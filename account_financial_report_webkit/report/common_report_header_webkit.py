@@ -1,0 +1,232 @@
+# -*- encoding: utf-8 -*-
+##############################################################################
+#
+#    Author: Nicolas Bessi. Copyright Camptocamp SA
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+from account.report.common_report_header import common_report_header
+
+
+class CommonReportHeaderWebkit(common_report_header):
+    """Define common helper for financial report"""
+    
+    ####################From getter helper #####################################
+    def get_start_period_br(self, data):
+        return self._get_info(data,'period_from', 'account.period')
+        
+    def get_end_period_br(self, data):
+        return self._get_info(data,'period_to', 'account.period')
+
+    def get_fiscalyear_br(self, data):
+        return self._get_info(data,'fiscalyear_id', 'account.fiscalyear')
+        
+    def _get_info(self, data, field, model):
+        info = data.get('form', {}).get(field)
+        if info:
+            return self.pool.get(model).browse(self.cursor, self.uid, info)
+        return False
+            
+
+    ####################Account and account line filter helper #################
+
+    def get_all_accounts(self, account_ids, filter_view=False, context=None):
+        """Get all account passed in params with their childrens"""
+        context = context or {}
+        print account_ids
+        if not isinstance(account_ids, list):
+            account_ids = [account_ids]
+        acc_obj = self.pool.get('account.account')
+        accounts = []
+        for account_id in account_ids:
+            accounts.append(account_id)
+            accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id)
+        res = list(set(accounts))
+        if filter_view:
+            sql = ("Select id from account_account where id in (%s)"
+                   " And type != 'view'") % (','.join([str(x) for x in res]),)
+
+            res = self.cursor.execute(sql)
+            res = self.cursor.fetchall()
+            if not res:
+                return []
+            res = [x[0] for x in res]
+        return res
+
+    ####################Periods and fiscal years  helper #######################
+
+    def _get_opening_periods(self):
+        """Return the list of all journal that can be use to create opening entries
+        We actually filter on this instead of special period as older version of OpenERP
+        did not have this notion"""
+        return self.pool.get('account.period').search(self.cursor,
+                                                       self.uid,
+                                                       [('special', '=', True)])
+                                                       
+                                                       
+    def get_included_special_period(self, period):
+        """Return the special included in normal period we use the assemption
+        that ther is only one special period per fiscal year"""
+        res = self.pool.get('account.period').search(self.cursor, 
+                                                     self.uid,
+                                                     [('special', '=', True),
+                                                      ('date_start', '>=', period.date_start),
+                                                      ('date_stop', '<=', period.date_stop)],
+                                                     limit=1)
+        return res
+    
+    def _get_period_range_form_periods(start_period, stop_period, mode):
+        # TODO test date type
+        period_obj = self.pool.get('account.period')
+        search_period = [('date_start', '>=' start_period.date_start)
+                         ('date_stop', '<=', stop_period.date_stop)]
+        if mode == 'exclude_special':
+            search_period += [('special', '=', False)]
+        res = period_obj.search(self.cursor, self.uid, search_period)
+        return res
+
+    def _get_period_range_form_start_period(self, start_period, include_special=False,
+                                            fiscalyear=False, stop_at_previous_special=False):
+        """We retrieve all periods before start period"""
+        period_obj = self.pool.get('account.period')
+        fisc_year_obj = self.pool.get('account.fiscalyear')
+        # We look for previous special period
+        special_period = []
+        if stop_at_previous_special:
+            special_search = [('special', '=', True),
+                             ('date_stop', '<', start_period.date_start)]
+            if fiscalyear :
+                special_search.append(('fiscalyear_id', '=', fiscalyear.id))
+                
+            special_period = period_obj.search(self.cursor, self.uid, special_search,
+                                               limit=1, order='date_stop desc')
+        past_limit = []
+        if special_period:
+            special_period_br = period_obj.browse(self.cursor, self.uid, special_period[0])
+            past_limit = [('date_start', '>=', special_period.date_stop)]
+            
+        periods_search = [('date_stop','<=',start_period.date_stop)]
+        periods_search += past_limit
+        
+        if not include_special:
+            periods_search += [('special', '=', False)]
+            
+        if fiscalyear :
+            periods_search.append(('fiscalyear_id', '=', fiscalyear.id))
+        periods = period_obj.search(self.cursor, self.uid, periods_search)
+        if include_special:
+            periods += special_period
+        return periods
+
+    def get_first_fiscalyear_period(self, fiscalyear):
+        return self._get_st_ficsalyear_period(fiscalyear)
+     
+    def get_last_fiscalyear_period(self, fiscalyear):
+        return self._get_st_ficsalyear_period(fiscalyear, order='DESC')   
+        
+    def _get_st_ficsalyear_period(self, fiscalyear, order='ASC'):
+        period_obj = self.pool.get('account.period')
+        p_id = period_obj.search(self.cursor,
+                                 self.uid, 
+                                 [('special','=', False),
+                                  ('fiscalyear_id', '=', fiscalyear.id)],
+                                 limit=1, 
+                                 order='date_start %s' % (order,))
+        return period_obj.browse(self.cursor, self.uid, p_id[0])
+        
+    ####################Initial Balance helper #################################
+     
+    def _compute_init_balance(self, account, period_ids, mode='computed'):
+        if not isinstance(period_ids, list):
+            period_ids = [period_ids]
+        p_ids = ','.join([str(x) for x in period_ids])
+        
+        try:
+            self.cursor.execute("Select sum(debit)-sum(credit) as balance"
+                                " from account_move_line where period_id in (%s)" % (p_ids,))
+            res = self.cursor.fetchone()
+            
+        except Exception, exc:
+            self.cursor.rollback()
+            raise exc
+        return {'init_balance': res[0] or 0.0, 'state': mode}
+
+
+    def _compute_inital_balances(self, account_ids, start_period, fiscalyear, filter):
+        """We compute initial balance.
+        If form is filtered by date all initial balance are equal to 0"""
+        special_periods = self._get_opening_periods()
+        # if opening period is included in start period we do not need to compute init balance
+        # we just read it from opening entries
+        read_period_id = self.get_included_special_period(start_period)
+        res = {}
+        if filter in ('filter_period', 'filter_no'):
+            
+            # PNL and Balance accounts are not computed the same way look for attached doc
+            # We include special period in pnl account in order to see if opening entries 
+            # were created by error on this account
+            pnl_periods_ids = self._get_period_range_form_start_period(start_period, fiscalyear=fiscalyear, 
+                                                                       include_special=True)
+                                                             
+            bs_period_ids = self._get_period_range_form_start_period(start_period, include_special=True, 
+                                                                     stop_at_previous_special=True)
+            
+            for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
+                if acc.user_type.close_method == 'none':
+                    res[acc.id] = self._compute_init_balance(acc, pnl_periods_ids)
+                else :
+                    if read_period_id:
+                        res[acc.id] = self._compute_init_balance(acc, read_period_id, mode='read')
+                    else:
+                        res[acc.id] = self._compute_init_balance(acc, bs_period_ids)
+
+        else:
+            for acc_id in account_ids:
+                res[acc_id] = {'init_balance': 0.0, 'state': 'disable'}
+        return res
+        
+    ####################Account move retrieval helper ##########################
+    def _get_move_ids_from_periods(self, account_id, period_start, period_stop, mode):
+        move_line_obj = self.pool.get('account.move.line')
+        periods = _get_period_range_form_periods(period_start, period_stop, mode)
+        if not periods:
+            return []
+        return move_line_obj.search(self.cursor, self.uid, [('period_id', 'in', periods)]
+
+
+    
+    def _get_move_ids_from_dates(self, account_id, date_stop, date_end, mode):
+        # TODO imporve perfomance by setting opening period as a property
+        move_line_obj = self.pool.get('account.move.line')
+        search_period = [('date', '>=', date_start), ('date', '<=', date_stop)]
+        if mode == 'exclude_special':
+            special = self._get_opening_periods()
+            if special:
+                search_period += ['period_id', 'not in', special]
+        return move_line_obj.search(self.cursor, self.uid, search_period]
+
+    def get_move_lines_ids(self, account_id, filter, start, stop, mode='include_special'):
+        """Get account move lines base on form data"""
+        res = {}
+        if mode not in ('include_special', 'exclude_special'):
+            raise osv.except_osv(_('Invalid query mode'), _('Must be in include_special, exclude_special')) 
+            
+        if filter in ('filter_period', 'filter_no'):
+            return self._get_move_ids_from_periods(account_id, start, stop, mode)
+        elif filter == 'filter_date'
+            return self._get_move_ids_from_dates(account_id, start, stop, mode)
+        else:
+            raise osv.except_osv(_('No valid filter'), _('Please set a valid time filter'))  
