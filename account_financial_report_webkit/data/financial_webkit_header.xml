@@ -3,7 +3,7 @@
     <data>
         <record id="financial_landscape_header" model="ir.header_webkit">
             <field name="footer_html"><![CDATA[
- <html>
+<html>
     <head>
         <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
         <script>
@@ -19,10 +19,12 @@
             }
         </script>
     </head>
+    <% import datetime %>
     <body style="border:0; margin: 0;" onload="subst()">
         <table style="border-top: 1px solid black; width: 100%">
             <tr >
-                <td style="text-align:right;font-size:12;" width="95%">Page <span class="page"/></td><td style="text-align:left;font-size:12;">  of <span class="topage"/></td>
+                <td style="text-align:left;font-size:12;">${formatLang( str(datetime.datetime.today().date()),date=True)}</td>
+                <td style="text-align:right;font-size:12;" width="90%">Page <span class="page"/></td><td style="text-align:left;font-size:12;">  of <span class="topage"/></td>
             </tr>
         </table>
     </body>
@@ -52,11 +54,11 @@
     <body style="border:0; margin: 0;" onload="subst()">
         <table class="header" style="border-bottom: 0px solid black; width: 100%">
             <tr>
-                <td><br/></td>
-                <td style="text-align:right"> </td>
+                <td style="text-align:left">${report_name} </td>
+                <td/>
             </tr>
             <tr>
-                <td>${company.partner_id.name |entity}</td>
+                <td style="text-align:left" >${company.partner_id.name |entity}</td>
                 <td/>
             </tr>
         </table> ${_debug or ''|n} </body>
@@ -64,88 +66,49 @@
             </field>
             <field eval="20.0" name="margin_top"/>
             <field name="css"><![CDATA[
-body {
-font-family:helvetica;
-font-size:12;
+body, table, td, span {
+    font-family:Helvetica, arial;
 }
-
-
-.dest_address {
-margin-left:60%;
-font-size:12;
+.list_table, tr {
+    border-color:gray;
+    border-bottom:1px solid lightGrey;
+    border-left:0px;
+    border-right:0px;
+    text-align:left;
+    font-size:10px;
+    padding-right:3px;
+    padding-left:3px;
+    padding-top:2px;
+    padding-bottom:1px;
+    border-collapse:collapse;
 }
-.header {
-margin-left:0;
-text-align:left;
-width:300px;
-font-size:12;
+.list_table, td {
+    word-wrap:break-word;
 }
-
+.list_table thead {
+    background-color:#F0F0F0;
+}
+.data_table {
+    border-color:gray;
+    border-bottom:1px solid lightGrey;
+    border-left:0px;
+    border-right:0px;
+    text-align:left;
+    font-size:6px;
+    padding-right:3px;
+    padding-left:3px;
+    padding-top:2px;
+    padding-bottom:2px;
+}
+.data_table td {
+    font-size:8px;
+}
 .title {
-font-size:16;
-font-weight: bold;
-
+    font-size:10px;
+    font-weight:bold;
 }
-
-
-.basic_table{
-text-align:center;
-border:1px solid lightGrey;
-border-collapse: collapse;
-}
-.basic_table td {
-border:1px solid lightGrey;
-font-size:12;
-
-
-}
-
-.list_table {
-border-color:black;
-text-align:center;
-border-collapse: collapse;
-
-}
-.list_table td {
-border-color:gray;
-border-top:1px solid gray;
-text-align:left;
-font-size:12;
-padding-right:3px
-padding-left:3px
-padding-top:3px
-padding-bottom:3px
-}
-
-.list_table th {
-border-bottom:2px solid black;
-text-align:left;
-font-size:12;
-font-weight:bold;
-padding-right:3px
-padding-left:3px
-}
-
-.list_tabe thead {
+thead {
     display:table-header-group;
-}
-
-
-.total {
-width:100%;
-}
-.lib {
-width:10.3%;
-}
-.tot {
-text-align:right;
-width:15%;
-}
-.lefttot {
-width:74%;
-}
-.tax {
-width:50%;
 }]]>
             </field>
             <field name="name">Financial Landscape Header</field>

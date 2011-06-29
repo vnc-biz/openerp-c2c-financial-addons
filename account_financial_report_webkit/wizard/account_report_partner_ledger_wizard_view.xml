@@ -15,7 +15,7 @@
                     </xpath>
                     <xpath expr="//field[@name='target_move']" position="after">
                         <field name="display_account"/>
-                        <field name="initial_balance" attrs="{'readonly':[('fiscalyear_id','=', False)]}"/>
+                        <field name="initial_balance" attrs="{'readonly':[('fiscalyear_id','=', False)], 'invisible':[('filter','=','filter_date')]}"/>
                         <field name="amount_currency"/>
                         <newline/>
                     </xpath>

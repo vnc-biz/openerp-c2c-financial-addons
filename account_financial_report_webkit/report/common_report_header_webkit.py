@@ -2,6 +2,7 @@
 ##############################################################################
 #
 #    Author: Nicolas Bessi. Copyright Camptocamp SA
+#    SQL inspired from OpenERP original code
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -17,9 +18,10 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+# TODO USE cursor execute string fromatting function and split this file
 
 from account.report.common_report_header import common_report_header
-
+from tools.translate import _
 
 class CommonReportHeaderWebkit(common_report_header):
     """Define common helper for financial report"""
@@ -40,17 +42,44 @@ class CommonReportHeaderWebkit(common_report_header):
             return self.pool.get(model).browse(self.cursor, self.uid, info)
         return False
             
+    def _get_display_account(self, data):
+        val = self._get_form_param('display_account', data)
+        if val == 'bal_all':
+            return _('All accounts')
+        elif val == 'bal_mix':
+            return _('With transactions or non zero balance')
+        else:
+            return val
+            
+    def _get_display_account_raw(self, data):
+        return self._get_form_param('display_account', data)
+
+    def _get_filter(self, data):
+        return self._get_form_param('filter', data)
+    
+    def _get_target_move(self, data):
+        return self._get_form_param('target_move', data)
+        
+    def _get_initial_balance(self, data):
+        return self._get_form_param('initial_balance', data)
+        
+    def _get_amount_currency(self, data):
+        return self._get_form_param('amount_currency', data)
+        
+    def _get_form_param(self, param, data):
+        return data.get('form', {}).get(param)
+        
+
 
     ####################Account and account line filter helper #################
 
     def get_all_accounts(self, account_ids, filter_view=False, context=None):
         """Get all account passed in params with their childrens"""
         context = context or {}
-        print account_ids
+        accounts = []
         if not isinstance(account_ids, list):
             account_ids = [account_ids]
         acc_obj = self.pool.get('account.account')
-        accounts = []
         for account_id in account_ids:
             accounts.append(account_id)
             accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id)
@@ -88,10 +117,10 @@ class CommonReportHeaderWebkit(common_report_header):
                                                      limit=1)
         return res
     
-    def _get_period_range_form_periods(start_period, stop_period, mode):
+    def _get_period_range_form_periods(self, start_period, stop_period, mode):
         # TODO test date type
         period_obj = self.pool.get('account.period')
-        search_period = [('date_start', '>=' start_period.date_start)
+        search_period = [('date_start', '>=', start_period.date_start),
                          ('date_stop', '<=', stop_period.date_stop)]
         if mode == 'exclude_special':
             search_period += [('special', '=', False)]
@@ -101,6 +130,7 @@ class CommonReportHeaderWebkit(common_report_header):
     def _get_period_range_form_start_period(self, start_period, include_special=False,
                                             fiscalyear=False, stop_at_previous_special=False):
         """We retrieve all periods before start period"""
+        
         period_obj = self.pool.get('account.period')
         fisc_year_obj = self.pool.get('account.fiscalyear')
         # We look for previous special period
@@ -131,11 +161,14 @@ class CommonReportHeaderWebkit(common_report_header):
             periods += special_period
         return periods
 
+
     def get_first_fiscalyear_period(self, fiscalyear):
         return self._get_st_ficsalyear_period(fiscalyear)
+
      
     def get_last_fiscalyear_period(self, fiscalyear):
         return self._get_st_ficsalyear_period(fiscalyear, order='DESC')   
+
         
     def _get_st_ficsalyear_period(self, fiscalyear, order='ASC'):
         period_obj = self.pool.get('account.period')
@@ -155,19 +188,21 @@ class CommonReportHeaderWebkit(common_report_header):
         p_ids = ','.join([str(x) for x in period_ids])
         
         try:
-            self.cursor.execute("Select sum(debit)-sum(credit) as balance"
-                                " from account_move_line where period_id in (%s)" % (p_ids,))
+            self.cursor.execute("SELECT sum(debit)-sum(credit) as balance,"
+                                " sum(amount_currency) as curr_balance"
+                                " FROM account_move_line where period_id in (%s)" % (p_ids,))
             res = self.cursor.fetchone()
             
         except Exception, exc:
             self.cursor.rollback()
             raise exc
-        return {'init_balance': res[0] or 0.0, 'state': mode}
+        return {'init_balance': res[0] or 0.0, 'init_balance_currency': res[1] or 0.0, 'state': mode}
 
 
     def _compute_inital_balances(self, account_ids, start_period, fiscalyear, filter):
         """We compute initial balance.
-        If form is filtered by date all initial balance are equal to 0"""
+        If form is filtered by date all initial balance are equal to 0
+        This function will sum pear and apple in currency amount if account as no secondary currency"""
         special_periods = self._get_opening_periods()
         # if opening period is included in start period we do not need to compute init balance
         # we just read it from opening entries
@@ -195,38 +230,132 @@ class CommonReportHeaderWebkit(common_report_header):
 
         else:
             for acc_id in account_ids:
-                res[acc_id] = {'init_balance': 0.0, 'state': 'disable'}
+                res[acc_id] = {'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'disable'}
         return res
         
     ####################Account move retrieval helper ##########################
-    def _get_move_ids_from_periods(self, account_id, period_start, period_stop, mode):
+    def _get_move_ids_from_periods(self, account_id, period_start, period_stop, mode, valid_only=False):
         move_line_obj = self.pool.get('account.move.line')
-        periods = _get_period_range_form_periods(period_start, period_stop, mode)
+        # we filter special period here
+        periods = self._get_period_range_form_periods(period_start, period_stop, mode)
         if not periods:
             return []
-        return move_line_obj.search(self.cursor, self.uid, [('period_id', 'in', periods)]
+        search = [('period_id', 'in', periods), ('account_id', '=', account_id)]
+        if valid_only:
+            search += [('state', '=', 'valid')]
+        return move_line_obj.search(self.cursor, self.uid, search)
 
-
-    
-    def _get_move_ids_from_dates(self, account_id, date_stop, date_end, mode):
+    def _get_move_ids_from_dates(self, account_id, date_stop, date_end, mode, valid_only=False):
         # TODO imporve perfomance by setting opening period as a property
         move_line_obj = self.pool.get('account.move.line')
-        search_period = [('date', '>=', date_start), ('date', '<=', date_stop)]
+        search_period = [('date', '>=', date_start), ('date', '<=', date_stop), 
+                         ('account_id', '=', account_id)]
         if mode == 'exclude_special':
             special = self._get_opening_periods()
             if special:
                 search_period += ['period_id', 'not in', special]
-        return move_line_obj.search(self.cursor, self.uid, search_period]
+        if valid_only:
+            search_period += [('state', '=', 'valid')]
+        return move_line_obj.search(self.cursor, self.uid, search_period)
 
-    def get_move_lines_ids(self, account_id, filter, start, stop, mode='include_special'):
+    def get_move_lines_ids(self, account_id, filter, start, stop, mode='include_special', valid_only=False):
         """Get account move lines base on form data"""
         res = {}
         if mode not in ('include_special', 'exclude_special'):
             raise osv.except_osv(_('Invalid query mode'), _('Must be in include_special, exclude_special')) 
             
         if filter in ('filter_period', 'filter_no'):
-            return self._get_move_ids_from_periods(account_id, start, stop, mode)
-        elif filter == 'filter_date'
-            return self._get_move_ids_from_dates(account_id, start, stop, mode)
+            return self._get_move_ids_from_periods(account_id, start, stop, mode, 
+                                                   valid_only=valid_only)
+        elif filter == 'filter_date':
+            return self._get_move_ids_from_dates(account_id, start, stop, mode, 
+                                                 valid_only=valid_only)
         else:
-            raise osv.except_osv(_('No valid filter'), _('Please set a valid time filter'))  
+            raise osv.except_osv(_('No valid filter'), _('Please set a valid time filter'))
+    
+    def _get_move_line_datas(self, move_line_ids, order="l.date ASC, peropen DESC"):
+        if not move_line_ids:
+            return []
+        if not isinstance(move_line_ids, list):
+            move_line_ids = [move_line_ids]
+        mids = ','.join([str(x) for x in move_line_ids])    
+        monster ="""
+SELECT l.id AS lid, 
+            l.date AS ldate,
+            j.code AS jcode ,
+            l.currency_id,
+            l.account_id,
+            l.amount_currency,
+            l.ref AS lref,
+            l.name AS lname,
+            COALESCE(l.debit, 0.0) - COALESCE(l.credit, 0.0) AS balance,
+            l.period_id AS lperiod_id,
+            per.code as period_code,
+            per.special AS peropen,
+            l.partner_id AS lpartner_id,
+            p.name AS partner_name,
+            m.name AS move_name, 
+             COALESCE(partialrec.name, fullrec.name, '') AS rec_name,
+            m.id AS move_id,
+            c.symbol AS currency_code,
+            i.id AS invoice_id, 
+            i.type AS invoice_type, 
+            i.number AS invoice_number
+FROM account_move_line l
+    JOIN account_move m on (l.move_id=m.id)
+    LEFT JOIN res_currency c on (l.currency_id=c.id)
+    LEFT JOIN account_move_reconcile partialrec on (l.reconcile_partial_id = partialrec.id)
+    LEFT JOIN account_move_reconcile fullrec on (l.reconcile_id = fullrec.id)
+    LEFT JOIN res_partner p on (l.partner_id=p.id)
+    LEFT JOIN account_invoice i on (m.id =i.move_id)
+    LEFT JOIN account_period per on (per.id=l.period_id)
+    JOIN account_journal j on (l.journal_id=j.id)
+    WHERE l.id in (%s) ORDER BY %s""" % (mids, order)
+        
+        try:
+            self.cursor.execute(monster)
+            res= self.cursor.dictfetchall()
+        except Exception, exc:
+            self.cursor.rollback()
+            raise exc
+        if res:
+            return res
+        else:
+            return []
+            
+    def _get_moves_counterparts(self, move_ids, account_id, limit=3):
+        if not move_ids:
+            return {}
+        if not isinstance(move_ids, list):
+            move_ids = [move_ids]
+        mids = ','.join([str(x) for x in move_ids])
+        to_retunr = {}
+        sql = """
+SELECT account_move.id, 
+       array_to_string(
+          ARRAY(SELECT DISTINCT a.code
+                FROM account_move_line m2
+                  LEFT JOIN account_account a ON (m2.account_id=a.id)
+                WHERE m2.move_id =account_move_line.move_id
+                  AND m2.account_id<>%s limit %s) , ', ')
+	    
+FROM account_move
+	JOIN account_move_line on (account_move_line.move_id = account_move.id)
+	JOIN account_account on (account_move_line.account_id = account_account.id) 
+WHERE move_id in (%s) """ % (account_id, limit, mids)
+
+        try:
+            self.cursor.execute(sql)
+            res= self.cursor.fetchall()
+        except Exception, exc:
+            self.cursor.rollback()
+            raise exc
+        if res:
+            return dict(res)
+        else:
+            return {}
+        
+        
+        
+
+    
