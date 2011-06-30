@@ -82,12 +82,6 @@ body, table, td, span {
     padding-bottom:1px;
     border-collapse:collapse;
 }
-.list_table, td {
-    word-wrap:break-word;
-}
-.list_table thead {
-    background-color:#F0F0F0;
-}
 .data_table {
     border-color:gray;
     border-bottom:1px solid lightGrey;
@@ -102,6 +96,17 @@ body, table, td, span {
 }
 .data_table td {
     font-size:8px;
+}
+.list_table, td {
+    word-wrap:break-word;
+}
+@media print {
+thead {
+    display: table-header-group;
+}
+}
+.list_table thead {
+    background-color:#F0F0F0;
 }
 .title {
     font-size:10px;
