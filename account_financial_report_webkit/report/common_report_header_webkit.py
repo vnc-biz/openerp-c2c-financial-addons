@@ -146,7 +146,7 @@ class CommonReportHeaderWebkit(common_report_header):
         past_limit = []
         if special_period:
             special_period_br = period_obj.browse(self.cursor, self.uid, special_period[0])
-            past_limit = [('date_start', '>=', special_period.date_stop)]
+            past_limit = [('date_start', '>=', special_period_br.date_stop)]
             
         periods_search = [('date_stop','<=',start_period.date_stop)]
         periods_search += past_limit
