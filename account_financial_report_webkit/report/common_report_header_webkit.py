@@ -106,15 +106,24 @@ class CommonReportHeaderWebkit(common_report_header):
                                                        [('special', '=', True)])
                                                        
                                                        
-    def get_included_special_period(self, period):
+    def get_included_special_period(self, period, check_move = True):
         """Return the special included in normal period we use the assemption
         that ther is only one special period per fiscal year"""
+        mv_line_obj = self.pool.get('account.move.line')
         res = self.pool.get('account.period').search(self.cursor, 
                                                      self.uid,
                                                      [('special', '=', True),
                                                       ('date_start', '>=', period.date_start),
                                                       ('date_stop', '<=', period.date_stop)],
                                                      limit=1)
+        if check_move and res:
+            validation_res = mv_line_obj.search(self.cursor, 
+                                                self.uid,
+                                                [('period_id', '=', res[0])],
+                                                limit=1)
+            if not validation_res:
+                return False
+            
         return res
     
     def _get_period_range_form_periods(self, start_period, stop_period, mode):
@@ -130,22 +139,31 @@ class CommonReportHeaderWebkit(common_report_header):
     def _get_period_range_form_start_period(self, start_period, include_special=False,
                                             fiscalyear=False, stop_at_previous_special=False):
         """We retrieve all periods before start period"""
-        
+        special_period_id = False
         period_obj = self.pool.get('account.period')
         fisc_year_obj = self.pool.get('account.fiscalyear')
+        mv_line_obj = self.pool.get('account.move.line')
         # We look for previous special period
-        special_period = []
         if stop_at_previous_special:
             special_search = [('special', '=', True),
                              ('date_stop', '<', start_period.date_start)]
             if fiscalyear :
                 special_search.append(('fiscalyear_id', '=', fiscalyear.id))
                 
-            special_period = period_obj.search(self.cursor, self.uid, special_search,
-                                               limit=1, order='date_stop desc')
+            special_periods = period_obj.search(self.cursor, self.uid, special_search,
+                                               order='date_stop desc')
+            for special_period in special_periods:
+                validation_res = mv_line_obj.search(self.cursor, 
+                                                    self.uid,
+                                                    [('period_id', '=', special_period)],
+                                                    limit=1)
+                if validation_res:
+                    special_period_id = special_period
+                    break
         past_limit = []
-        if special_period:
-            special_period_br = period_obj.browse(self.cursor, self.uid, special_period[0])
+        if special_period_id:
+            #we also look for overlapping periods
+            special_period_br = period_obj.browse(self.cursor, self.uid, special_period_id)
             past_limit = [('date_start', '>=', special_period_br.date_stop)]
             
         periods_search = [('date_stop','<=',start_period.date_stop)]
@@ -157,8 +175,12 @@ class CommonReportHeaderWebkit(common_report_header):
         if fiscalyear :
             periods_search.append(('fiscalyear_id', '=', fiscalyear.id))
         periods = period_obj.search(self.cursor, self.uid, periods_search)
-        if include_special:
-            periods += special_period
+        if include_special and special_period_id:
+            periods.append(special_period_id)
+        print 'DEBUG PERIODS', periods
+        periods = list(set(periods))
+        if start_period.id in periods:
+            periods.remove(start_period.id)
         return periods
 
 
@@ -178,6 +200,8 @@ class CommonReportHeaderWebkit(common_report_header):
                                   ('fiscalyear_id', '=', fiscalyear.id)],
                                  limit=1, 
                                  order='date_start %s' % (order,))
+        if not p_id:
+            raise osv.except_osv(_('No normal period found'),'')
         return period_obj.browse(self.cursor, self.uid, p_id[0])
         
     ####################Initial Balance helper #################################
@@ -190,7 +214,9 @@ class CommonReportHeaderWebkit(common_report_header):
         try:
             self.cursor.execute("SELECT sum(debit)-sum(credit) as balance,"
                                 " sum(amount_currency) as curr_balance"
-                                " FROM account_move_line where period_id in (%s)" % (p_ids,))
+                                " FROM account_move_line" 
+                                " where period_id in (%s)" 
+                                " And account_id = %s" % (p_ids, account.id))
             res = self.cursor.fetchone()
             
         except Exception, exc:
@@ -218,15 +244,20 @@ class CommonReportHeaderWebkit(common_report_header):
                                                              
             bs_period_ids = self._get_period_range_form_start_period(start_period, include_special=True, 
                                                                      stop_at_previous_special=True)
-            
+            nil_res = {'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'computed'}
             for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
                 if acc.user_type.close_method == 'none':
-                    res[acc.id] = self._compute_init_balance(acc, pnl_periods_ids)
+                    if pnl_periods_ids:
+                        res[acc.id] = self._compute_init_balance(acc, pnl_periods_ids)
+                    else:
+                        res[acc.id] = nil_res
                 else :
                     if read_period_id:
                         res[acc.id] = self._compute_init_balance(acc, read_period_id, mode='read')
-                    else:
+                    elif bs_period_ids:
                         res[acc.id] = self._compute_init_balance(acc, bs_period_ids)
+                    else:
+                        res[acc.id] = nil_res
 
         else:
             for acc_id in account_ids:
@@ -297,7 +328,7 @@ SELECT l.id AS lid,
             m.name AS move_name, 
              COALESCE(partialrec.name, fullrec.name, '') AS rec_name,
             m.id AS move_id,
-            c.symbol AS currency_code,
+            c.name AS currency_code,
             i.id AS invoice_id, 
             i.type AS invoice_type, 
             i.number AS invoice_number

@@ -50,24 +50,22 @@
                         ## balance
                         <td width="55px" style="word-wrap:normal; text-align:right">${_('Balance')}</td>
                         ## balance cumulated
-                        <td width="55px" style="word-wrap:normal; text-align:right">${_('C. Balance')}</td>
+                        <td width="55px" style="word-wrap:normal; text-align:right">${_('Cumul. Bal.')}</td>
                         %if amount_currency(data):
-                        ## curency code
-                        <td width="30px" style="word-wrap:normal; text-align:right">${_('Curr.')}</td>
-                        ## currency balance
-                        <td width="55px" style="word-wrap:normal; text-align:right">${_('Curr. Balance')}</td>
-                        %if account.currency_id:
-                        ## currency balance cumulated
-                        <td width="55px" style="word-wrap:normal; text-align:right">${_('C. Cumul. Balance')}</td>
-                        %endif
+                            ## curency code
+                            <td width="30px" style="word-wrap:normal; text-align:right">${_('Curr.')}</td>
+                            ## currency balance
+                            <td width="55px" style="word-wrap:normal; text-align:right">${_('Curr. Balance')}</td>
+                            ## currency balance cumulated
+                            <td width="55px" style="word-wrap:normal; text-align:right">${_('Curr. Cumul. Bal')}</td>
                         %endif</tr>
                 </thead>
                 
                 <tbody>
                       %if initial_balance(data):
                         <%
-                        cumul_balance = account.init_balance.get('init_balance', 0.0)
-                        cumul_balance_curr = account.init_balance.get('init_balance_currency', 0.0)
+                        cumul_balance = account.init_balance.get('init_balance') or 0.0
+                        cumul_balance_curr = account.init_balance.get('init_balance_currency') or 0.0
                         %>
                         <tr>
                           ## date
@@ -100,6 +98,8 @@
                               %if account.currency_id:
                                   ## currency balance cumulated
                                   <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr)}</td>
+                              %else:
+                                <td style="word-wrap:normal; text-align:right">${formatLang(0.0)}</td>
                               %endif
                          %endif
 
@@ -108,37 +108,39 @@
                       %for line in account.ledger_lines:
                       <tr>
                           ## date
-                          <td>${formatLang(line.get('ldate', False), date=True)}</td>
+                          <td>${formatLang(line.get('ldate') or '', date=True)}</td>
                           ## period
-                          <td>${line.get('period_code', '')}</td>
+                          <td>${line.get('period_code') or ''}</td>
                           ## move
-                          <td>${line.get('move_name', '')}</td>
+                          <td>${line.get('move_name') or ''}</td>
                           ## journal
-                          <td>${line.get('jcode', '')}</td>
+                          <td>${line.get('jcode') or ''}</td>
                           ## partner
-                          <td>${line.get('partner_name', '')}</td>
+                          <td>${line.get('partner_name') or ''}</td>
                           ## ref
-                          <td>${line.get('lref', '')}</td>
+                          <td>${line.get('lref') or ''}</td>
                           ## label
-                          <td>${line.get('lname', '')}</td>
+                          <td>${line.get('lname') or ''}</td>
                           ## counterpart
-                          <td>${line.get('counterparts', '')}</td>
+                          <td>${line.get('counterparts') or ''}</td>
                           ## reconcile
-                          <td>${line.get('rec_name', '')}</td>
+                          <td>${line.get('rec_name') or ''}</td>
                           ## balance
-                          <td style="word-wrap:normal; text-align:right">${formatLang(line.get('balance', 0.0))}</td>
+                          <td style="word-wrap:normal; text-align:right">${formatLang(line.get('balance') or 0.0)}</td>
                           ## balance cumulated
-                          <% cumul_balance += line.get('balance', 0.0) %>
+                          <% cumul_balance += line.get('balance') or 0.0 %>
                           <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance)}</td>
                           %if amount_currency(data):
                               ## curency code
-                              <td>${line.get('currency_code','')|entity}</td>
+                              <td>${line.get('currency_code') or ''}</td>
                               ## currency balance
-                              <td style="word-wrap:normal; text-align:right">${formatLang(line.get('amount_currency', 0.0))}</td>
+                              <td style="word-wrap:normal; text-align:right">${formatLang(line.get('amount_currency') or 0.0)}</td>
                               %if account.currency_id:
-                              <% cumul_balance_curr += line.get('amount_currency', 0.0) %>
+                              <% cumul_balance_curr += line.get('amount_currency') or 0.0 %>
                                   ## currency balance cumulated
                                   <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr)}</td>
+                              %else:
+                                  <td style="word-wrap:normal; text-align:right">${formatLang(0.0)}</td>
                               %endif
                           %endif
                       </tr>
