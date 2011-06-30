@@ -101,7 +101,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         res = {}
         valid_only = True
         if target_move == 'all':
-            valid_only=false
+            valid_only=False
         for acc_id in accounts_ids:
             # We get the move line ids of the account depending of the
             # way the initial balance was created we include or not opening entries
