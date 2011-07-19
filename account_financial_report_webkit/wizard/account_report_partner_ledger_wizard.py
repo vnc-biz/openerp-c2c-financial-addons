@@ -61,7 +61,6 @@ class AccountReportPartnerLedgerWizard(osv.osv_memory):
         # GTK client problem onchange does not consider in save record
         if not data['form']['fiscalyear_id']:
             data['form'].update({'initial_balance': False})
-
         return {'type': 'ir.actions.report.xml',
                 'report_name': 'account.account_report_partner_ledger_webkit',
                 'datas': data}

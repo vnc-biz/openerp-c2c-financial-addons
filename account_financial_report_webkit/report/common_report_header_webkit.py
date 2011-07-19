@@ -18,30 +18,29 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-# TODO USE cursor execute string fromatting function and split this file
 
 from account.report.common_report_header import common_report_header
 from tools.translate import _
 
 class CommonReportHeaderWebkit(common_report_header):
     """Define common helper for financial report"""
-    
+
     ####################From getter helper #####################################
     def get_start_period_br(self, data):
         return self._get_info(data,'period_from', 'account.period')
-        
+
     def get_end_period_br(self, data):
         return self._get_info(data,'period_to', 'account.period')
 
     def get_fiscalyear_br(self, data):
         return self._get_info(data,'fiscalyear_id', 'account.fiscalyear')
-        
+
     def _get_info(self, data, field, model):
         info = data.get('form', {}).get(field)
         if info:
             return self.pool.get(model).browse(self.cursor, self.uid, info)
         return False
-            
+
     def _get_display_account(self, data):
         val = self._get_form_param('display_account', data)
         if val == 'bal_all':
@@ -50,25 +49,25 @@ class CommonReportHeaderWebkit(common_report_header):
             return _('With transactions or non zero balance')
         else:
             return val
-            
+
     def _get_display_account_raw(self, data):
         return self._get_form_param('display_account', data)
 
     def _get_filter(self, data):
         return self._get_form_param('filter', data)
-    
+
     def _get_target_move(self, data):
         return self._get_form_param('target_move', data)
-        
+
     def _get_initial_balance(self, data):
         return self._get_form_param('initial_balance', data)
-        
+
     def _get_amount_currency(self, data):
         return self._get_form_param('amount_currency', data)
-        
+
     def _get_form_param(self, param, data):
         return data.get('form', {}).get(param)
-        
+
 
 
     ####################Account and account line filter helper #################
@@ -85,10 +84,10 @@ class CommonReportHeaderWebkit(common_report_header):
             accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id)
         res = list(set(accounts))
         if filter_view:
-            sql = ("Select id from account_account where id in (%s)"
-                   " And type != 'view'") % (','.join([str(x) for x in res]),)
+            sql = ("Select id from account_account where id in %s"
+                   " And type != 'view'")
 
-            res = self.cursor.execute(sql)
+            res = self.cursor.execute(sql, (tuple(res),))
             res = self.cursor.fetchall()
             if not res:
                 return []
@@ -104,28 +103,28 @@ class CommonReportHeaderWebkit(common_report_header):
         return self.pool.get('account.period').search(self.cursor,
                                                        self.uid,
                                                        [('special', '=', True)])
-                                                       
-                                                       
+
+
     def get_included_special_period(self, period, check_move = True):
         """Return the special included in normal period we use the assemption
         that ther is only one special period per fiscal year"""
         mv_line_obj = self.pool.get('account.move.line')
-        res = self.pool.get('account.period').search(self.cursor, 
+        res = self.pool.get('account.period').search(self.cursor,
                                                      self.uid,
                                                      [('special', '=', True),
                                                       ('date_start', '>=', period.date_start),
                                                       ('date_stop', '<=', period.date_stop)],
                                                      limit=1)
         if check_move and res:
-            validation_res = mv_line_obj.search(self.cursor, 
+            validation_res = mv_line_obj.search(self.cursor,
                                                 self.uid,
                                                 [('period_id', '=', res[0])],
                                                 limit=1)
             if not validation_res:
                 return False
-            
+
         return res
-    
+
     def _get_period_range_form_periods(self, start_period, stop_period, mode):
         # TODO test date type
         period_obj = self.pool.get('account.period')
@@ -149,11 +148,11 @@ class CommonReportHeaderWebkit(common_report_header):
                              ('date_stop', '<', start_period.date_start)]
             if fiscalyear :
                 special_search.append(('fiscalyear_id', '=', fiscalyear.id))
-                
+
             special_periods = period_obj.search(self.cursor, self.uid, special_search,
                                                order='date_stop desc')
             for special_period in special_periods:
-                validation_res = mv_line_obj.search(self.cursor, 
+                validation_res = mv_line_obj.search(self.cursor,
                                                     self.uid,
                                                     [('period_id', '=', special_period)],
                                                     limit=1)
@@ -165,19 +164,18 @@ class CommonReportHeaderWebkit(common_report_header):
             #we also look for overlapping periods
             special_period_br = period_obj.browse(self.cursor, self.uid, special_period_id)
             past_limit = [('date_start', '>=', special_period_br.date_stop)]
-            
+
         periods_search = [('date_stop','<=',start_period.date_stop)]
         periods_search += past_limit
-        
+
         if not include_special:
             periods_search += [('special', '=', False)]
-            
+
         if fiscalyear :
             periods_search.append(('fiscalyear_id', '=', fiscalyear.id))
         periods = period_obj.search(self.cursor, self.uid, periods_search)
         if include_special and special_period_id:
             periods.append(special_period_id)
-        print 'DEBUG PERIODS', periods
         periods = list(set(periods))
         if start_period.id in periods:
             periods.remove(start_period.id)
@@ -187,38 +185,37 @@ class CommonReportHeaderWebkit(common_report_header):
     def get_first_fiscalyear_period(self, fiscalyear):
         return self._get_st_ficsalyear_period(fiscalyear)
 
-     
-    def get_last_fiscalyear_period(self, fiscalyear):
-        return self._get_st_ficsalyear_period(fiscalyear, order='DESC')   
 
-        
+    def get_last_fiscalyear_period(self, fiscalyear):
+        return self._get_st_ficsalyear_period(fiscalyear, order='DESC')
+
+
     def _get_st_ficsalyear_period(self, fiscalyear, order='ASC'):
         period_obj = self.pool.get('account.period')
         p_id = period_obj.search(self.cursor,
-                                 self.uid, 
+                                 self.uid,
                                  [('special','=', False),
                                   ('fiscalyear_id', '=', fiscalyear.id)],
-                                 limit=1, 
+                                 limit=1,
                                  order='date_start %s' % (order,))
         if not p_id:
             raise osv.except_osv(_('No normal period found'),'')
         return period_obj.browse(self.cursor, self.uid, p_id[0])
-        
+
     ####################Initial Balance helper #################################
-     
+
     def _compute_init_balance(self, account, period_ids, mode='computed'):
         if not isinstance(period_ids, list):
             period_ids = [period_ids]
-        p_ids = ','.join([str(x) for x in period_ids])
-        
+
         try:
             self.cursor.execute("SELECT sum(debit)-sum(credit) as balance,"
                                 " sum(amount_currency) as curr_balance"
-                                " FROM account_move_line" 
-                                " where period_id in (%s)" 
-                                " And account_id = %s" % (p_ids, account.id))
+                                " FROM account_move_line"
+                                " where period_id in %s"
+                                " And account_id = %s", (tuple(period_ids), account.id))
             res = self.cursor.fetchone()
-            
+
         except Exception, exc:
             self.cursor.rollback()
             raise exc
@@ -235,14 +232,14 @@ class CommonReportHeaderWebkit(common_report_header):
         read_period_id = self.get_included_special_period(start_period)
         res = {}
         if filter in ('filter_period', 'filter_no'):
-            
+
             # PNL and Balance accounts are not computed the same way look for attached doc
-            # We include special period in pnl account in order to see if opening entries 
+            # We include special period in pnl account in order to see if opening entries
             # were created by error on this account
-            pnl_periods_ids = self._get_period_range_form_start_period(start_period, fiscalyear=fiscalyear, 
+            pnl_periods_ids = self._get_period_range_form_start_period(start_period, fiscalyear=fiscalyear,
                                                                        include_special=True)
-                                                             
-            bs_period_ids = self._get_period_range_form_start_period(start_period, include_special=True, 
+
+            bs_period_ids = self._get_period_range_form_start_period(start_period, include_special=True,
                                                                      stop_at_previous_special=True)
             nil_res = {'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'computed'}
             for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
@@ -263,7 +260,7 @@ class CommonReportHeaderWebkit(common_report_header):
             for acc_id in account_ids:
                 res[acc_id] = {'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'disable'}
         return res
-        
+
     ####################Account move retrieval helper ##########################
     def _get_move_ids_from_periods(self, account_id, period_start, period_stop, mode, valid_only=False):
         move_line_obj = self.pool.get('account.move.line')
@@ -276,10 +273,10 @@ class CommonReportHeaderWebkit(common_report_header):
             search += [('state', '=', 'valid')]
         return move_line_obj.search(self.cursor, self.uid, search)
 
-    def _get_move_ids_from_dates(self, account_id, date_stop, date_end, mode, valid_only=False):
+    def _get_move_ids_from_dates(self, account_id, date_start, date_stop, mode, valid_only=False):
         # TODO imporve perfomance by setting opening period as a property
         move_line_obj = self.pool.get('account.move.line')
-        search_period = [('date', '>=', date_start), ('date', '<=', date_stop), 
+        search_period = [('date', '>=', date_start), ('date', '<=', date_stop),
                          ('account_id', '=', account_id)]
         if mode == 'exclude_special':
             special = self._get_opening_periods()
@@ -293,25 +290,24 @@ class CommonReportHeaderWebkit(common_report_header):
         """Get account move lines base on form data"""
         res = {}
         if mode not in ('include_special', 'exclude_special'):
-            raise osv.except_osv(_('Invalid query mode'), _('Must be in include_special, exclude_special')) 
-            
+            raise osv.except_osv(_('Invalid query mode'), _('Must be in include_special, exclude_special'))
+
         if filter in ('filter_period', 'filter_no'):
-            return self._get_move_ids_from_periods(account_id, start, stop, mode, 
+            return self._get_move_ids_from_periods(account_id, start, stop, mode,
                                                    valid_only=valid_only)
         elif filter == 'filter_date':
-            return self._get_move_ids_from_dates(account_id, start, stop, mode, 
+            return self._get_move_ids_from_dates(account_id, start, stop, mode,
                                                  valid_only=valid_only)
         else:
             raise osv.except_osv(_('No valid filter'), _('Please set a valid time filter'))
-    
-    def _get_move_line_datas(self, move_line_ids, order="l.date ASC, peropen DESC"):
+
+    def _get_move_line_datas(self, move_line_ids, order=('l.date ASC', 'peropen DESC')):
         if not move_line_ids:
             return []
         if not isinstance(move_line_ids, list):
             move_line_ids = [move_line_ids]
-        mids = ','.join([str(x) for x in move_line_ids])    
         monster ="""
-SELECT l.id AS lid, 
+SELECT l.id AS lid,
             l.date AS ldate,
             j.code AS jcode ,
             l.currency_id,
@@ -325,12 +321,12 @@ SELECT l.id AS lid,
             per.special AS peropen,
             l.partner_id AS lpartner_id,
             p.name AS partner_name,
-            m.name AS move_name, 
+            m.name AS move_name,
              COALESCE(partialrec.name, fullrec.name, '') AS rec_name,
             m.id AS move_id,
             c.name AS currency_code,
-            i.id AS invoice_id, 
-            i.type AS invoice_type, 
+            i.id AS invoice_id,
+            i.type AS invoice_type,
             i.number AS invoice_number
 FROM account_move_line l
     JOIN account_move m on (l.move_id=m.id)
@@ -341,10 +337,9 @@ FROM account_move_line l
     LEFT JOIN account_invoice i on (m.id =i.move_id)
     LEFT JOIN account_period per on (per.id=l.period_id)
     JOIN account_journal j on (l.journal_id=j.id)
-    WHERE l.id in (%s) ORDER BY %s""" % (mids, order)
-        
+    WHERE l.id in %s ORDER BY %s"""
         try:
-            self.cursor.execute(monster)
+            self.cursor.execute(monster, (tuple(move_line_ids), order))
             res= self.cursor.dictfetchall()
         except Exception, exc:
             self.cursor.rollback()
@@ -353,30 +348,29 @@ FROM account_move_line l
             return res
         else:
             return []
-            
+
     def _get_moves_counterparts(self, move_ids, account_id, limit=3):
         if not move_ids:
             return {}
         if not isinstance(move_ids, list):
             move_ids = [move_ids]
-        mids = ','.join([str(x) for x in move_ids])
         to_retunr = {}
         sql = """
-SELECT account_move.id, 
+SELECT account_move.id,
        array_to_string(
           ARRAY(SELECT DISTINCT a.code
                 FROM account_move_line m2
                   LEFT JOIN account_account a ON (m2.account_id=a.id)
                 WHERE m2.move_id =account_move_line.move_id
                   AND m2.account_id<>%s limit %s) , ', ')
-	    
+
 FROM account_move
-	JOIN account_move_line on (account_move_line.move_id = account_move.id)
-	JOIN account_account on (account_move_line.account_id = account_account.id) 
-WHERE move_id in (%s) """ % (account_id, limit, mids)
+        JOIN account_move_line on (account_move_line.move_id = account_move.id)
+        JOIN account_account on (account_move_line.account_id = account_account.id)
+WHERE move_id in %s"""
 
         try:
-            self.cursor.execute(sql)
+            self.cursor.execute(sql, (account_id, limit, tuple(move_ids)))
             res= self.cursor.fetchall()
         except Exception, exc:
             self.cursor.rollback()
@@ -385,8 +379,3 @@ WHERE move_id in (%s) """ % (account_id, limit, mids)
             return dict(res)
         else:
             return {}
-        
-        
-        
-
-    

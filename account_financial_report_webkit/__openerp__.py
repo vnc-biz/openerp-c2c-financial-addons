@@ -33,7 +33,7 @@
                    'report/report.xml',
                    'wizard/wizard.xml',
                    'wizard/account_report_partner_ledger_wizard_view.xml'],
-    'test': [],
+    'test': ['tests/general_ledger.yml'],
     'active': False,
     'installable': True,
 }

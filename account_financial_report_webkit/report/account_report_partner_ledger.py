@@ -52,8 +52,8 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         by mako template"""
         new_ids = data['form']['chart_account_id']
 
-        # We memoize ledger lines linked to account key is account id
-        # values array of lines
+        # We memoize ledger lines linked to account. Key is account id
+        # values are array of lines
         ledger_lines_memoizer = {}
 
         # Account initial balance memoizer
@@ -72,7 +72,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             start_period = self.get_first_fiscalyear_period(fiscalyear)
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
 
-        # Retreiving accounts
+        # Retrieving accounts
         accounts =  self.get_all_accounts(new_ids, filter_view=True)
         if init_bal and filter in ('filter_no', 'filter_period'):
             init_balance_memoizer = self._compute_inital_balances(accounts, start_period,
@@ -87,13 +87,11 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             stop = stop_period
         ledger_lines_memoizer = self._compute_account_ledger_lines(accounts, init_balance_memoizer,
                                                                    filter, target_move, start, stop)
-        import pprint; pprint.pprint(init_balance_memoizer) 
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, accounts):
             account.ledger_lines = ledger_lines_memoizer.get(account.id, [])
             account.init_balance = init_balance_memoizer.get(account.id, {})
             objects.append(account)
-        print '<<<<<<<<<<<<<<<<<<<<<<<<<<<<', 'computation end'
         return super(GeneralLedgerWebkit, self).set_context(objects, data, new_ids,
                                                             report_type=report_type)
 
