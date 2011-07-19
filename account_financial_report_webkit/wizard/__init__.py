@@ -18,4 +18,5 @@
 #
 ##############################################################################
 
-from . import account_report_partner_ledger_wizard
+from . import account_report_general_ledger_wizard
+from . import account_report_partners_ledger_wizard

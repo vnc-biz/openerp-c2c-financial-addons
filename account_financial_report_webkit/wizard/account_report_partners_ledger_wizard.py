@@ -20,13 +20,13 @@
 from osv import fields, osv
 
 
-class AccountReportPartnerLedgerWizard(osv.osv_memory):
-    """Will launch general ledger report and pass requiered args"""
+class AccountReportPartnersLedgerWizard(osv.osv_memory):
+    """Will launch partner ledger report and pass requiered args"""
 
 
     _inherit = "account.common.account.report"
-    _name = "account.report.general.ledger.webkit"
-    _description = "General Ledger Report"
+    _name = "account.report.partners.ledger.webkit"
+    _description = "Partner Ledger Report"
 
     _columns = {
         'initial_balance': fields.boolean("Include initial balances",
@@ -39,6 +39,18 @@ class AccountReportPartnerLedgerWizard(osv.osv_memory):
                                              ('bal_mix', 'With transactions or non zero balance')],
                                             'Display accounts',
                                             required=True),
+        'include_reconciled': fields.boolean("Include reconciled entries",
+                                help="TODO"),
+        'include_reconciled_date': fields.date("Reconciled entries date",
+                                help="TODO"),
+        'partner_ids': fields.many2many('res.partner', 'wiz_part_rel', 
+                                        'partner_id', 'wiz_id','Filter on partner',
+                                         help="TODO"),
+        'account_type': fields.selection([('all', 'Payable and Receivable'),
+                                          ('pay', 'Payable only'),
+                                          ('rec', 'Receivable only')],
+                                         'Filter on account type',
+                                         help="TODO"),
     }
     _defaults = {
         'amount_currency': False,
@@ -62,7 +74,7 @@ class AccountReportPartnerLedgerWizard(osv.osv_memory):
         if not data['form']['fiscalyear_id']:
             data['form'].update({'initial_balance': False})
         return {'type': 'ir.actions.report.xml',
-                'report_name': 'account.account_report_partner_ledger_webkit',
+                'report_name': 'account.TOSET',
                 'datas': data}
 
-AccountReportPartnerLedgerWizard()
+AccountReportPartnersLedgerWizard()
