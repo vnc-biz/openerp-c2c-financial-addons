@@ -11,15 +11,15 @@
                 <data>
                     <xpath expr="/form/label[@string='']" position="replace">
                         <separator string="partners Ledger" colspan="4"/>
-                        <label nolabel="1" colspan="4" string="This report allows you to print or generate a pdf of your partner ledger with details of all your account journals"/>
+                        <label nolabel="1" colspan="4" string="This report allows you to print or generate a pdf of your partner ledger with details of all your payable/receivable account"/>
                     </xpath>
                     <xpath expr="//field[@name='target_move']" position="after">
                         <field name="display_account"/>
                         <field name="initial_balance" attrs="{'readonly':[('fiscalyear_id','=', False)], 'invisible':[('filter','=','filter_date')]}"/>
                         <field name="amount_currency"/>
                         <field name="include_reconciled"/>
-                        <field name="include_reconciled_date" attrs="{'invisible':[('include_reconciled','=', False)]}"/>
-                        <field name="account_type"/>
+                        <field name="include_reconciled_date" attrs="{'invisible':[('include_reconciled','=', False)], 'required':[('include_reconciled','!=', False)]}"/>
+                        <field name="result_selection" />
                         <newline/>
                         <separator string="Partner filter" colspan="4"/>
                         <field name="partner_ids" colspan="4" nolabel="1"/>
@@ -54,7 +54,7 @@
         <record model="ir.values" id="action_account_partners_ledger_values_webkit">
             <field name="model_id" ref="account.model_account_account"/>
             <field name="object" eval="1"/>
-            <field name="name">partners Ledger Webkit</field>
+            <field name="name">Partners Ledger Webkit</field>
             <field name="key2">client_print_multi</field>
             <field name="value"
                 eval="'ir.actions.act_window,' +str(ref('action_account_partners_ledger_menu_webkit'))"/>

@@ -34,8 +34,8 @@
             <field eval="1" name="header"/>
             <field name="model">account.account</field>
             <field name="type">ir.actions.report.xml</field>
-            <field name="name">General Ledger Webkit</field>
-            <field name="report_file">account_financial_report_webkit/report/templates/account_report_partner_ledger.mako</field>
+            <field name="name">Partner Ledger Webkit</field>
+            <field name="report_file">account_financial_report_webkit/report/templates/account_report_partners_ledger.mako</field>
             <field name="webkit_header" ref="financial_landscape_header"/>
         </record> 
     </data>

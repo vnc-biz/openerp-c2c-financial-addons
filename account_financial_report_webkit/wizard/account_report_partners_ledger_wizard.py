@@ -24,7 +24,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
     """Will launch partner ledger report and pass requiered args"""
 
 
-    _inherit = "account.common.account.report"
+    _inherit = "account.common.partner.report"
     _name = "account.report.partners.ledger.webkit"
     _description = "Partner Ledger Report"
 
@@ -46,11 +46,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
         'partner_ids': fields.many2many('res.partner', 'wiz_part_rel', 
                                         'partner_id', 'wiz_id','Filter on partner',
                                          help="TODO"),
-        'account_type': fields.selection([('all', 'Payable and Receivable'),
-                                          ('pay', 'Payable only'),
-                                          ('rec', 'Receivable only')],
-                                         'Filter on account type',
-                                         help="TODO"),
+
     }
     _defaults = {
         'amount_currency': False,
@@ -62,19 +58,28 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
         if not fiscalyear:
             res['value'] = {'initial_balance': False}
         return res
-
+        
+    def pre_print_report(self, cr, uid, ids, data, context=None):
+        data = super(AccountReportPartnersLedgerWizard, self).pre_print_report(cr, uid, ids, data, context)
+        if context is None:
+            context = {}
+        vals = self.read(cr, uid, ids, 
+                         ['initial_balance', 'amount_currency', 'partner_ids',
+                          'include_reconciled_date', 'include_reconciled'],
+                         context=context)[0]
+        data['form'].update(vals)
+        return data
+        
     def _print_report(self, cursor, uid, ids, data, context=None):
         context = context or {}
         # we update form with display account value
+        import pdb; pdb.set_trace()
         data = self.pre_print_report(cursor, uid, ids, data, context=context)
-        vals = self.read(cursor, uid, ids, ['initial_balance', 'amount_currency'])[0]
-
-        data['form'].update(vals)
         # GTK client problem onchange does not consider in save record
         if not data['form']['fiscalyear_id']:
             data['form'].update({'initial_balance': False})
         return {'type': 'ir.actions.report.xml',
-                'report_name': 'account.TOSET',
+                'report_name': 'account.account_report_partners_ledger_webkit',
                 'datas': data}
 
 AccountReportPartnersLedgerWizard()

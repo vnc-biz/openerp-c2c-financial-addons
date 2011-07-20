@@ -18,7 +18,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
+#TODO split file
 from account.report.common_report_header import common_report_header
 from tools.translate import _
 
@@ -72,7 +72,7 @@ class CommonReportHeaderWebkit(common_report_header):
 
     ####################Account and account line filter helper #################
 
-    def get_all_accounts(self, account_ids, filter_view=False, context=None):
+    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, context=None):
         """Get all account passed in params with their childrens"""
         context = context or {}
         accounts = []
@@ -83,11 +83,16 @@ class CommonReportHeaderWebkit(common_report_header):
             accounts.append(account_id)
             accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id)
         res = list(set(accounts))
-        if filter_view:
-            sql = ("Select id from account_account where id in %s"
-                   " And type != 'view'")
+        if filter_view or filter_type:
+            format_list = [tuple(res)]
+            sql = "Select id from account_account where id in %s"
+            if filter_view:
+                sql += " And type != 'view'"
+            if filter_type:
+                sql += " And type in %s"
+                format_list.append(tuple(filter_type))
 
-            res = self.cursor.execute(sql, (tuple(res),))
+            res = self.cursor.execute(sql, tuple(format_list))
             res = self.cursor.fetchall()
             if not res:
                 return []
@@ -379,3 +384,8 @@ WHERE move_id in %s"""
             return dict(res)
         else:
             return {}
+            
+ ####################Partner specific helper ##########################
+    def get_patner_ids_from_account(self, accounts):
+        acc_ids = [x.id for x in accounts]
+

@@ -50,6 +50,16 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         if not fiscalyear:
             res['value'] = {'initial_balance': False}
         return res
+        
+    def pre_print_report(self, cr, uid, ids, data, context=None):
+        data = super(AccountReportGeneralLedgerWizard, self).pre_print_report(cr, uid, ids, data, context)
+        if context is None:
+            context = {}
+        vals = self.read(cr, uid, ids, 
+                         ['initial_balance', 'amount_currency', 'display_account'],
+                         context=context)[0]
+        data['form'].update(vals)
+        return data
 
     def _print_report(self, cursor, uid, ids, data, context=None):
         context = context or {}
