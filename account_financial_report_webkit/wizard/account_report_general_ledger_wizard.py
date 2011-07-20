@@ -62,7 +62,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         if not data['form']['fiscalyear_id']:
             data['form'].update({'initial_balance': False})
         return {'type': 'ir.actions.report.xml',
-                'report_name': 'account.account_report_partner_ledger_webkit',
+                'report_name': 'account.account_report_general_ledger_webkit',
                 'datas': data}
 
 AccountReportGeneralLedgerWizard()

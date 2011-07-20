@@ -131,7 +131,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         
         
 
-report_sxw.report_sxw('report.account.account_report_partner_ledger_webkit',
+report_sxw.report_sxw('report.account.account_report_general_ledger_webkit',
                       'account.account',
-                      'addons/account_financial_report_webkit/report/templates/account_report_partner_ledger.mako',
+                      'addons/account_financial_report_webkit/report/templates/account_report_general_ledger.mako',
                       parser=GeneralLedgerWebkit)
