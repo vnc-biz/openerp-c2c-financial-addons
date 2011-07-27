@@ -70,7 +70,6 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
     def _print_report(self, cursor, uid, ids, data, context=None):
         context = context or {}
         # we update form with display account value
-        import pdb; pdb.set_trace()
         data = self.pre_print_report(cursor, uid, ids, data, context=context)
         # GTK client problem onchange does not consider in save record
         if not data['form']['fiscalyear_id']:

@@ -65,8 +65,8 @@ class CommonReportHeaderWebkit(common_report_header):
     def _get_amount_currency(self, data):
         return self._get_form_param('amount_currency', data)
 
-    def _get_form_param(self, param, data):
-        return data.get('form', {}).get(param)
+    def _get_form_param(self, param, data, default=False):
+        return data.get('form', {}).get(param, default)
 
 
 
@@ -112,7 +112,7 @@ class CommonReportHeaderWebkit(common_report_header):
 
     def get_included_special_period(self, period, check_move = True):
         """Return the special included in normal period we use the assemption
-        that ther is only one special period per fiscal year"""
+        that there is only one special period per fiscal year"""
         mv_line_obj = self.pool.get('account.move.line')
         res = self.pool.get('account.period').search(self.cursor,
                                                      self.uid,
@@ -170,7 +170,7 @@ class CommonReportHeaderWebkit(common_report_header):
             special_period_br = period_obj.browse(self.cursor, self.uid, special_period_id)
             past_limit = [('date_start', '>=', special_period_br.date_stop)]
 
-        periods_search = [('date_stop','<=',start_period.date_stop)]
+        periods_search = [('date_stop', '<=', start_period.date_stop)]
         periods_search += past_limit
 
         if not include_special:

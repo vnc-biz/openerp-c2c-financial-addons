@@ -60,14 +60,15 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         init_balance_memoizer = {}
 
         # Reading form
-        init_bal = data.get('form', {}).get('initial_balance')
-        filter = data.get('form', {}).get('filter', 'filter_no')
-        target_move = data.get('form', {}).get('target_move', 'all')
-        start_date = data.get('form', {}).get('date_from')
-        stop_date = data.get('form', {}).get('date_to')
+        init_bal = self._get_form_param('initial_balance', data)
+        filter =  self._get_form_param('filter', data, default='filter_no')
+        target_move = self._get_form_param('target_move', data, default='all')
+        start_date = self._get_form_param('date_from', data)
+        stop_date = self._get_form_param('date_to', data)
         start_period = self.get_start_period_br(data)
         stop_period = self.get_end_period_br(data)
         fiscalyear = self.get_fiscalyear_br(data)
+        
         if filter == 'filter_no':
             start_period = self.get_first_fiscalyear_period(fiscalyear)
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
