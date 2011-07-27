@@ -14,11 +14,10 @@
                         <label nolabel="1" colspan="4" string="This report allows you to print or generate a pdf of your partner ledger with details of all your payable/receivable account"/>
                     </xpath>
                     <xpath expr="//field[@name='target_move']" position="after">
-                        <field name="display_account"/>
                         <field name="initial_balance" attrs="{'readonly':[('fiscalyear_id','=', False)], 'invisible':[('filter','=','filter_date')]}"/>
                         <field name="amount_currency"/>
-                        <field name="include_reconciled"/>
-                        <field name="include_reconciled_date" attrs="{'invisible':[('include_reconciled','=', False)], 'required':[('include_reconciled','!=', False)]}"/>
+                        <field name="exclude_reconciled"/>
+                        <field name="until_date"/>
                         <field name="result_selection" />
                         <newline/>
                         <separator string="Partner filter" colspan="4"/>

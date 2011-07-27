@@ -24,21 +24,19 @@ from report import report_sxw
 from osv import osv
 from tools.translate import _
 import pooler
+from common_partners_report_header_webkit import CommonPartnersReportHeaderWebkit
 
-from common_report_header_webkit import CommonReportHeaderWebkit
-
-class GeneralPartnersWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
-
-
+class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebkit):
+    
+    
     def __init__(self, cursor, uid, name, context):
-        super(GeneralPartnersWebkit, self).__init__(cursor, uid, name, context=context)
+        super(PartnersLedgerWebkit, self).__init__(cursor, uid, name, context=context)
         self.pool = pooler.get_pool(self.cr.dbname)
         self.cursor = self.cr
         self.localcontext.update({
             'cr':cursor,
             'uid': uid,
             'report_name':_('General Ledger'),
-            'display_account': self._get_display_account,
             'display_account_raw': self._get_display_account_raw,
             'filter': self._get_filter,
             'target_move': self._get_target_move,
@@ -59,6 +57,8 @@ class GeneralPartnersWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
 
         # Account initial balance memoizer
         init_balance_memoizer = {}
+        # account partner memoizer 
+        account_partner_rel_memoizer = {}
 
         # Reading form
         init_bal = data.get('form', {}).get('initial_balance')
@@ -86,7 +86,7 @@ class GeneralPartnersWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         accounts = self.get_all_accounts(new_ids, filter_view=True, filter_type=filter_type)
         
         if init_bal and filter in ('filter_no', 'filter_period'):
-            init_balance_memoizer = self._compute_inital_balances(accounts, start_period,
+            init_balance_memoizer = self._compute_partner_inital_balances(accounts, start_period,
                                                                   fiscalyear, filter)
 
         # computation of ledeger lines
@@ -96,17 +96,17 @@ class GeneralPartnersWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         else:
             start = start_period
             stop = stop_period
-        ledger_lines_memoizer = self._compute_account_ledger_lines(accounts, init_balance_memoizer,
+        ledger_lines_memoizer = self._compute_partner_ledger_lines(accounts, init_balance_memoizer,
                                                                    filter, target_move, start, stop)
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, accounts):
             account.ledger_lines = ledger_lines_memoizer.get(account.id, [])
             account.init_balance = init_balance_memoizer.get(account.id, {})
             objects.append(account)
-        return super(GeneralPartnersWebkit, self).set_context(objects, data, new_ids,
+        return super(PartnersLedgerWebkit, self).set_context(objects, data, new_ids,
                                                             report_type=report_type)
 
-    def _compute_account_ledger_lines(self, accounts_ids, init_balance_memoizer, filter,
+    def _compute_partner_ledger_lines(self, accounts_ids, init_balance_memoizer, filter,
                                       target_move, start, stop):
         res = {}
         valid_only = True
@@ -145,4 +145,4 @@ class GeneralPartnersWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
 report_sxw.report_sxw('report.account.account_report_partners_ledger_webkit',
                       'account.account',
                       'addons/account_financial_report_webkit/report/templates/account_report_partners_ledger.mako',
-                      parser=GeneralPartnersWebkit)
+                      parser=PartnersLedgerWebkit)

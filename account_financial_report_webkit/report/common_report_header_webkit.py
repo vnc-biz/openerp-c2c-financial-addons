@@ -384,8 +384,3 @@ WHERE move_id in %s"""
             return dict(res)
         else:
             return {}
-            
- ####################Partner specific helper ##########################
-    def get_patner_ids_from_account(self, accounts):
-        acc_ids = [x.id for x in accounts]
-

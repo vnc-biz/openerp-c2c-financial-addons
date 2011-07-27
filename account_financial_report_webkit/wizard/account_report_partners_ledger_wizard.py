@@ -21,7 +21,7 @@ from osv import fields, osv
 
 
 class AccountReportPartnersLedgerWizard(osv.osv_memory):
-    """Will launch partner ledger report and pass requiered args"""
+    """Will launch partner ledger report and pass required args"""
 
 
     _inherit = "account.common.partner.report"
@@ -34,15 +34,11 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
 
         'amount_currency': fields.boolean("With Currency",
                                           help="It adds the currency column"),
-
-        'display_account': fields.selection([('bal_all', 'All'),
-                                             ('bal_mix', 'With transactions or non zero balance')],
-                                            'Display accounts',
-                                            required=True),
-        'include_reconciled': fields.boolean("Include reconciled entries",
-                                help="TODO"),
-        'include_reconciled_date': fields.date("Reconciled entries date",
-                                help="TODO"),
+        'exclude_reconciled': fields.boolean("Exclude reconciled entries",
+                                             help="TODO"),
+        'until_date': fields.date("Reconciled entries date",
+                                  required=True,
+                                  help="TODO"),
         'partner_ids': fields.many2many('res.partner', 'wiz_part_rel', 
                                         'partner_id', 'wiz_id','Filter on partner',
                                          help="TODO"),
@@ -51,6 +47,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
     _defaults = {
         'amount_currency': False,
         'initial_balance': False,
+        'exclude_reconciled': True,
     }
 
     def onchange_fiscalyear(self, cursor, uid, ids, fiscalyear=False, context=None):
@@ -65,7 +62,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
             context = {}
         vals = self.read(cr, uid, ids, 
                          ['initial_balance', 'amount_currency', 'partner_ids',
-                          'include_reconciled_date', 'include_reconciled'],
+                          'until_date', 'exclude_reconciled'],
                          context=context)[0]
         data['form'].update(vals)
         return data
