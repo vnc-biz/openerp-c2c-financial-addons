@@ -18,13 +18,130 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-#TODO split file
+# TODO refactor helper in order to act more like mixin
+# By using properties we will have a more simple signature in fuctions
+
+from collections import defaultdict
+
 from common_report_header_webkit import CommonReportHeaderWebkit
 from tools.translate import _
 
 class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
-    """Define common helper for financial report"""
+    """Define common helper for partner oriented financial report"""
     
+    ####################Account move line retrieval helper ##########################
+    
+    def get_partners_move_lines_ids(self, account_id, filter, start, stop, exclude_reconcile=True, 
+                                    valid_only=False, partner_filter=False):
+        if filter in ('filter_period', 'filter_no'):
+            return self._get_partners_move_ids_from_periods(account_id,
+                                                            start,
+                                                            stop,
+                                                            exclude_reconcile=exclude_reconcile,
+                                                            valid_only=valid_only, 
+                                                            partner_filter=partner_filter)
+                                
+        elif filter == 'filter_date':
+            return self._get_partners_move_ids_from_dates(account_id,
+                                                          start,
+                                                          stop,
+                                                          exclude_reconcile=exclude_reconcile,
+                                                          valid_only=valid_only, 
+                                                          partner_filter=partner_filter)
+                             
+                             
+                                                 
+    def _get_partners_move_ids_from_periods(self, account_id, period_start, period_stop, 
+                        exclude_reconcile=True, valid_only=False, partner_filter=False):
+        # we do not want opening period so we exclude opening
+        periods = self._get_period_range_form_periods(period_start, period_stop, 'exclude_opening')
+        if not periods:
+            return []
+        final_res = defaultdict(list)
+        search_params = {'period_ids':tuple(periods),
+                         'account_ids': account_id,
+                         'partner_ids': partner_filter,
+                         'date_stop': period_stop.date_stop}
+
+        sql = "SELECT id, partner_id FROM account_move_line"
+              "  WHERE period_id in %(period_ids)s"
+              "  AND account_id in %(account_ids)s"
+        if exclude_reconcile:
+            sql += "  AND ((reconcile_id IS NULL)"
+                   "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%%(date_stop)s)))"
+        if partner_filter:
+            sql += "   AND partner_id in %(partner_ids)s"
+            
+        if valid_only:
+            sql += "   AND state = 'valid'"
+            
+        sql += " group by account_id, partner_id"
+        self.cursor.execute(sql, search_params)
+        res = self.cursor.dictfetchall()
+        if res:
+            for row in res:
+                final_res[row['partner_id']].append(row['id'])
+        else:
+            return {}
+
+        
+
+    def _get_partners_move_ids_from_dates(self, account_id, date_start, date_stop,
+                   exclude_reconcile=True, valid_only=False, partner_filter=False):
+                   
+        periods = self._get_opening_periods()
+        if not periods:
+            periods = (-1,)
+        final_res = defaultdict(list)
+        search_params = {'period_ids': periods,
+                         'account_ids': account_id,
+                         'partner_ids': partner_filter,
+                         'date_start': period_start.date_start,
+                         'date_stop': period_stop.date_stop}
+
+        sql = "SELECT id, partner_id FROM account_move_line"
+              "  WHERE period_id not in %(period_ids)s"
+              "  AND date between date(%(date_start)s) and (%(date_stop)s)"
+              "  AND account_id in %(account_ids)s"
+        if exclude_reconcile:
+            sql += "  AND ((reconcile_id IS NULL)"
+                   "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%%(date_stop)s)))"
+        if partner_filter:
+            sql += "   AND partner_id in %(partner_ids)s"
+            
+        if valid_only:
+            sql += "   AND state = 'valid'"
+            
+        sql += " group by account_id, partner_id"
+        self.cursor.execute(sql, search_params)
+        res = cr.dictfetchall()
+        if res:
+            for row in res:
+                final_res[row['partner_id']].append(row['id'])
+        else:
+            return {}
+            
+    def _get_clearance_move_line_ids(self, move_line_ids, date_stop, date_until):
+        move_line_obj = self.pool.get('account.move.line')
+        # we do not use orm in order to gain perfo
+        # In this case I have to test the effective gain over an itteration
+        # Actually ORM does not allows distinct behavior
+        sql = "Select distinct reconcile_id for account_move_line where id in %(%s)"
+        self.cursor.execute(sql, (tuple(move_line_obj),))
+        rec_ids = self.fetchall()
+        if rec_ids:
+            rec_ids = [x[0] for x in rec_ids]
+            l_ids = move_line_obj.search(self.cursor,
+                                         self.uid, 
+                                         [('reconcile_id', 'in', rec_ids), 
+                                          ('date', '>=', date_stop),
+                                          ('date', '<=', date_until)])
+            return line_ids
+        else:
+            return []
+        
+        
+
      ####################Initial Partner Balance helper ########################
     def _compute_partners_inital_balances(self, account_ids, start_period, fiscalyear, filter, partner_filter=None):
         """We compute initial balance.
@@ -32,42 +149,41 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         This function will sum pear and apple in currency amount if account as no secondary currency"""
         final_res = {}
         period_ids = self._get_period_range_form_start_period(start_period, fiscalyear=False,
-                                                                       include_special=False)
+                                                                       include_opening=False)
         if not period_ids:
             period_ids = [-1]
         # if opening period is included in start period we do not need to compute init balance
         # we just read it from opening entries
-        res = {}
+        res = defaultdict(dict)
         if filter in ('filter_period', 'filter_no'):
-            search_param = [start_period.date_start, tuple(period_ids), tuple(account_ids)]
+            search_param = {'date_start': start_period.date_start, 
+                            'period_ids': tuple(period_ids),
+                            'account_ids': tuple(account_ids),
+                            'partner_ids': tuple(partner_filter)}
             sql = ("SELECT account_id, partner_id,"
                    "     sum(debit-credit) as init_balance,"
                    "     sum(amount_currency) as init_balance_currency"
                    "   FROM account_move_line "
                    "   WHERE ((reconcile_id IS NULL)"
-                   "           OR (reconcile_id IS NOT NULL AND last_rec_date > date(%s)))"
-                   "     AND period_id in %s"
-                   "     AND account_id in %s")
+                   "           OR (reconcile_id IS NOT NULL AND last_rec_date > date(%(date_start)s)))"
+                   "     AND period_id in %(period_ids)s"
+                   "     AND account_id in %(account_ids)s")
             if partner_filter:
-                search_param.append(tuple(partner_filter))
-                sql += "   AND partner_id in %s"
+                sql += "   AND partner_id in %(partner_ids)s"
             sql += " group by account_id, partner_id"
-            self.cursor.execute(sql, tuple(search_param))
+            self.cursor.execute(sql, search_param)
             res = self.cursor.dictfetchall()
             import pprint; pprint.pprint(res)
-            print '---------------------'
             if res:
                 for row in res:
-                    if not final_res.get(row['account_id']):
-                        final_res[row['account_id']] = {}
                     final_res[row['account_id']][row['partner_id']] = \
-                       {'init_balance': row['init_balance'], 
-                        'init_balance_currency': row['init_balance_currency'] }
+                        {'init_balance': row['init_balance'], 'init_balance_currency': row['init_balance_currency']}
         if not final_res:
             for acc_id in account_ids:
                 final_res[acc_id] = {}
+        import pprint; pprint.pprint(final_res)
         return final_res
-     
+
      
     ####################Partner specific helper ################################    
     def get_patner_ids_from_account_move_lines(self, line_ids):
@@ -79,7 +195,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
        sql = ("SELECT DISTINCT partner_id from account_move_line where account_id in %S"
               " AND partner_id IS NOT NULL")
        self.cursor.execute(sql, (tuple(account_ids),))
-       res = cr.fetchall()
+       res = self.cursor.fetchall()
        if not res:
            return base_dict
        for acc_ids in account_ids:

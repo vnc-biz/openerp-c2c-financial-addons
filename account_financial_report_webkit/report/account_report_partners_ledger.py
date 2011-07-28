@@ -17,8 +17,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
 import time
+from collections import defaultdict
 
 from report import report_sxw
 from osv import osv
@@ -70,6 +70,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         partner_ids = self._get_form_param('partner_ids', data)
         result_selection = self._get_form_param('result_selection', data)
         exclude_reconcile = self._get_form_param('exclude_reconciled', data)
+        date_until = self._get_form_param('until_date', data)
         import pprint; pprint.pprint(filter)
         if filter == 'filter_no':
             start_period = self.get_first_fiscalyear_period(fiscalyear)
@@ -86,8 +87,11 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
                                          filter_type=filter_type)
         
         if init_bal and filter in ('filter_no', 'filter_period'):
-            init_balance_memoizer = self._compute_partners_inital_balances(accounts, start_period,
-                                                    fiscalyear, filter, partner_filter=partner_ids)
+            init_balance_memoizer = self._compute_partners_inital_balances(accounts, 
+                                                                           start_period,
+                                                                           fiscalyear,
+                                                                           filter, 
+                                                                           partner_filter=partner_ids)
 
         # computation of ledeger lines
         if filter == 'filter_date':
@@ -96,46 +100,62 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         else:
             start = start_period
             stop = stop_period
-        ledger_lines_memoizer = self._compute_partner_ledger_lines(accounts, filter, target_move, 
-                                               start, stop, exclude_reconcile=exclude_reconcile)
+        ledger_lines_memoizer = self._compute_partner_ledger_lines(accounts,
+                                                                   filter,
+                                                                   target_move, 
+                                                                   start,
+                                                                   stop,
+                                                                   exclude_reconcile=exclude_reconcile, 
+                                                                   partner_filter=partner_ids)
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, accounts):
-            account.ledger_lines = ledger_lines_memoizer.get(account.id, [])
+            account.ledger_lines = ledger_lines_memoizer.get(account.id, {})
             account.init_balance = init_balance_memoizer.get(account.id, {})
             objects.append(account)
         return super(PartnersLedgerWebkit, self).set_context(objects, data, new_ids,
                                                             report_type=report_type)
 
-    def _compute_partner_ledger_lines(self, accounts_ids, filter,
-                                      target_move, start, stop, exclude_reconcile=True):
-        res = {}
+    def _compute_partner_ledger_lines(self, accounts_ids, filter, target_move, start, 
+                                      stop, exclude_reconcile=True, partner_filter=False):
+        res = defaultdict(dict)
         valid_only = True
         if target_move == 'all':
             valid_only=False
+        ## we check if until date and date stop have the same value
+        if filter in ('filter_period', 'filter_no'):
+            date_stop = stop.date_stop
+            date_match = (date_stop == date_until)
+            
+        elif filter == 'filter_date':
+            date_stop = stop
+            date_match = (stop == date_until)
+
+        else:
+            raise osv.except_osv(_('Unsuported filter'), 
+                                 _('Filter has to be in filter date, period, or none'))
+        
         for acc_id in accounts_ids:
             # We get the move line ids of the account depending of the
             # way the initial balance was created we include or not opening entries
-            move_line_ids = self.get_partners_move_lines_ids(acc_id, filter, start, stop, exclude_reconcile=True, valid_only=valid_only)
+            move_line_ids_dict = self.get_partners_move_lines_ids(acc_id, 
+                                                             filter,
+                                                             start,
+                                                             stop,
+                                                             exclude_reconcile=True,
+                                                             valid_only=valid_only, 
+                                                             partner_filter=partner_filter)
             if not move_line_ids:
-                res[acc_id] = []
+                #not really useful as it is default dict
+                res[acc_id] = {}
                 continue
-            lines = self._get_ledger_lines(move_line_ids, acc_id)
-            res[acc_id] = lines
+            for partner_id in move_line_ids_dict:
+                m_line_ids = move_line_ids_dict.get(partner_id, False)
+                if not date_match:
+                    move_line_ids += self._get_clearance_move_line_ids(move_line_ids, date_stop, date_until)
+                lines = self._get_move_line_datas(list(set(m_line_ids)))
+                res[acc_id][partner_id] = lines
         return res
             
-    def _get_ledger_lines(self, move_line_ids, account_id):
-        if not move_line_ids :
-            return []
-        res = self._get_move_line_datas(move_line_ids)
-        ## computing counter part is really heavy in term of ressouces consuption
-        ## looking for a king of SQL to help me improve it
-        move_ids = [x.get('move_id') for x in res]
-        counter_parts = self._get_moves_counterparts(move_ids, account_id)
-        for line in res :
-            line['counterparts'] = counter_parts.get(line.get('move_id'), '')
-        return res
-        
-        
 
 report_sxw.report_sxw('report.account.account_report_partners_ledger_webkit',
                       'account.account',

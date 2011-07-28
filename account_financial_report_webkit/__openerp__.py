@@ -17,6 +17,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+# TODO refactor helper in order to act more like mixin
+# By using properties we will have a more simple signature in fuctions
 {
     'name': 'Webkit based extended report financial report',
     'description': """TODO""",

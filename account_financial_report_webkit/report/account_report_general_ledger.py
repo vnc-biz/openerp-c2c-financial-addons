@@ -105,10 +105,10 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         for acc_id in accounts_ids:
             # We get the move line ids of the account depending of the
             # way the initial balance was created we include or not opening entries
-            search_mode = 'include_special'
+            search_mode = 'include_opening'
             if acc_id in init_balance_memoizer:
                 if init_balance_memoizer[acc_id].get('state') == 'read':
-                    search_mode = 'exclude_special'
+                    search_mode = 'exclude_opening'
             move_line_ids = self.get_move_lines_ids(acc_id, filter, start, stop,
                                                     mode=search_mode, valid_only=valid_only)
             if not move_line_ids:
