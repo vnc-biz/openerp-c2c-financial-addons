@@ -36,7 +36,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
                                           help="It adds the currency column"),
         'exclude_reconciled': fields.boolean("Exclude reconciled entries",
                                              help="TODO"),
-        'until_date': fields.date("Reconciled entries date",
+        'until_date': fields.date("Clearance date",
                                   required=True,
                                   help="TODO"),
         'partner_ids': fields.many2many('res.partner', 'wiz_part_rel', 
