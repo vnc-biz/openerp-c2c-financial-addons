@@ -230,7 +230,7 @@ class CommonReportHeaderWebkit(common_report_header):
         return {'init_balance': res[0] or 0.0, 'init_balance_currency': res[1] or 0.0, 'state': mode}
 
 
-    def _compute_inital_balances(self, account_ids, start_period, fiscalyear, filter):
+    def _compute_inital_balances(self, account_ids, start_period, fiscalyear, main_filter):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
@@ -239,7 +239,7 @@ class CommonReportHeaderWebkit(common_report_header):
         # we just read it from opening entries
         read_period_id = self.get_included_opening_period(start_period)
         res = {}
-        if filter in ('filter_period', 'filter_no'):
+        if main_filter in ('filter_period', 'filter_no'):
 
             # PNL and Balance accounts are not computed the same way look for attached doc
             # We include opening period in pnl account in order to see if opening entries
@@ -296,16 +296,16 @@ class CommonReportHeaderWebkit(common_report_header):
             search_period += [('state', '=', 'valid')]
         return move_line_obj.search(self.cursor, self.uid, search_period)
 
-    def get_move_lines_ids(self, account_id, filter, start, stop, mode='include_opening', valid_only=False):
+    def get_move_lines_ids(self, account_id, main_filter, start, stop, mode='include_opening', valid_only=False):
         """Get account move lines base on form data"""
         res = {}
         if mode not in ('include_opening', 'exclude_opening'):
             raise osv.except_osv(_('Invalid query mode'), _('Must be in include_opening, exclude_opening'))
 
-        if filter in ('filter_period', 'filter_no'):
+        if main_filter in ('filter_period', 'filter_no'):
             return self._get_move_ids_from_periods(account_id, start, stop, mode, valid_only=valid_only)
             
-        elif filter == 'filter_date':
+        elif main_filter == 'filter_date':
             return self._get_move_ids_from_dates(account_id, start, stop, mode, valid_only=valid_only)
             
         else:

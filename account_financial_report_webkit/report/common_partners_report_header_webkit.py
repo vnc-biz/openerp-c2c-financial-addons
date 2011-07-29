@@ -31,9 +31,9 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
     
     ####################Account move line retrieval helper ##########################
     
-    def get_partners_move_lines_ids(self, account_id, filter, start, stop, exclude_reconcile=True, 
+    def get_partners_move_lines_ids(self, account_id, main_filter, start, stop, exclude_reconcile=True, 
                                     valid_only=False, partner_filter=False):
-        if filter in ('filter_period', 'filter_no'):
+        if main_filter in ('filter_period', 'filter_no'):
             return self._get_partners_move_ids_from_periods(account_id,
                                                             start,
                                                             stop,
@@ -41,7 +41,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                                                             valid_only=valid_only, 
                                                             partner_filter=partner_filter)
                                 
-        elif filter == 'filter_date':
+        elif main_filter == 'filter_date':
             return self._get_partners_move_ids_from_dates(account_id,
                                                           start,
                                                           stop,
@@ -63,26 +63,23 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                          'partner_ids': partner_filter,
                          'date_stop': period_stop.date_stop}
 
-        sql = "SELECT id, partner_id FROM account_move_line"
-              "  WHERE period_id in %(period_ids)s"
-              "  AND account_id in %(account_ids)s"
+        sql = ("SELECT id, partner_id FROM account_move_line"
+               "  WHERE period_id in %(period_ids)s"
+               "  AND account_id = %(account_ids)s")
         if exclude_reconcile:
-            sql += "  AND ((reconcile_id IS NULL)"
-                   "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%%(date_stop)s)))"
+            sql += ("  AND ((reconcile_id IS NULL)"
+                    "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_stop)s)))")
         if partner_filter:
             sql += "   AND partner_id in %(partner_ids)s"
             
         if valid_only:
             sql += "   AND state = 'valid'"
-            
-        sql += " group by account_id, partner_id"
         self.cursor.execute(sql, search_params)
         res = self.cursor.dictfetchall()
         if res:
             for row in res:
                 final_res[row['partner_id']].append(row['id'])
-        else:
-            return {}
+        return final_res
 
         
 
@@ -99,20 +96,19 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                          'date_start': period_start.date_start,
                          'date_stop': period_stop.date_stop}
 
-        sql = "SELECT id, partner_id FROM account_move_line"
-              "  WHERE period_id not in %(period_ids)s"
-              "  AND date between date(%(date_start)s) and (%(date_stop)s)"
-              "  AND account_id in %(account_ids)s"
+        sql = ("SELECT id, partner_id FROM account_move_line"
+               "  WHERE period_id not in %(period_ids)s"
+               "  AND date between date(%(date_start)s) and (%(date_stop)s)"
+               "  AND account_id = %(account_ids)s")
         if exclude_reconcile:
-            sql += "  AND ((reconcile_id IS NULL)"
-                   "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%%(date_stop)s)))"
+            sql += ("  AND ((reconcile_id IS NULL)"
+                    "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_stop)s)))")
         if partner_filter:
             sql += "   AND partner_id in %(partner_ids)s"
             
         if valid_only:
             sql += "   AND state = 'valid'"
             
-        sql += " group by account_id, partner_id"
         self.cursor.execute(sql, search_params)
         res = cr.dictfetchall()
         if res:
@@ -122,13 +118,15 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             return {}
             
     def _get_clearance_move_line_ids(self, move_line_ids, date_stop, date_until):
+        if not move_line_ids:
+            return []
         move_line_obj = self.pool.get('account.move.line')
         # we do not use orm in order to gain perfo
         # In this case I have to test the effective gain over an itteration
         # Actually ORM does not allows distinct behavior
-        sql = "Select distinct reconcile_id for account_move_line where id in %(%s)"
-        self.cursor.execute(sql, (tuple(move_line_obj),))
-        rec_ids = self.fetchall()
+        sql = "Select distinct reconcile_id from account_move_line where id in %s"
+        self.cursor.execute(sql, (tuple(move_line_ids),))
+        rec_ids = self.cursor.fetchall()
         if rec_ids:
             rec_ids = [x[0] for x in rec_ids]
             l_ids = move_line_obj.search(self.cursor,
@@ -136,18 +134,17 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                                          [('reconcile_id', 'in', rec_ids), 
                                           ('date', '>=', date_stop),
                                           ('date', '<=', date_until)])
-            return line_ids
+            return l_ids
         else:
             return []
         
-        
 
      ####################Initial Partner Balance helper ########################
-    def _compute_partners_inital_balances(self, account_ids, start_period, fiscalyear, filter, partner_filter=None):
+    def _compute_partners_inital_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
-        final_res = {}
+        final_res = defaultdict(dict)
         period_ids = self._get_period_range_form_start_period(start_period, fiscalyear=False,
                                                                        include_opening=False)
         if not period_ids:
@@ -155,7 +152,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         # if opening period is included in start period we do not need to compute init balance
         # we just read it from opening entries
         res = defaultdict(dict)
-        if filter in ('filter_period', 'filter_no'):
+        if main_filter in ('filter_period', 'filter_no'):
             search_param = {'date_start': start_period.date_start, 
                             'period_ids': tuple(period_ids),
                             'account_ids': tuple(account_ids),
@@ -173,7 +170,6 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             sql += " group by account_id, partner_id"
             self.cursor.execute(sql, search_param)
             res = self.cursor.dictfetchall()
-            import pprint; pprint.pprint(res)
             if res:
                 for row in res:
                     final_res[row['account_id']][row['partner_id']] = \
@@ -186,17 +182,21 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
 
      
     ####################Partner specific helper ################################    
-    def get_patner_ids_from_account_move_lines(self, line_ids):
-       """We get the partner linked to all current accounts that are used.
-          We also use ensure that partner are ordered bay name"""
-       base_dict = {}
-       if not isinstance(account_ids, list):
-           account_ids = [account_ids]
-       sql = ("SELECT DISTINCT partner_id from account_move_line where account_id in %S"
-              " AND partner_id IS NOT NULL")
-       self.cursor.execute(sql, (tuple(account_ids),))
-       res = self.cursor.fetchall()
-       if not res:
-           return base_dict
-       for acc_ids in account_ids:
-           base_dict
+    def _order_partners(self, *args):
+        """We get the partner linked to all current accounts that are used.
+            We also use ensure that partner are ordered bay name
+            args must be list"""
+        partner_ids = []  
+        for arg in args:
+            if arg:
+                partner_ids += arg
+        if not partner_ids:
+            return []
+        # We may use orm here as the performance optimization is not that big
+        sql = ("SELECT name|| ' ' ||CASE WHEN ref IS NOT NULL THEN ref ELSE '' END, id"
+               "  FROM res_partner WHERE id IN %s ORDER BY name, ref")
+        self.cursor.execute(sql, (tuple(set(partner_ids)),))
+        res = self.cursor.fetchall()
+        if not res:
+            return []
+        return res
