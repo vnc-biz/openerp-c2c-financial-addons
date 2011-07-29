@@ -152,6 +152,7 @@
                 </table>
                <br/>
                %endfor
+            <br/>
             %endif
         %endfor
     </body>
