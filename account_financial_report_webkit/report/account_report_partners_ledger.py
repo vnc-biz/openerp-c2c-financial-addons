@@ -36,7 +36,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         self.localcontext.update({
             'cr':cursor,
             'uid': uid,
-            'report_name':_('General Ledger'),
+            'report_name':_('Partner Ledger'),
             'display_account_raw': self._get_display_account_raw,
             'filter': self._get_filter,
             'target_move': self._get_target_move,
