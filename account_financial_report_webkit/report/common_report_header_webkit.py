@@ -25,6 +25,7 @@ from account.report.common_report_header import common_report_header
 from osv import osv
 from tools.translate import _
 
+
 class CommonReportHeaderWebkit(common_report_header):
     """Define common helper for financial report"""
 
@@ -101,6 +102,39 @@ class CommonReportHeaderWebkit(common_report_header):
 
     ####################Account and account line filter helper #################
 
+    def sort_accounts_with_structure(self, account_ids, context=None):
+        """Sort accounts by code respecting their structure"""
+
+        def recursive_sort_by_code(level, max_level, accounts, parent_id=False):
+            sorted_accounts = []
+            level_accounts = [account for account
+                              in accounts
+                              if account['level'] == level
+                              and (not parent_id or
+                                   account['parent_id'] and account['parent_id'][0] == parent_id)]
+            if not level_accounts:
+                return []
+
+            level_accounts = sorted(level_accounts, key=lambda a: a['code'])
+            for level_account in level_accounts:
+                sorted_accounts.append(level_account['id'])
+                if level < max_level:
+                    sorted_accounts.extend(recursive_sort_by_code(level + 1, max_level, accounts, parent_id=level_account['id']))
+            return sorted_accounts
+
+        if not account_ids:
+            return []
+        accounts = self.pool.get('account.account').read(self.cr, self.uid,
+                                                         account_ids,
+                                                         ['id', 'parent_id', 'level', 'code'],
+                                                         context=context)
+        levels = [x['level'] for x in accounts]
+        start_level = min(levels)
+        max_level = max(levels)
+        sorted_accounts = recursive_sort_by_code(start_level, max_level, accounts)
+
+        return sorted_accounts
+
     def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, filter_hidden=False, context=None):
         """Get all account passed in params with their childrens"""
         context = context or {}
@@ -111,9 +145,12 @@ class CommonReportHeaderWebkit(common_report_header):
         for account_id in account_ids:
             accounts.append(account_id)
             accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id)
-        res = list(set(accounts))
+        res_ids = list(set(accounts))
+
+        res_ids = self.sort_accounts_with_structure(res_ids, context=context)
+
         if filter_view or filter_type or filter_hidden:
-            format_list = [tuple(res)]
+            format_list = [tuple(res_ids)]
             sql = "SELECT id FROM account_account WHERE id IN %s "
             if filter_hidden:
                 sql += " AND hide_on_reports = false"
@@ -123,13 +160,14 @@ class CommonReportHeaderWebkit(common_report_header):
                 sql += " AND type in %s"
                 format_list.append(tuple(filter_type))
 
-            sql += ' ORDER BY code'
             self.cursor.execute(sql, tuple(format_list))
-            res = self.cursor.fetchall()
-            if not res:
+            fetch_only_ids = self.cursor.fetchall()
+            if not fetch_only_ids:
                 return []
-            res = [x[0] for x in res]
-        return res
+            only_ids = [only_id[0] for only_id in fetch_only_ids]
+            # keep sorting but filter ids
+            res_ids = [res_id for res_id in res_ids if res_id in only_ids]
+        return res_ids
 
     ####################Periods and fiscal years  helper #######################
 

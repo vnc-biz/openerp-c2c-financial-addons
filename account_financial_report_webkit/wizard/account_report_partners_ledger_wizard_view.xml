@@ -23,7 +23,7 @@
                         <separator string="Options" colspan="4"/>
                         <field name="amount_currency"/>
                         <field name="exclude_reconciled"/>
-                        <field name="initial_balance" attrs="{'readonly':[('fiscalyear_id','=', False)], 'invisible':[('filter','=','filter_date')]}"/>
+                        <field name="initial_balance" invisible="True"/>
                     </xpath>
                     <page name="filters" position="after">
                         <page string="Partners Filters" name="partners">

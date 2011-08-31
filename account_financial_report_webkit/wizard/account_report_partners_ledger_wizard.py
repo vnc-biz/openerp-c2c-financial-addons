@@ -135,7 +135,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
         # we update form with display account value
         data = self.pre_print_report(cursor, uid, ids, data, context=context)
         # GTK client problem onchange does not consider in save record
-        if not data['form']['fiscalyear_id']:
+        if not data['form']['fiscalyear_id'] or data['form']['filter'] == 'filter_date':
             data['form'].update({'initial_balance': False})
         return {'type': 'ir.actions.report.xml',
                 'report_name': 'account.account_report_partners_ledger_webkit',

@@ -51,7 +51,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
     }
     _defaults = {
         'amount_currency': False,
-        'initial_balance': False,
+        'initial_balance': True,
         'display_account': 'bal_mix',
         'account_ids': _get_account_ids,
     }
