@@ -62,12 +62,12 @@
                 </thead>
                 
                 <tbody>
-                      %if initial_balance(data):
+                      %if initial_balance(data) and cumul_balance:
                         <%
                         cumul_balance = account.init_balance.get('init_balance') or 0.0
                         cumul_balance_curr = account.init_balance.get('init_balance_currency') or 0.0
                         %>
-                        <tr>
+                        <tr class="initial_balance">
                           ## date
                           <td ></td>
                           ## period

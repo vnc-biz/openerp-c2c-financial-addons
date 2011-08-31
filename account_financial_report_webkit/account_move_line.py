@@ -21,6 +21,7 @@
 from osv import fields, osv
 from tools.translate import _
 
+
 class AccountMoveLine(osv.osv):
     """Overriding Account move line in order to add last_rec_date.
     Last rec date is the date of the last reconciliation (full or partial) account move line"""

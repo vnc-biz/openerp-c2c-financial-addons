@@ -43,6 +43,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
     _defaults = {
         'amount_currency': False,
         'initial_balance': False,
+        'display_account': 'bal_mix',
     }
 
     def onchange_fiscalyear(self, cursor, uid, ids, fiscalyear=False, context=None):

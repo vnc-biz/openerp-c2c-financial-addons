@@ -27,26 +27,25 @@ import pooler
 
 from common_report_header_webkit import CommonReportHeaderWebkit
 
-class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
 
+class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
 
     def __init__(self, cursor, uid, name, context):
         super(GeneralLedgerWebkit, self).__init__(cursor, uid, name, context=context)
         self.pool = pooler.get_pool(self.cr.dbname)
         self.cursor = self.cr
         self.localcontext.update({
-            'cr':cursor,
+            'cr': cursor,
             'uid': uid,
-            'report_name':_('General Ledger'),
+            'report_name': _('General Ledger'),
             'display_account': self._get_display_account,
             'display_account_raw': self._get_display_account_raw,
             'filter': self._get_filter,
             'target_move': self._get_target_move,
             'initial_balance': self._get_initial_balance,
-            'amount_currency': self._get_amount_currency
+            'amount_currency': self._get_amount_currency,
         })
-        
-        
+
     def set_context(self, objects, data, ids, report_type=None):
         """Populate a ledger_lines attribute on each browse record that will be used
         by mako template"""
@@ -61,20 +60,20 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
 
         # Reading form
         init_bal = self._get_form_param('initial_balance', data)
-        main_filter =  self._get_form_param('filter', data, default='filter_no')
+        main_filter = self._get_form_param('filter', data, default='filter_no')
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
         stop_date = self._get_form_param('date_to', data)
         start_period = self.get_start_period_br(data)
         stop_period = self.get_end_period_br(data)
         fiscalyear = self.get_fiscalyear_br(data)
-        
+
         if main_filter == 'filter_no':
             start_period = self.get_first_fiscalyear_period(fiscalyear)
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
 
         # Retrieving accounts
-        accounts =  self.get_all_accounts(new_ids, filter_view=True)
+        accounts = self.get_all_accounts(new_ids, filter_view=True)
         if init_bal and main_filter in ('filter_no', 'filter_period'):
             init_balance_memoizer = self._compute_inital_balances(accounts, start_period,
                                                                   fiscalyear, main_filter)
@@ -101,7 +100,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         res = {}
         valid_only = True
         if target_move == 'all':
-            valid_only=False
+            valid_only = False
         for acc_id in accounts_ids:
             # We get the move line ids of the account depending of the
             # way the initial balance was created we include or not opening entries
@@ -117,20 +116,19 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             lines = self._get_ledger_lines(move_line_ids, acc_id)
             res[acc_id] = lines
         return res
-            
+
     def _get_ledger_lines(self, move_line_ids, account_id):
-        if not move_line_ids :
+        if not move_line_ids:
             return []
         res = self._get_move_line_datas(move_line_ids)
         ## computing counter part is really heavy in term of ressouces consuption
         ## looking for a king of SQL to help me improve it
         move_ids = [x.get('move_id') for x in res]
         counter_parts = self._get_moves_counterparts(move_ids, account_id)
-        for line in res :
+        for line in res:
             line['counterparts'] = counter_parts.get(line.get('move_id'), '')
         return res
-        
-        
+
 
 report_sxw.report_sxw('report.account.account_report_general_ledger_webkit',
                       'account.account',

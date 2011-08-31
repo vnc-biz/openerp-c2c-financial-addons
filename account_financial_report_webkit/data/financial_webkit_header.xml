@@ -21,10 +21,12 @@
     </head>
     <% import datetime %>
     <body style="border:0; margin: 0;" onload="subst()">
-        <table style="border-top: 1px solid black; width: 100%">
-            <tr >
-                <td style="text-align:left;font-size:12;">${formatLang( str(datetime.datetime.today().date()),date=True)}</td>
-                <td style="text-align:right;font-size:12;" width="90%">Page <span class="page"/></td><td style="text-align:left;font-size:12;">  of <span class="topage"/></td>
+        <table style="border-top: 1px solid black; width: 1080px">
+            <tr style="border-collapse:collapse;">
+                <td style="text-align:left;font-size:11;width:350px;">${formatLang( str(datetime.datetime.today()), date_time=True)}</td>
+                <td style="text-align:center;font-size:11;width:350px;">${user.name}</td>
+                <td style="text-align:right;font-size:11;width:350px;">Page <span class="page"/></td>
+                <td style="text-align:left;font-size:11;width:30px">&nbsp;of <span class="topage"/></td>
             </tr>
         </table>
     </body>
@@ -69,7 +71,7 @@
 body, table, td, span {
     font-family:Helvetica, arial;
 }
-.list_table, tr {
+.list_table, .list_table tr {
     border-color:gray;
     border-bottom:1px solid lightGrey;
     border-left:0px;
@@ -97,8 +99,14 @@ body, table, td, span {
 .data_table td {
     font-size:8px;
 }
-.list_table, td {
+.td {
     word-wrap:break-word;
+}
+.list_table td{
+    border-right:1px solid lightGrey;
+}
+.list_table td.first_column {
+    border-left:1px solid lightGrey;
 }
 @media print {
 thead {
@@ -111,10 +119,15 @@ thead {
 .title {
     font-size:10px;
     font-weight:bold;
+    width:1080px;
 }
 thead {
     display:table-header-group;
-}]]>
+}
+.initial_balance td {
+     font-style:italic;
+}
+]]>
             </field>
             <field name="name">Financial Landscape Header</field>
         </record>

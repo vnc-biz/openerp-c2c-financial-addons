@@ -22,6 +22,7 @@
 # By using properties we will have a more simple signature in fuctions
 
 from account.report.common_report_header import common_report_header
+from osv import osv
 from tools.translate import _
 
 class CommonReportHeaderWebkit(common_report_header):
@@ -51,7 +52,27 @@ class CommonReportHeaderWebkit(common_report_header):
             return _('With transactions or non zero balance')
         else:
             return val
-            
+
+    def _get_display_partner_account(self, data):
+        val = self._get_form_param('result_selection', data)
+        if val == 'customer':
+            return _('Receivable Accounts')
+        elif val == 'supplier':
+            return _('Payable Accounts')
+        elif val == 'customer_supplier':
+            return _('Receivable and Payable Accounts')
+        else:
+            return val
+
+    def _get_display_target_move(self, data):
+        val = self._get_form_param('target_move', data)
+        if val == 'posted':
+            return _('All Posted Entries')
+        elif val == 'all':
+            return _('All Entries')
+        else:
+            return val
+
     def _get_display_account_raw(self, data):
         return self._get_form_param('display_account', data)
 
@@ -66,6 +87,12 @@ class CommonReportHeaderWebkit(common_report_header):
 
     def _get_amount_currency(self, data):
         return self._get_form_param('amount_currency', data)
+
+    def _get_date_from(self, data):
+        return self._get_form_param('date_from', data)
+
+    def _get_date_to(self, data):
+        return self._get_form_param('date_to', data)
 
     def _get_form_param(self, param, data, default=False):
         return data.get('form', {}).get(param, default)
@@ -94,7 +121,8 @@ class CommonReportHeaderWebkit(common_report_header):
                 sql += " And type in %s"
                 format_list.append(tuple(filter_type))
 
-            res = self.cursor.execute(sql, tuple(format_list))
+            sql += ' order by code'
+            self.cursor.execute(sql, tuple(format_list))
             res = self.cursor.fetchall()
             if not res:
                 return []
@@ -191,14 +219,14 @@ class CommonReportHeaderWebkit(common_report_header):
 
 
     def get_first_fiscalyear_period(self, fiscalyear):
-        return self._get_st_ficsalyear_period(fiscalyear)
+        return self._get_st_fiscalyear_period(fiscalyear)
 
 
     def get_last_fiscalyear_period(self, fiscalyear):
-        return self._get_st_ficsalyear_period(fiscalyear, order='DESC')
+        return self._get_st_fiscalyear_period(fiscalyear, order='DESC')
 
 
-    def _get_st_ficsalyear_period(self, fiscalyear, order='ASC'):
+    def _get_st_fiscalyear_period(self, fiscalyear, order='ASC'):
         period_obj = self.pool.get('account.period')
         p_id = period_obj.search(self.cursor,
                                  self.uid,
@@ -311,7 +339,7 @@ class CommonReportHeaderWebkit(common_report_header):
         else:
             raise osv.except_osv(_('No valid filter'), _('Please set a valid time filter'))
 
-    def _get_move_line_datas(self, move_line_ids, order=('l.date ASC', 'peropen DESC')):
+    def _get_move_line_datas(self, move_line_ids, order='l.date ASC, per.special DESC, per.date_start ASC, m.name ASC'):
         if not move_line_ids:
             return []
         if not isinstance(move_line_ids, list):
@@ -347,13 +375,14 @@ FROM account_move_line l
     LEFT JOIN account_invoice i on (m.id =i.move_id)
     LEFT JOIN account_period per on (per.id=l.period_id)
     JOIN account_journal j on (l.journal_id=j.id)
-    WHERE l.id in %s ORDER BY %s"""
+    WHERE l.id in %s"""
+        monster += (" ORDER BY %s" % (order,))
         try:
-            self.cursor.execute(monster, (tuple(move_line_ids), order))
+            self.cursor.execute(monster, (tuple(move_line_ids),))
             res= self.cursor.dictfetchall()
         except Exception, exc:
             self.cursor.rollback()
-            raise exc
+            raise
         if res:
             return res
         else:

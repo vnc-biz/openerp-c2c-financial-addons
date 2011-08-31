@@ -26,54 +26,82 @@ from collections import defaultdict
 from common_report_header_webkit import CommonReportHeaderWebkit
 from tools.translate import _
 
+
 class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
     """Define common helper for partner oriented financial report"""
-    
+
     ####################Account move line retrieval helper ##########################
-    
-    def get_partners_move_lines_ids(self, account_id, main_filter, start, stop, exclude_reconcile=True, 
+    def get_partners_move_lines_ids(self, account_id, main_filter, start, stop, exclude_reconcile=True,
                                     valid_only=False, partner_filter=False):
+        filter_from = False
         if main_filter in ('filter_period', 'filter_no'):
-            return self._get_partners_move_ids_from_periods(account_id,
-                                                            start,
-                                                            stop,
-                                                            exclude_reconcile=exclude_reconcile,
-                                                            valid_only=valid_only, 
-                                                            partner_filter=partner_filter)
-                                
+            filter_from = 'period'
         elif main_filter == 'filter_date':
-            return self._get_partners_move_ids_from_dates(account_id,
-                                                          start,
-                                                          stop,
-                                                          exclude_reconcile=exclude_reconcile,
-                                                          valid_only=valid_only, 
-                                                          partner_filter=partner_filter)
-                             
-                             
-                                                 
-    def _get_partners_move_ids_from_periods(self, account_id, period_start, period_stop, 
-                        exclude_reconcile=True, valid_only=False, partner_filter=False):
+            filter_from = 'date'
+        if filter_from:
+            return self._get_partners_move_ids(filter_from,
+                                               account_id,
+                                               start,
+                                               stop,
+                                               exclude_reconcile=exclude_reconcile,
+                                               valid_only=valid_only,
+                                               partner_filter=partner_filter)
+
+
+    def _get_query_params_from_periods(self, period_start, period_stop):
         # we do not want opening period so we exclude opening
         periods = self._get_period_range_form_periods(period_start, period_stop, 'exclude_opening')
         if not periods:
             return []
-        final_res = defaultdict(list)
-        search_params = {'period_ids':tuple(periods),
-                         'account_ids': account_id,
-                         'partner_ids': partner_filter,
+
+        search_params = {'period_ids': tuple(periods),
                          'date_stop': period_stop.date_stop}
 
-        sql = ("SELECT id, partner_id FROM account_move_line"
-               "  WHERE period_id in %(period_ids)s"
-               "  AND account_id = %(account_ids)s")
+        sql_conditions = "  AND period_id in %(period_ids)s"
+
+        return sql_conditions, search_params
+
+    def _get_query_params_from_dates(self, date_start, date_stop):
+
+        periods = self._get_opening_periods()
+        if not periods:
+            periods = (-1,)
+
+        search_params = {'period_ids': tuple(periods),
+                         'date_start': date_start,
+                         'date_stop': date_stop}
+
+        sql_conditions = "  AND period_id not in %(period_ids)s" \
+                         "  AND date between date(%(date_start)s) and date((%(date_stop)s))"
+
+        return sql_conditions, search_params
+
+    def _get_partners_move_ids(self, filter_from, account_id, start, stop,
+                   exclude_reconcile=True, valid_only=False, partner_filter=False):
+
+        final_res = defaultdict(list)
+
+        sql = "SELECT id, partner_id FROM account_move_line " \
+              " WHERE account_id = %(account_ids)s "
+
+        sql_conditions, search_params = getattr(self, '_get_query_params_from_'+filter_from+'s')(start, stop)
+
+        sql += sql_conditions
+        
         if exclude_reconcile:
             sql += ("  AND ((reconcile_id IS NULL)"
                     "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_stop)s)))")
         if partner_filter:
             sql += "   AND partner_id in %(partner_ids)s"
-            
+
         if valid_only:
             sql += "   AND state = 'valid'"
+
+        search_params.update({
+            'account_ids': account_id,
+            'partner_ids': tuple(partner_filter),
+        })
+
         self.cursor.execute(sql, search_params)
         res = self.cursor.dictfetchall()
         if res:
@@ -81,42 +109,6 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                 final_res[row['partner_id']].append(row['id'])
         return final_res
 
-        
-
-    def _get_partners_move_ids_from_dates(self, account_id, date_start, date_stop,
-                   exclude_reconcile=True, valid_only=False, partner_filter=False):
-                   
-        periods = self._get_opening_periods()
-        if not periods:
-            periods = (-1,)
-        final_res = defaultdict(list)
-        search_params = {'period_ids': periods,
-                         'account_ids': account_id,
-                         'partner_ids': partner_filter,
-                         'date_start': period_start.date_start,
-                         'date_stop': period_stop.date_stop}
-
-        sql = ("SELECT id, partner_id FROM account_move_line"
-               "  WHERE period_id not in %(period_ids)s"
-               "  AND date between date(%(date_start)s) and (%(date_stop)s)"
-               "  AND account_id = %(account_ids)s")
-        if exclude_reconcile:
-            sql += ("  AND ((reconcile_id IS NULL)"
-                    "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_stop)s)))")
-        if partner_filter:
-            sql += "   AND partner_id in %(partner_ids)s"
-            
-        if valid_only:
-            sql += "   AND state = 'valid'"
-            
-        self.cursor.execute(sql, search_params)
-        res = cr.dictfetchall()
-        if res:
-            for row in res:
-                final_res[row['partner_id']].append(row['id'])
-        else:
-            return {}
-            
     def _get_clearance_move_line_ids(self, move_line_ids, date_stop, date_until):
         if not move_line_ids:
             return []
@@ -130,14 +122,13 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         if rec_ids:
             rec_ids = [x[0] for x in rec_ids]
             l_ids = move_line_obj.search(self.cursor,
-                                         self.uid, 
-                                         [('reconcile_id', 'in', rec_ids), 
+                                         self.uid,
+                                         [('reconcile_id', 'in', rec_ids),
                                           ('date', '>=', date_stop),
                                           ('date', '<=', date_until)])
             return l_ids
         else:
             return []
-        
 
      ####################Initial Partner Balance helper ########################
     def _compute_partners_inital_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None):
@@ -153,7 +144,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         # we just read it from opening entries
         res = defaultdict(dict)
         if main_filter in ('filter_period', 'filter_no'):
-            search_param = {'date_start': start_period.date_start, 
+            search_param = {'date_start': start_period.date_start,
                             'period_ids': tuple(period_ids),
                             'account_ids': tuple(account_ids),
                             'partner_ids': tuple(partner_filter)}
@@ -177,16 +168,15 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         if not final_res:
             for acc_id in account_ids:
                 final_res[acc_id] = {}
-        import pprint; pprint.pprint(final_res)
+
         return final_res
 
-     
-    ####################Partner specific helper ################################    
+    ####################Partner specific helper ################################
     def _order_partners(self, *args):
         """We get the partner linked to all current accounts that are used.
             We also use ensure that partner are ordered bay name
             args must be list"""
-        partner_ids = []  
+        partner_ids = []
         for arg in args:
             if arg:
                 partner_ids += arg

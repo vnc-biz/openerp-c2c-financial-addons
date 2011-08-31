@@ -9,13 +9,13 @@
         <%setLang(user.address_id and user.address_id.partner_id.lang and user.address_id.partner_id.lang or 'en_US')%>
         <table width="1080" class="data_table" >
             <tr>
-                <td width="30%"><b >${_('Fiscal Year:')}</b></td><td width="30%"></td><td width="30%"></td>
+                <td width="30%" colspan="3"><b >${_('Fiscal Year:')}</b> ${ fiscalyear.name if fiscalyear else '' }</td>
             </tr>
             <tr>
-                <td><b>${_('Period From:')}</b></td><td><b>${_('to:')}</b></td><td><b>${_('Displayed Account:')}</b></td>
+                <td><b>${_('Period From:')}</b> ${ start_period.name if start_period else u'' }</td><td><b>${_('to:')}</b> ${ stop_period.name if stop_period else u'' }</td><td><b>${_('Displayed Account:')}</b> ${ display_partner_account(data) }</td>
             </tr>
             <tr>
-                <td><b>${_('Date From:')}</b></td><td><b>${_('to:')}</b></td><td><b>${_('Target Move:')}</b></td>
+                <td><b>${_('Date From:')}</b> ${ formatLang(start_date, date=True) if start_date else '' }</td><td><b>${_('to:')}</b> ${ formatLang(stop_date, date=True) if stop_date else '' }</td><td><b>${_('Target Move:')}</b> ${ display_target_move(data) }</td>
             </tr>
         </table>
         <br/>
@@ -27,7 +27,7 @@
                   cumul_balance =  0.0
                   cumul_balance_curr = 0.0
                 %>
-                <div width="100%" style="background-color:#F0F0F0" class="title">${account.code} - ${account.name}</div>
+                <div style="background-color:#F0F0F0" class="title">${account.code} - ${account.name}</div>
                 <br/>
                 %for partner_name, p_id in account.partners_order:
                 <%
@@ -39,7 +39,7 @@
                     <thead>
                         <tr> 
                             ## date
-                            <td width="60px">${_('Date')}</td>
+                            <td width="60px" class="first_column">${_('Date')}</td>
                             ## period
                             <td width="60px">${_('Period')}</td>
                             ## move
@@ -68,42 +68,29 @@
                             %endif</tr>
                     </thead>
                     <tbody>
-                          %if initial_balance(data):
+                          %if initial_balance(data) and cumul_balance:
                             <%
                               part_cumul_balance = account.init_balance.get(p_id, {}).get('init_balance') or 0.0
                               part_cumul_balance_curr = account.init_balance.get(p_id, {}).get('init_balance_currency') or 0.0
                             %>
-                            <tr>
-                              ## date
-                              <td ></td>
-                              ## period
-                              <td></td>
-                              ## move
-                              <td></td>
-                              ## journal
-                              <td></td>
-                              ## partner
-                              <td></td>
-                              ## ref
-                              <td></td>
+                            <tr class="initial_balance">
+                              <td colspan="6" class="first_column"/>
                               ## label
-                              <td>${_('Balance brought forward')}</td>
-                              ## reconcile
-                              <td></td>
+                              <td colspan="2">${_('Balance brought forward')}</td>
                               ## balance
-                              <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance)}</td>
+                              <td style="word-wrap:normal; text-align:right;">${formatLang(cumul_balance)}</td>
                               ## balance cumulated
-                              <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance)}</td>
+                              <td style="word-wrap:normal; text-align:right;">${formatLang(cumul_balance)}</td>
                              %if amount_currency(data):
                                   ## curency code
-                                  <td style="word-wrap:normal; text-align:right"></td>
+                                  <td style="word-wrap:normal; text-align:right"/>
                                   ## currency balance
-                                  <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr)}</td>
+                                  <td style="word-wrap:normal; text-align:right;">${formatLang(cumul_balance_curr)}</td>
                                   %if account.currency_id:
                                       ## currency balance cumulated
-                                      <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr)}</td>
+                                      <td style="word-wrap:normal; text-align:right;">${formatLang(cumul_balance_curr)}</td>
                                   %else:
-                                    <td style="word-wrap:normal; text-align:right">${formatLang(0.0)}</td>
+                                    <td style="word-wrap:normal; text-align:right;">${formatLang(0.0)}</td>
                                   %endif
                              %endif
 
@@ -113,7 +100,7 @@
                         %for line in account.ledger_lines.get(p_id, []):
                             <tr>
                               ## date
-                              <td>${formatLang(line.get('ldate') or '', date=True)}</td>
+                              <td class="first_column">${formatLang(line.get('ldate') or '', date=True)}</td>
                               ## period
                               <td>${line.get('period_code') or ''}</td>
                               ## move

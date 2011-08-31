@@ -26,25 +26,26 @@ from tools.translate import _
 import pooler
 from common_partners_report_header_webkit import CommonPartnersReportHeaderWebkit
 
+
 class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebkit):
-    
-    
+
     def __init__(self, cursor, uid, name, context):
         super(PartnersLedgerWebkit, self).__init__(cursor, uid, name, context=context)
         self.pool = pooler.get_pool(self.cr.dbname)
         self.cursor = self.cr
         self.localcontext.update({
-            'cr':cursor,
+            'cr': cursor,
             'uid': uid,
             'report_name':_('Partner Ledger'),
             'display_account_raw': self._get_display_account_raw,
             'filter': self._get_filter,
             'target_move': self._get_target_move,
             'initial_balance': self._get_initial_balance,
-            'amount_currency': self._get_amount_currency
+            'amount_currency': self._get_amount_currency,
+            'display_partner_account': self._get_display_partner_account,
+            'display_target_move': self._get_display_target_move,
         })
-        
-        
+
     def set_context(self, objects, data, ids, report_type=None):
         """Populate a ledger_lines attribute on each browse record that will be used
         by mako template"""
@@ -56,11 +57,11 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
 
         # Account initial balance memoizer
         init_balance_memoizer = {}
-        # account partner memoizer 
+        # account partner memoizer
         account_partner_rel_memoizer = {}
         # Reading form
         init_bal = self._get_form_param('initial_balance', data)
-        main_filter =  self._get_form_param('filter', data, default='filter_no')
+        main_filter = self._get_form_param('filter', data, default='filter_no')
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
         stop_date = self._get_form_param('date_to', data)
@@ -71,8 +72,8 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         result_selection = self._get_form_param('result_selection', data)
         exclude_reconcile = self._get_form_param('exclude_reconciled', data)
         date_until = self._get_form_param('until_date', data)
-        import pprint; pprint.pprint(main_filter)
-        if main_filter == 'filter_no':
+
+        if main_filter == 'filter_no' and fiscalyear:
             start_period = self.get_first_fiscalyear_period(fiscalyear)
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
 
@@ -81,16 +82,16 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         if result_selection == 'customer':
             filter_type = ('receivable',)
         if result_selection == 'supplier':
-            filter_type = ('payable',)        
-            
-        accounts = self.get_all_accounts(new_ids, filter_view=True, 
+            filter_type = ('payable',)
+
+        accounts = self.get_all_accounts(new_ids, filter_view=True,
                                          filter_type=filter_type)
-        
+
         if init_bal and main_filter in ('filter_no', 'filter_period'):
-            init_balance_memoizer = self._compute_partners_inital_balances(accounts, 
+            init_balance_memoizer = self._compute_partners_inital_balances(accounts,
                                                                            start_period,
                                                                            fiscalyear,
-                                                                           main_filter, 
+                                                                           main_filter,
                                                                            partner_filter=partner_ids)
         # computation of ledeger lines
         if main_filter == 'filter_date':
@@ -101,11 +102,11 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             stop = stop_period
         ledger_lines_memoizer = self._compute_partner_ledger_lines(accounts,
                                                                    main_filter,
-                                                                   target_move, 
+                                                                   target_move,
                                                                    start,
                                                                    stop,
                                                                    date_until,
-                                                                   exclude_reconcile=exclude_reconcile, 
+                                                                   exclude_reconcile=exclude_reconcile,
                                                                    partner_filter=partner_ids)
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, accounts):
@@ -124,37 +125,46 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             account.partners_order = self._order_partners(ledg_lines_pids, init_bal_lines_pids)
             account.ledger_lines = ledger_lines_memoizer.get(account.id, {})
             objects.append(account)
+
+        self.localcontext.update({
+            'fiscalyear': fiscalyear,
+            'start_date': start_date,
+            'stop_date': stop_date,
+            'start_period': start_period,
+            'stop_period': stop_period,
+        })
+
         return super(PartnersLedgerWebkit, self).set_context(objects, data, new_ids,
                                                             report_type=report_type)
 
-    def _compute_partner_ledger_lines(self, accounts_ids, main_filter, target_move, start, 
+    def _compute_partner_ledger_lines(self, accounts_ids, main_filter, target_move, start,
                                       stop, date_until, exclude_reconcile=True, partner_filter=False):
         res = defaultdict(dict)
         valid_only = True
         if target_move == 'all':
-            valid_only=False
+            valid_only = False
         ## we check if until date and date stop have the same value
         if main_filter in ('filter_period', 'filter_no'):
             date_stop = stop.date_stop
             date_match = (date_stop == date_until)
-            
+
         elif main_filter == 'filter_date':
             date_stop = stop
             date_match = (stop == date_until)
 
         else:
-            raise osv.except_osv(_('Unsuported filter'), 
+            raise osv.except_osv(_('Unsuported filter'),
                                  _('Filter has to be in filter date, period, or none'))
-        
+
         for acc_id in accounts_ids:
             # We get the move line ids of the account depending of the
             # way the initial balance was created we include or not opening entries
-            move_line_ids_dict = self.get_partners_move_lines_ids(acc_id, 
+            move_line_ids_dict = self.get_partners_move_lines_ids(acc_id,
                                                              main_filter,
                                                              start,
                                                              stop,
                                                              exclude_reconcile=True,
-                                                             valid_only=valid_only, 
+                                                             valid_only=valid_only,
                                                              partner_filter=partner_filter)
             if not move_line_ids_dict:
                 #not really useful as it is default dict
@@ -162,12 +172,12 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
                 continue
             for partner_id in move_line_ids_dict:
                 m_line_ids = move_line_ids_dict.get(partner_id, [])
-                if not date_match and m_line_ids:
+                if not date_match and m_line_ids:  # no initial balance when filtering by date
                     m_line_ids += self._get_clearance_move_line_ids(m_line_ids, date_stop, date_until)
                 lines = self._get_move_line_datas(list(set(m_line_ids)))
                 res[acc_id][partner_id] = lines
         return res
-            
+
 
 report_sxw.report_sxw('report.account.account_report_partners_ledger_webkit',
                       'account.account',
