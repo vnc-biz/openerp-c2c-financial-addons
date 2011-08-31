@@ -101,7 +101,7 @@ class CommonReportHeaderWebkit(common_report_header):
 
     ####################Account and account line filter helper #################
 
-    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, context=None):
+    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, filter_hidden=False, context=None):
         """Get all account passed in params with their childrens"""
         context = context or {}
         accounts = []
@@ -112,16 +112,18 @@ class CommonReportHeaderWebkit(common_report_header):
             accounts.append(account_id)
             accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id)
         res = list(set(accounts))
-        if filter_view or filter_type:
+        if filter_view or filter_type or filter_hidden:
             format_list = [tuple(res)]
-            sql = "Select id from account_account where id in %s"
+            sql = "SELECT id FROM account_account WHERE id IN %s "
+            if filter_hidden:
+                sql += " AND hide_on_reports = false"
             if filter_view:
-                sql += " And type != 'view'"
+                sql += " AND type != 'view'"
             if filter_type:
-                sql += " And type in %s"
+                sql += " AND type in %s"
                 format_list.append(tuple(filter_type))
 
-            sql += ' order by code'
+            sql += ' ORDER BY code'
             self.cursor.execute(sql, tuple(format_list))
             res = self.cursor.fetchall()
             if not res:

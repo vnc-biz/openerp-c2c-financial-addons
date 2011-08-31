@@ -49,7 +49,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
     def set_context(self, objects, data, ids, report_type=None):
         """Populate a ledger_lines attribute on each browse record that will be used
         by mako template"""
-        new_ids = data['form']['chart_account_id']
+        new_ids = data['form']['account_ids'] or data['form']['chart_account_id']
 
         # We memoize ledger lines linked to account. Key is account id
         # values are array of lines
@@ -73,7 +73,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
 
         # Retrieving accounts
-        accounts = self.get_all_accounts(new_ids, filter_view=True)
+        accounts = self.get_all_accounts(new_ids, filter_view=True, filter_hidden=True)
         if init_bal and main_filter in ('filter_no', 'filter_period'):
             init_balance_memoizer = self._compute_inital_balances(accounts, start_period,
                                                                   fiscalyear, main_filter)

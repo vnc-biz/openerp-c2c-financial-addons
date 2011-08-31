@@ -35,7 +35,11 @@ class AccountAccount(osv.osv):
     _inherit = 'account.account'
 
     _columns = {
-        'hide_on_reports': fields.boolean('Hide on financial reports')
+        'hide_on_reports': fields.boolean('Hide on financial reports', help="If flagged, the account will not be displayed in the General Ledger report (webkit).")
+    }
+
+    _defaults = {
+        'hide_on_reports': False,
     }
 
 AccountAccount()

@@ -28,6 +28,12 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
     _name = "account.report.general.ledger.webkit"
     _description = "General Ledger Report"
 
+    def _get_account_ids(self, cr, uid, context=None):
+        res = False
+        if context.get('active_model', False) == 'account.account' and context.get('active_ids', False):
+            res = context['active_ids']
+        return res
+
     _columns = {
         'initial_balance': fields.boolean("Include initial balances",
                                           help='It adds initial balance row'),
@@ -39,11 +45,15 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
                                              ('bal_mix', 'With transactions or non zero balance')],
                                             'Display accounts',
                                             required=True),
+        'account_ids': fields.many2many('account.account', 'wiz_account_rel',
+                                        'account_id', 'wiz_id', 'Filter on accounts',
+                                         help="Only selected accounts will be printed. Leave empty to print all accounts."),
     }
     _defaults = {
         'amount_currency': False,
         'initial_balance': False,
         'display_account': 'bal_mix',
+        'account_ids': _get_account_ids,
     }
 
     def onchange_fiscalyear(self, cursor, uid, ids, fiscalyear=False, context=None):
@@ -57,7 +67,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         if context is None:
             context = {}
         vals = self.read(cr, uid, ids, 
-                         ['initial_balance', 'amount_currency', 'display_account'],
+                         ['initial_balance', 'amount_currency', 'display_account', 'account_ids'],
                          context=context)[0]
         data['form'].update(vals)
         return data

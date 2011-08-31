@@ -39,7 +39,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
                                   help="Allows you to excludes entries reconciled between the end date of the report and this date' ; generally used for audit/provisionning purposes."),
         'partner_ids': fields.many2many('res.partner', 'wiz_part_rel',
                                         'partner_id', 'wiz_id', 'Filter on partner',
-                                         help="TODO"),
+                                         help="Only selected partners will be printed. Leave empty to print all partners."),
 
     }
     _defaults = {

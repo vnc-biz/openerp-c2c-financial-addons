@@ -30,7 +30,7 @@
                 <thead>
                     <tr> 
                         ## date
-                        <td width="60px">${_('Date')}</td>
+                        <td width="60px" class="first_column">${_('Date')}</td>
                         ## period
                         <td width="60px">${_('Period')}</td>
                         ## move
@@ -69,7 +69,7 @@
                         %>
                         <tr class="initial_balance">
                           ## date
-                          <td ></td>
+                          <td class="first_column" ></td>
                           ## period
                           <td></td>
                           ## move
