@@ -8,7 +8,7 @@
     <body>
         <%!
         def amount(text):
-            return text.replace('-', '&#8209;')
+            return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
         <%setLang(user.address_id and user.address_id.partner_id.lang and user.address_id.partner_id.lang or 'en_US')%>
         <table width="1080" class="data_table" >
@@ -32,7 +32,6 @@
                   cumul_balance_curr = 0.0
                 %>
                 <div style="background-color:#F0F0F0" class="title">${account.code} - ${account.name}</div>
-                <br/>
                 %for partner_name, p_id in account.partners_order:
                 <%
                   part_cumul_balance =  0.0
@@ -141,7 +140,6 @@
                         %endfor
                     </tbody>
                 </table>
-               <br/>
                %endfor
             <br/>
             %endif

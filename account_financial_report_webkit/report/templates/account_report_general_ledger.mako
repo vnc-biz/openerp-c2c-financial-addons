@@ -8,7 +8,7 @@
     <body>
         <%!
         def amount(text):
-            return text.replace('-', '&#8209;')
+            return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
         <table width="1080" class="data_table" >
             <tr>
@@ -151,7 +151,6 @@
                       %endfor
                   </tbody>
               </table>
-              <br/>
           %endif
         %endfor
     </body>
