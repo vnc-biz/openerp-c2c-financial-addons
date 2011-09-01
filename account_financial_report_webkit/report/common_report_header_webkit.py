@@ -39,6 +39,9 @@ class CommonReportHeaderWebkit(common_report_header):
     def get_fiscalyear_br(self, data):
         return self._get_info(data,'fiscalyear_id', 'account.fiscalyear')
 
+    def _get_chart_account_id_br(self, data):
+        return self._get_info(data, 'chart_account_id', 'account.account')
+
     def _get_info(self, data, field, model):
         info = data.get('form', {}).get(field)
         if info:

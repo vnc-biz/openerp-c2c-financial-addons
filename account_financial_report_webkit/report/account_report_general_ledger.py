@@ -44,6 +44,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             'target_move': self._get_target_move,
             'initial_balance': self._get_initial_balance,
             'amount_currency': self._get_amount_currency,
+            'display_target_move': self._get_display_target_move,
         })
 
     def set_context(self, objects, data, ids, report_type=None):
@@ -67,6 +68,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         start_period = self.get_start_period_br(data)
         stop_period = self.get_end_period_br(data)
         fiscalyear = self.get_fiscalyear_br(data)
+        chart_account = self._get_chart_account_id_br(data)
 
         if main_filter == 'filter_no':
             start_period = self.get_first_fiscalyear_period(fiscalyear)
@@ -92,6 +94,16 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             account.ledger_lines = ledger_lines_memoizer.get(account.id, [])
             account.init_balance = init_balance_memoizer.get(account.id, {})
             objects.append(account)
+
+        self.localcontext.update({
+            'fiscalyear': fiscalyear,
+            'start_date': start_date,
+            'stop_date': stop_date,
+            'start_period': start_period,
+            'stop_period': stop_period,
+            'chart_account': chart_account,
+        })
+
         return super(GeneralLedgerWebkit, self).set_context(objects, data, new_ids,
                                                             report_type=report_type)
 

@@ -10,16 +10,15 @@
         def amount(text):
             return text.replace('-', '&#8209;')
         %>
-
         <table width="1080" class="data_table" >
             <tr>
-                <td width="30%"><b >${_('Fiscal Year:')}</b></td><td width="30%"></td><td width="30%"></td>
+                <td width="30%" colspan="3"><b>${_('Fiscal Year:')}</b> ${ fiscalyear.name if fiscalyear else '' }</td>
             </tr>
             <tr>
-                <td><b>${_('Period From:')}</b></td><td><b>${_('to:')}</b></td><td><b>${_('Displayed Account:')}</b></td>
+                <td><b>${_('Period From:')}</b> ${ start_period.name if start_period else u'' }</td><td><b>${_('to:')}</b> ${ stop_period.name if stop_period else u'' }</td><td><b>${_('Chart of Account:')}</b> ${ chart_account.name }</td>
             </tr>
             <tr>
-                <td><b>${_('Date From:')}</b></td><td><b>${_('to:')}</b></td><td><b>${_('Target Move:')}</b></td>
+                <td><b>${_('Date From:')}</b> ${ formatLang(start_date, date=True) if start_date else '' }</td><td><b>${_('to:')}</b> ${ formatLang(stop_date, date=True) if stop_date else '' }</td><td><b>${_('Target Move:')}</b> ${ display_target_move(data) }</td>
             </tr>
         </table>
         <br/>
