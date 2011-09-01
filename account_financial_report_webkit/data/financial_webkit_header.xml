@@ -77,7 +77,7 @@ body, table, td, span {
     border-left:0px;
     border-right:0px;
     text-align:left;
-    font-size:10px;
+    font-size:9px;
     padding-right:3px;
     padding-left:3px;
     padding-top:2px;
@@ -97,7 +97,7 @@ body, table, td, span {
     padding-bottom:2px;
 }
 .data_table td {
-    font-size:8px;
+    font-size:9px;
 }
 .td {
     word-wrap:break-word;
