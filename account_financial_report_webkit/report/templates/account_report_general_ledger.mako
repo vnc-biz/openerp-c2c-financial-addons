@@ -6,6 +6,11 @@
         </style>
     </head>
     <body>
+        <%!
+        def amount(text):
+            return text.replace('-', '&#8209;')
+        %>
+
         <table width="1080" class="data_table" >
             <tr>
                 <td width="30%"><b >${_('Fiscal Year:')}</b></td><td width="30%"></td><td width="30%"></td>
@@ -87,19 +92,19 @@
                           ## reconcile
                           <td></td>
                           ## balance
-                          <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance)}</td>
+                          <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance) | amount }</td>
                           ## balance cumulated
-                          <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance)}</td>
+                          <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance) | amount }</td>
                          %if amount_currency(data):
                               ## curency code
                               <td style="word-wrap:normal; text-align:right"></td>
                               ## currency balance
-                              <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr)}</td>
+                              <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr) | amount }</td>
                               %if account.currency_id:
                                   ## currency balance cumulated
-                                  <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr)}</td>
+                                  <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr) | amount }</td>
                               %else:
-                                <td style="word-wrap:normal; text-align:right">${formatLang(0.0)}</td>
+                                <td style="word-wrap:normal; text-align:right">${formatLang(0.0) | amount }</td>
                               %endif
                          %endif
 
@@ -126,21 +131,21 @@
                           ## reconcile
                           <td>${line.get('rec_name') or ''}</td>
                           ## balance
-                          <td style="word-wrap:normal; text-align:right">${formatLang(line.get('balance') or 0.0)}</td>
+                          <td style="word-wrap:normal; text-align:right">${ formatLang(line.get('balance') or 0.0) | amount }</td>
                           ## balance cumulated
                           <% cumul_balance += line.get('balance') or 0.0 %>
-                          <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance)}</td>
+                          <td style="word-wrap:normal; text-align:right">${ formatLang(cumul_balance) | amount }</td>
                           %if amount_currency(data):
                               ## curency code
                               <td>${line.get('currency_code') or ''}</td>
                               ## currency balance
-                              <td style="word-wrap:normal; text-align:right">${formatLang(line.get('amount_currency') or 0.0)}</td>
+                              <td style="word-wrap:normal; text-align:right">${formatLang(line.get('amount_currency') or 0.0)  | amount }</td>
                               %if account.currency_id:
                               <% cumul_balance_curr += line.get('amount_currency') or 0.0 %>
                                   ## currency balance cumulated
-                                  <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr)}</td>
+                                  <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr) | amount }</td>
                               %else:
-                                  <td style="word-wrap:normal; text-align:right">${formatLang(0.0)}</td>
+                                  <td style="word-wrap:normal; text-align:right">${formatLang(0.0) | amount }</td>
                               %endif
                           %endif
                       </tr>
