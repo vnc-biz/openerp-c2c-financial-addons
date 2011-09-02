@@ -10,147 +10,162 @@
         def amount(text):
             return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
-        <table width="1080" class="data_table" >
-            <tr>
-                <td width="30%" colspan="3"><b>${_('Fiscal Year:')}</b> ${ fiscalyear.name if fiscalyear else '' }</td>
-            </tr>
-            <tr>
-                <td><b>${_('Period From:')}</b> ${ start_period.name if start_period else u'' }</td><td><b>${_('to:')}</b> ${ stop_period.name if stop_period else u'' }</td><td><b>${_('Chart of Account:')}</b> ${ chart_account.name }</td>
-            </tr>
-            <tr>
-                <td><b>${_('Date From:')}</b> ${ formatLang(start_date, date=True) if start_date else '' }</td><td><b>${_('to:')}</b> ${ formatLang(stop_date, date=True) if stop_date else '' }</td><td><b>${_('Target Move:')}</b> ${ display_target_move(data) }</td>
-            </tr>
-        </table>
+
+        <div class="act_as_table data_table">
+            <div class="act_as_row">
+                <div class="act_as_cell"><b>${_('Fiscal Year:')}</b> ${ fiscalyear.name if fiscalyear else '' }</div>
+            </div>
+            <div class="act_as_row">
+                <div class="act_as_cell"><b>${_('Period From:')}</b> ${ start_period.name if start_period else u'' }</div>
+                <div class="act_as_cell"><b>${_('to:')}</b> ${ stop_period.name if stop_period else u'' }</div>
+                <div class="act_as_cell"><b>${_('Chart of Account:')}</b> ${ chart_account.name }</div>
+            </div>
+            <div class="act_as_row">
+                <div class="act_as_cell"><b>${_('Date From:')}</b> ${ formatLang(start_date, date=True) if start_date else '' }</div>
+                <div class="act_as_cell"><b>${_('to:')}</b> ${ formatLang(stop_date, date=True) if stop_date else '' }</div>
+                <div class="act_as_cell"><b>${_('Target Move:')}</b> ${ display_target_move(data) }</div>
+            </div>
+        </div>
         <br/>
+
         <%setLang(user.address_id and user.address_id.partner_id.lang and user.address_id.partner_id.lang or 'en_US')%>
+
+        <!-- we use div with css instead of table for tabular data because div do not cut rows at half at page breaks -->
         %for account in objects:
           %if display_account_raw(data) == 'all' or (account.ledger_lines or account.init_balance.get('init_balance')):
               <%
               cumul_balance =  0.0
-              cumul_balance_curr = 0.0 
+              cumul_balance_curr = 0.0
               %>
-        <span class="title">${account.code} - ${account.name}</span>
-            <table class="list_table" width="1080px">
-                <thead>
-                    <tr> 
+            <div class="act_as_table list_table">
+                
+                <div class="act_as_caption account_title">
+                    ${account.code} - ${account.name}
+                </div>
+                <div class="act_as_thead">
+                    <div class="act_as_row labels">
                         ## date
-                        <td width="60px" class="first_column">${_('Date')}</td>
+                        <div class="act_as_cell first_column" style="width: 60px;">${_('Date')}</div>
                         ## period
-                        <td width="60px">${_('Period')}</td>
+                        <div class="act_as_cell" style="width: 60px;">${_('Period')}</div>
                         ## move
-                        <td width="120px">${_('Move')}</td>
+                        <div class="act_as_cell" style="width: 120px;">${_('Move')}</div>
                         ## journal
-                        <td width="60px">${_('Journal')}</td>
+                        <div class="act_as_cell" style="width: 60px;">${_('Journal')}</div>
                         ## partner
-                        <td width="120px">${_('Partner')}</td>
+                        <div class="act_as_cell" style="width: 120px;">${_('Partner')}</div>
                         ## ref
-                        <td width="100px">${_('Ref')}</td>
+                        <div class="act_as_cell" style="width: 100px;">${_('Ref')}</div>
                         ## label
-                        <td width="200px">${_('Label')}</td>
+                        <div class="act_as_cell" style="width: 200px;">${_('Label')}</div>
                         ## counterpart
-                        <td width="120px">${_('Counter part')}</td>
+                        <div class="act_as_cell" style="width: 120px;">${_('Counter part')}</div>
                         ## reconcile
-                        <td width="50px">${_('Reconcile')}</td>
+                        <div class="act_as_cell" style="width: 50px;" >${_('Reconcile')}</div>
                         ## balance
-                        <td width="55px" style="word-wrap:normal; text-align:right">${_('Balance')}</td>
+                        <div class="act_as_cell amount" style="width: 55px;">${_('Balance')}</div>
                         ## balance cumulated
-                        <td width="55px" style="word-wrap:normal; text-align:right">${_('Cumul. Bal.')}</td>
+                        <div class="act_as_cell amount" style="width: 55px;">${_('Cumul. Bal.')}</div>
                         %if amount_currency(data):
                             ## curency code
-                            <td width="30px" style="word-wrap:normal; text-align:right">${_('Curr.')}</td>
+                            <div class="act_as_cell amount" style="width: 30px;">${_('Curr.')}</div>
                             ## currency balance
-                            <td width="55px" style="word-wrap:normal; text-align:right">${_('Curr. Balance')}</td>
+                            <div class="act_as_cell amount" style="width: 55px;">${_('Curr. Balance')}</div>
                             ## currency balance cumulated
-                            <td width="55px" style="word-wrap:normal; text-align:right">${_('Curr. Cumul. Bal')}</td>
-                        %endif</tr>
-                </thead>
-                
-                <tbody>
+                            <div class="act_as_cell amount" style="width: 55px;">${_('Curr. Cumul. Bal')}</div>
+                        %endif
+                    </div>
+                </div>
+
+                <div class="act_as_tbody">
                       <%
                       cumul_balance = account.init_balance.get('init_balance') or 0.0
                       cumul_balance_curr = account.init_balance.get('init_balance_currency') or 0.0
                       %>
                       %if initial_balance(data) and cumul_balance:
-                        <tr class="initial_balance">
+                        <div class="act_as_row initial_balance">
                           ## date
-                          <td class="first_column" ></td>
+                          <div class="act_as_cell first_column"></div>
                           ## period
-                          <td></td>
+                          <div class="act_as_cell"></div>
                           ## move
-                          <td></td>
+                          <div class="act_as_cell"></div>
                           ## journal
-                          <td></td>
+                          <div class="act_as_cell"></div>
                           ## partner
-                          <td></td>
+                          <div class="act_as_cell"></div>
                           ## ref
-                          <td></td>
+                          <div class="act_as_cell"></div>
                           ## label
-                          <td>${_('Balance brought forward')}</td>
+                          <div class="act_as_cell">${_('Balance brought forward')}</div>
                           ## counterpart
-                          <td></td>
+                          <div class="act_as_cell"></div>
                           ## reconcile
-                          <td></td>
+                          <div class="act_as_cell"></div>
                           ## balance
-                          <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance) | amount }</td>
+                          <div class="act_as_cell amount">${formatLang(cumul_balance) | amount }</div>
                           ## balance cumulated
-                          <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance) | amount }</td>
+                          <div class="act_as_cell amount">${formatLang(cumul_balance) | amount }</div>
                          %if amount_currency(data):
                               ## curency code
-                              <td style="word-wrap:normal; text-align:right"></td>
+                              <div class="act_as_cell amount"></div>
                               ## currency balance
-                              <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr) | amount }</td>
+                              <div class="act_as_cell amount">${formatLang(cumul_balance_curr) | amount }</div>
                               %if account.currency_id:
                                   ## currency balance cumulated
-                                  <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr) | amount }</td>
+                                  <div class="act_as_cell amount">${formatLang(cumul_balance_curr) | amount }</div>
                               %else:
-                                <td style="word-wrap:normal; text-align:right">${formatLang(0.0) | amount }</td>
+                                <div class="act_as_cell amount">${formatLang(0.0) | amount }</div>
                               %endif
                          %endif
 
-                      </tr>
+                        </div>
                       %endif
                       %for line in account.ledger_lines:
-                      <tr>
+                      <div class="act_as_row lines">
                           ## date
-                          <td>${formatLang(line.get('ldate') or '', date=True)}</td>
+                          <div class="act_as_cell">${formatLang(line.get('ldate') or '', date=True)}</div>
                           ## period
-                          <td>${line.get('period_code') or ''}</td>
+                          <div class="act_as_cell">${line.get('period_code') or ''}</div>
                           ## move
-                          <td>${line.get('move_name') or ''}</td>
+                          <div class="act_as_cell">${line.get('move_name') or ''}</div>
                           ## journal
-                          <td>${line.get('jcode') or ''}</td>
+                          <div class="act_as_cell">${line.get('jcode') or ''}</div>
                           ## partner
-                          <td>${line.get('partner_name') or ''}</td>
+                          <div class="act_as_cell">${line.get('partner_name') or ''}</div>
                           ## ref
-                          <td>${line.get('lref') or ''}</td>
+                          <div class="act_as_cell">${line.get('lref') or ''}</div>
                           ## label
-                          <td>${line.get('lname') or ''}</td>
+                          <div class="act_as_cell">${line.get('lname') or ''}</div>
                           ## counterpart
-                          <td>${line.get('counterparts') or ''}</td>
+                          <div class="act_as_cell">${line.get('counterparts') or ''}</div>
                           ## reconcile
-                          <td>${line.get('rec_name') or ''}</td>
+                          <div class="act_as_cell">${line.get('rec_name') or ''}</div>
                           ## balance
-                          <td style="word-wrap:normal; text-align:right">${ formatLang(line.get('balance') or 0.0) | amount }</td>
+                          <div class="act_as_cell amount">${ formatLang(line.get('balance') or 0.0) | amount }</div>
                           ## balance cumulated
                           <% cumul_balance += line.get('balance') or 0.0 %>
-                          <td style="word-wrap:normal; text-align:right">${ formatLang(cumul_balance) | amount }</td>
+                          <div class="act_as_cell amount">${ formatLang(cumul_balance) | amount }</div>
                           %if amount_currency(data):
                               ## curency code
-                              <td>${line.get('currency_code') or ''}</td>
+                              <div class="act_as_cell amount">${line.get('currency_code') or ''}</div>
                               ## currency balance
-                              <td style="word-wrap:normal; text-align:right">${formatLang(line.get('amount_currency') or 0.0)  | amount }</td>
+                              <div class="act_as_cell amount">${formatLang(line.get('amount_currency') or 0.0)  | amount }</div>
                               %if account.currency_id:
                               <% cumul_balance_curr += line.get('amount_currency') or 0.0 %>
                                   ## currency balance cumulated
-                                  <td style="word-wrap:normal; text-align:right">${formatLang(cumul_balance_curr) | amount }</td>
+                                  <div class="act_as_cell amount">${formatLang(cumul_balance_curr) | amount }</div>
                               %else:
-                                  <td style="word-wrap:normal; text-align:right">${formatLang(0.0) | amount }</td>
+                                  <div class="act_as_cell amount">${formatLang(0.0) | amount }</div>
                               %endif
                           %endif
-                      </tr>
+                      </div>
                       %endfor
-                  </tbody>
-              </table>
+                </div>
+                <div class="act_as_tfoot">
+                    <div class="blank_row">&nbsp;</div>
+                </div>
+            </div>
           %endif
         %endfor
     </body>

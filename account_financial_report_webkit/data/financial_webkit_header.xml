@@ -68,12 +68,46 @@
             </field>
             <field eval="20.0" name="margin_top"/>
             <field name="css"><![CDATA[
-body, table, td, span {
-    font-family:Helvetica, arial;
+
+/* div version css */
+
+body, table, td, span, div {
+    font-family: Helvetica, arial;
 }
-.list_table, .list_table tr {
-    border-color:gray;
-    border-bottom:1px solid lightGrey;
+
+.act_as_table {
+    display: table;
+}
+.act_as_row  {
+    display: table-row;
+}
+.act_as_cell {
+    display: table-cell;
+}
+.act_as_thead {
+    display: table-header-group;
+}
+.act_as_tbody {
+    display: table-row-group;
+}
+.act_as_tfoot {
+    display: table-footer-group;
+}
+.act_as_caption {
+    display: table-caption;
+}
+act_as_colgroup {
+    display: table-column-group;
+}
+.blank_row {
+    height: 10px;
+}
+
+.list_table, .data_table {
+    width: 1080px;
+}
+
+.list_table, .data_table, .list_table .act_as_row {
     border-left:0px;
     border-right:0px;
     text-align:left;
@@ -81,21 +115,63 @@ body, table, td, span {
     padding-right:3px;
     padding-left:3px;
     padding-top:2px;
-    padding-bottom:1px;
+    padding-bottom:2px;
     border-collapse:collapse;
 }
-.data_table {
+
+.list_table .act_as_row.labels, .list_table .act_as_row.initial_balance, .list_table .act_as_row.lines {
     border-color:gray;
     border-bottom:1px solid lightGrey;
-    border-left:0px;
-    border-right:0px;
-    text-align:left;
-    font-size:6px;
-    padding-right:3px;
-    padding-left:3px;
-    padding-top:2px;
-    padding-bottom:2px;
 }
+
+.data_table .act_as_cell {
+   
+}
+
+.initial_balance .act_as_cell {
+    font-style:italic;
+}
+
+.act_as_row.labels {
+    background-color: #F0F0F0;
+    <!--height: 8px;-->
+}
+
+<!--.act_as_row.labels .act_as_cell {-->
+    <!--padding-top: 6px;-->
+    <!--padding-bottom: 4px;-->
+<!--}-->
+
+.act_as_caption.account_title {
+    font-size:10px;
+    font-weight:bold;
+    page-break-after: avoid;
+}
+
+.act_as_cell.amount {
+    word-wrap:normal;
+    text-align:right
+}
+
+
+/* table version css */
+body, table, td, span {
+    font-family:Helvetica, arial;
+}
+
+<!--.list_table, .list_table tr {-->
+    <!--border-color:gray;-->
+    <!--border-left:0px;-->
+    <!--border-right:0px;-->
+    <!--text-align:left;-->
+    <!--font-size:9px;-->
+    <!--padding-right:3px;-->
+    <!--padding-left:3px;-->
+    <!--padding-top:2px;-->
+    <!--padding-bottom:1px;-->
+    <!--border-collapse:collapse;-->
+<!--}-->
+
 .data_table td {
     font-size:9px;
 }
