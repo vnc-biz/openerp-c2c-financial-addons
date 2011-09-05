@@ -42,6 +42,9 @@ class CommonReportHeaderWebkit(common_report_header):
     def _get_chart_account_id_br(self, data):
         return self._get_info(data, 'chart_account_id', 'account.account')
 
+    def _get_accounts_br(self, data):
+        return self._get_info(data, 'account_ids', 'account.account')
+
     def _get_info(self, data, field, model):
         info = data.get('form', {}).get(field)
         if info:

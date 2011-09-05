@@ -14,25 +14,49 @@
         <%setLang(user.address_id and user.address_id.partner_id.lang and user.address_id.partner_id.lang or 'en_US')%>
 
         <div class="act_as_table data_table">
-            <div class="act_as_row">
-                <div class="act_as_cell"><b >${_('Fiscal Year:')}</b> ${ fiscalyear.name if fiscalyear else '' }</div>
-                <div class="act_as_cell"><b>${_('Report Date:')}</b> ${ formatLang(date_until, date=True) }</div>
+            <div class="act_as_row labels">
+                <div class="act_as_cell">${_('Chart of Account')}</div>
+                <div class="act_as_cell">${_('Fiscal Year')}</div>
                 <div class="act_as_cell">
-                    <b>${_('From:')}</b>
                     %if filter(data) == 'filter_date':
-                        ${formatLang(start_date, date=True) if start_date else '' }
+                        ${_('Dates')}
+                    %else:
+                        ${_('Periods')}
+                    %endif
+                </div>
+                <div class="act_as_cell">${_('Report Date')}</div>
+                <div class="act_as_cell">${_('Displayed Accounts')}</div>
+                <div class="act_as_cell">${_('Target Moves')}</div>
+                <div class="act_as_cell">${_('Exclude Reconciled Entries')}</div>
+
+            </div>
+            <div class="act_as_row">
+                <div class="act_as_cell">${ chart_account.name }</div>
+                <div class="act_as_cell">${ fiscalyear.name if fiscalyear else '-' }</div>
+                <div class="act_as_cell">
+                    ${_('From:')}
+                    %if filter(data) == 'filter_date':
+                        ${formatLang(start_date, date=True) if start_date else u'' }
                     %else:
                         ${start_period.name if start_period else u''}
                     %endif
-                    <b>${_('To:')}</b>
+                    ${_('To:')}
                     %if filter(data) == 'filter_date':
-                        ${ formatLang(stop_date, date=True) if stop_date else '' }
+                        ${ formatLang(stop_date, date=True) if stop_date else u'' }
                     %else:
                         ${stop_period.name if stop_period else u'' }
                     %endif
                 </div>
-                <div class="act_as_cell"><b>${_('Displayed Accounts:')}</b> ${ display_partner_account(data) }</div>
-                <div class="act_as_cell"><b>${_('Target Moves:')}</b> ${ display_target_move(data) }</div>
+                <div class="act_as_cell">${ formatLang(date_until, date=True) }</div>
+                <div class="act_as_cell">
+                    %if partner_ids:
+                        ${_('Custom Filter')}
+                    %else:
+                        ${ display_partner_account(data) }
+                    %endif
+                </div>
+                <div class="act_as_cell">${ display_target_move(data) }</div>
+                <div class="act_as_cell">${ exclude_reconcile and _('Yes') or _('No') }</div>
             </div>
         </div>
         
@@ -59,7 +83,7 @@
                     <div class="act_as_thead">
                         <div class="act_as_row labels">
                             ## date
-                            <div class="act_as_cell first_column" style="width: 55px;">${_('Date')}</div>
+                            <div class="act_as_cell first_column" style="width: 45px;">${_('Date')}</div>
                             ## period
                             <div class="act_as_cell" style="width: 50px;">${_('Period')}</div>
                             ## move
@@ -84,7 +108,7 @@
                                 ## currency balance
                                 <div class="act_as_cell amount" style="width: 70px;">${_('Curr. Balance')}</div>
                                 ## currency balance cumulated
-                                <div class="act_as_cell amount" style="width: 70px;">${_('Curr. Cumul. Bal')}</div>
+                                <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Cumul. Bal')}</div>
                             %endif
                         </div>
                     </div>

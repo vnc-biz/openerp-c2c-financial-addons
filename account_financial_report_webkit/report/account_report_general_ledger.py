@@ -45,6 +45,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             'initial_balance': self._get_initial_balance,
             'amount_currency': self._get_amount_currency,
             'display_target_move': self._get_display_target_move,
+            'accounts': self._get_accounts_br,
         })
 
     def set_context(self, objects, data, ids, report_type=None):

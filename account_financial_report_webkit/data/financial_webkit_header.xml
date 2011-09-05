@@ -120,7 +120,13 @@ act_as_colgroup {
 }
 
 .data_table .act_as_cell {
-   word-wrap:break-word;
+    border: 1px solid lightGrey;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+.data_table .act_as_row.labels {
+    font-weight: bold;
 }
 
 .initial_balance .act_as_cell {

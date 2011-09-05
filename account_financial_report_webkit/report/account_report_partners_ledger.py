@@ -72,6 +72,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         result_selection = self._get_form_param('result_selection', data)
         exclude_reconcile = self._get_form_param('exclude_reconciled', data)
         date_until = self._get_form_param('until_date', data)
+        chart_account = self._get_chart_account_id_br(data)
 
         if main_filter == 'filter_no' and fiscalyear:
             start_period = self.get_first_fiscalyear_period(fiscalyear)
@@ -133,6 +134,9 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             'start_period': start_period,
             'stop_period': stop_period,
             'date_until': date_until,
+            'partner_ids': partner_ids,
+            'exclude_reconcile': exclude_reconcile,
+            'chart_account': chart_account,
         })
 
         return super(PartnersLedgerWebkit, self).set_context(objects, data, new_ids,
