@@ -24,6 +24,8 @@ from report import report_sxw
 from osv import osv
 from tools.translate import _
 import pooler
+from operator import add, itemgetter
+from itertools import groupby
 
 from common_report_header_webkit import CommonReportHeaderWebkit
 
@@ -76,7 +78,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
 
         # Retrieving accounts
-        accounts = self.get_all_accounts(new_ids, filter_view=True, filter_hidden=True)
+        accounts = self.get_all_accounts(new_ids, filter_view=True)
         if init_bal and main_filter in ('filter_no', 'filter_period'):
             init_balance_memoizer = self._compute_inital_balances(accounts, start_period,
                                                                   fiscalyear, main_filter)
@@ -92,7 +94,10 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
                                                                    main_filter, target_move, start, stop)
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, accounts):
-            account.ledger_lines = ledger_lines_memoizer.get(account.id, [])
+            if account.centralized:
+                account.ledger_lines = self._centralize_lines(main_filter, ledger_lines_memoizer.get(account.id, []))
+            else:
+                account.ledger_lines = ledger_lines_memoizer.get(account.id, [])
             account.init_balance = init_balance_memoizer.get(account.id, {})
             objects.append(account)
 
@@ -107,6 +112,49 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
 
         return super(GeneralLedgerWebkit, self).set_context(objects, data, new_ids,
                                                             report_type=report_type)
+
+    def _centralize_lines(self, filter, ledger_lines, context=None):
+        """ Group by period in filter mode 'period' or on one line in filter mode 'date'
+            ledger_lines parameter is a list of dict built by _get_ledger_lines"""
+        def group_lines(lines):
+            sum_balance = reduce(add, [line['balance'] for line in lines])
+            res_lines = {
+                'balance': sum_balance,
+                'lname': _('Centralized Entries'),
+                'account_id': lines[0]['account_id'],
+            }
+            return res_lines
+        
+        centralized_lines = []
+        if filter == 'filter_date':
+            # by date we centralize all entries in only one line
+            centralized_lines.append(group_lines(ledger_lines))
+
+        else:  # by period
+            # by period we centralize all entries in one line per period
+            period_obj = self.pool.get('account.period')
+            # we need to sort the lines per period in order to use groupby
+            # unique ids of each used period id in lines
+            period_ids = list(set([line['lperiod_id'] for line in ledger_lines ]))
+            # search on account.period in order to sort them by date_start
+            sorted_period_ids = period_obj.search(self.cr, self.uid,
+                                                  [('id', 'in', period_ids)],
+                                                  order='date_start',
+                                                  context=context)
+            sorted_ledger_lines = sorted(ledger_lines, key=lambda x: sorted_period_ids.index(x['lperiod_id']))
+            
+            for period_id, lines_per_period_iterator in groupby(sorted_ledger_lines, itemgetter('lperiod_id')):
+                lines_per_period = list(lines_per_period_iterator)
+                if not lines_per_period:
+                    continue
+                group_per_period = group_lines(lines_per_period)
+                group_per_period.update({
+                    'lperiod_id': period_id,
+                    'period_code': lines_per_period[0]['period_code'],  # period code is anyway the same on each line per period
+                })
+                centralized_lines.append(group_per_period)
+
+        return centralized_lines
 
     def _compute_account_ledger_lines(self, accounts_ids, init_balance_memoizer, main_filter,
                                       target_move, start, stop):

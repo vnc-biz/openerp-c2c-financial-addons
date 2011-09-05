@@ -141,7 +141,7 @@ class CommonReportHeaderWebkit(common_report_header):
 
         return sorted_accounts
 
-    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, filter_hidden=False, context=None):
+    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, context=None):
         """Get all account passed in params with their childrens"""
         context = context or {}
         accounts = []
@@ -155,11 +155,9 @@ class CommonReportHeaderWebkit(common_report_header):
 
         res_ids = self.sort_accounts_with_structure(res_ids, context=context)
 
-        if filter_view or filter_type or filter_hidden:
+        if filter_view or filter_type:
             format_list = [tuple(res_ids)]
             sql = "SELECT id FROM account_account WHERE id IN %s "
-            if filter_hidden:
-                sql += " AND hide_on_reports = false"
             if filter_view:
                 sql += " AND type != 'view'"
             if filter_type:
