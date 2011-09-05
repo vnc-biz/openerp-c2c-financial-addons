@@ -99,9 +99,6 @@ body, table, td, span, div {
 act_as_colgroup {
     display: table-column-group;
 }
-.blank_row {
-    height: 10px;
-}
 
 .list_table, .data_table {
     width: 1080px;
@@ -129,17 +126,12 @@ act_as_colgroup {
 }
 
 .data_table .act_as_cell {
-   
+   word-wrap:break-word;
 }
 
 .initial_balance .act_as_cell {
     font-style:italic;
 }
-
-<!--.act_as_row.labels .act_as_cell {-->
-    <!--padding-top: 6px;-->
-    <!--padding-bottom: 4px;-->
-<!--}-->
 
 .act_as_caption.account_title {
     font-size:10px;
@@ -152,56 +144,13 @@ act_as_colgroup {
     text-align:right
 }
 
-
-/* table version css */
-body, table, td, span {
-    font-family:Helvetica, arial;
-}
-
-<!--.list_table, .list_table tr {-->
-    <!--border-color:gray;-->
-    <!--border-left:0px;-->
-    <!--border-right:0px;-->
-    <!--text-align:left;-->
-    <!--font-size:9px;-->
-    <!--padding-right:3px;-->
-    <!--padding-left:3px;-->
-    <!--padding-top:2px;-->
-    <!--padding-bottom:1px;-->
-    <!--border-collapse:collapse;-->
-<!--}-->
-
-.data_table td {
-    font-size:9px;
-}
-.td {
-    word-wrap:break-word;
-}
-.list_table td{
+.list_table .act_as_cell{
 /*    border-right:1px solid lightGrey;  uncomment to active column lines */
 }
-.list_table td.first_column {
+.list_table .act_as_cell.first_column {
 /*    border-left:1px solid lightGrey; uncomment to active column lines */
 }
-@media print {
-thead {
-    display: table-header-group;
-}
-}
-.list_table thead {
-    background-color:#F0F0F0;
-}
-<!--.title {-->
-    <!--font-size:10px;-->
-    <!--font-weight:bold;-->
-    <!--width:1080px;-->
-<!--}-->
-thead {
-    display:table-header-group;
-}
-.initial_balance td {
-     font-style:italic;
-}
+
 ]]>
             </field>
             <field name="name">Financial Landscape Header</field>
