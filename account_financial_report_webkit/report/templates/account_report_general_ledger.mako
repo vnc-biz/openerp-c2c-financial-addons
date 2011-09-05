@@ -11,6 +11,8 @@
             return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
 
+        <%setLang(user.address_id and user.address_id.partner_id.lang and user.address_id.partner_id.lang or 'en_US')%>
+
         <div class="act_as_table data_table">
             <div class="act_as_row">
                 <div class="act_as_cell"><b>${_('Fiscal Year:')}</b> ${ fiscalyear.name if fiscalyear else '' }</div>
@@ -26,8 +28,7 @@
                 <div class="act_as_cell"><b>${_('Target Move:')}</b> ${ display_target_move(data) }</div>
             </div>
         </div>
-        <br/>
-
+        
         <%setLang(user.address_id and user.address_id.partner_id.lang and user.address_id.partner_id.lang or 'en_US')%>
 
         <!-- we use div with css instead of table for tabular data because div do not cut rows at half at page breaks -->
@@ -37,7 +38,7 @@
               cumul_balance =  0.0
               cumul_balance_curr = 0.0
               %>
-            <div class="act_as_table list_table">
+            <div class="act_as_table list_table" style="margin-top: 10px;">
                 
                 <div class="act_as_caption account_title">
                     ${account.code} - ${account.name}
@@ -161,9 +162,6 @@
                           %endif
                       </div>
                       %endfor
-                </div>
-                <div class="act_as_tfoot">
-                    <div class="blank_row">&nbsp;</div>
                 </div>
             </div>
           %endif

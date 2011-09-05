@@ -107,6 +107,10 @@ act_as_colgroup {
     width: 1080px;
 }
 
+.bg, .act_as_row.labels {
+    background-color:#F0F0F0;
+}
+
 .list_table, .data_table, .list_table .act_as_row {
     border-left:0px;
     border-right:0px;
@@ -130,11 +134,6 @@ act_as_colgroup {
 
 .initial_balance .act_as_cell {
     font-style:italic;
-}
-
-.act_as_row.labels {
-    background-color: #F0F0F0;
-    <!--height: 8px;-->
 }
 
 <!--.act_as_row.labels .act_as_cell {-->
@@ -192,11 +191,11 @@ thead {
 .list_table thead {
     background-color:#F0F0F0;
 }
-.title {
-    font-size:10px;
-    font-weight:bold;
-    width:1080px;
-}
+<!--.title {-->
+    <!--font-size:10px;-->
+    <!--font-weight:bold;-->
+    <!--width:1080px;-->
+<!--}-->
 thead {
     display:table-header-group;
 }
