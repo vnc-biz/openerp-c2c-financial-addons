@@ -132,6 +132,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             'stop_date': stop_date,
             'start_period': start_period,
             'stop_period': stop_period,
+            'date_until': date_until,
         })
 
         return super(PartnersLedgerWebkit, self).set_context(objects, data, new_ids,

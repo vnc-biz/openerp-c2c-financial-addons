@@ -16,16 +16,23 @@
         <div class="act_as_table data_table">
             <div class="act_as_row">
                 <div class="act_as_cell"><b >${_('Fiscal Year:')}</b> ${ fiscalyear.name if fiscalyear else '' }</div>
-            </div>
-            <div class="act_as_row">
-                <div class="act_as_cell"><b>${_('Period From:')}</b> ${ start_period.name if start_period else u'' }</div>
-                <div class="act_as_cell"><b>${_('to:')}</b> ${ stop_period.name if stop_period else u'' }</div>
-                <div class="act_as_cell"><b>${_('Displayed Account:')}</b> ${ display_partner_account(data) }</div>
-            </div>
-            <div class="act_as_row">
-                <div class="act_as_cell"><b>${_('Date From:')}</b> ${ formatLang(start_date, date=True) if start_date else '' }</div>
-                <div class="act_as_cell"><b>${_('to:')}</b> ${ formatLang(stop_date, date=True) if stop_date else '' }</div>
-                <div class="act_as_cell"><b>${_('Target Move:')}</b> ${ display_target_move(data) }</div>
+                <div class="act_as_cell"><b>${_('Report Date:')}</b> ${ formatLang(date_until, date=True) }</div>
+                <div class="act_as_cell">
+                    <b>${_('From:')}</b>
+                    %if filter(data) == 'filter_date':
+                        ${formatLang(start_date, date=True) if start_date else '' }
+                    %else:
+                        ${start_period.name if start_period else u''}
+                    %endif
+                    <b>${_('To:')}</b>
+                    %if filter(data) == 'filter_date':
+                        ${ formatLang(stop_date, date=True) if stop_date else '' }
+                    %else:
+                        ${stop_period.name if stop_period else u'' }
+                    %endif
+                </div>
+                <div class="act_as_cell"><b>${_('Displayed Accounts:')}</b> ${ display_partner_account(data) }</div>
+                <div class="act_as_cell"><b>${_('Target Moves:')}</b> ${ display_target_move(data) }</div>
             </div>
         </div>
         
