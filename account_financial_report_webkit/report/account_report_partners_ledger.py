@@ -168,7 +168,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
                                                              main_filter,
                                                              start,
                                                              stop,
-                                                             exclude_reconcile=True,
+                                                             exclude_reconcile=exclude_reconcile,
                                                              valid_only=valid_only,
                                                              partner_filter=partner_filter)
             if not move_line_ids_dict:

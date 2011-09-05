@@ -90,7 +90,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         
         if exclude_reconcile:
             sql += ("  AND ((reconcile_id IS NULL)"
-                    "   OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_stop)s)))")
+                    "   OR (reconcile_id IS NOT NULL AND last_rec_date > date(%(date_stop)s)))")
         if partner_filter:
             sql += "   AND partner_id in %(partner_ids)s"
 
