@@ -113,7 +113,7 @@
                         </div>
                     </div>
                     <div class="act_as_tbody">
-                          %if initial_balance(data) and cumul_balance:
+                          %if initial_balance(data) and account.init_balance.get(p_id, {}).get('init_balance'):
                             <%
                               part_cumul_balance = account.init_balance.get(p_id, {}).get('init_balance') or 0.0
                               part_cumul_balance_curr = account.init_balance.get(p_id, {}).get('init_balance_currency') or 0.0
@@ -136,17 +136,17 @@
                               ## reconcile
                               <div class="act_as_cell"></div>
                               ## balance
-                              <div class="act_as_cell amount">${formatLang(cumul_balance) | amount }</div>
+                              <div class="act_as_cell amount">${formatLang(part_cumul_balance) | amount }</div>
                               ## balance cumulated
-                              <div class="act_as_cell amount">${formatLang(cumul_balance) | amount }</div>
+                              <div class="act_as_cell amount">${formatLang(part_cumul_balance) | amount }</div>
                              %if amount_currency(data):
                                   ## curency code
                                   <div class="act_as_cell"></div>
                                   ## currency balance
-                                  <div class="act_as_cell amount">${formatLang(cumul_balance_curr) | amount }</div>
+                                  <div class="act_as_cell amount">${formatLang(part_cumul_balance_curr) | amount }</div>
                                   %if account.currency_id:
                                       ## currency balance cumulated
-                                      <div class="act_as_cell amount">${formatLang(cumul_balance_curr) | amount }</div>
+                                      <div class="act_as_cell amount">${formatLang(part_cumul_balance_curr) | amount }</div>
                                   %else:
                                     <div class="act_as_cell amount">${formatLang(0.0) | amount }</div>
                                   %endif
