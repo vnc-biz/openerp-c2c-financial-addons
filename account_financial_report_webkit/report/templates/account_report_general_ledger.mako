@@ -46,34 +46,34 @@
                 <div class="act_as_thead">
                     <div class="act_as_row labels">
                         ## date
-                        <div class="act_as_cell first_column" style="width: 60px;">${_('Date')}</div>
+                        <div class="act_as_cell first_column" style="width: 45px;">${_('Date')}</div>
                         ## period
-                        <div class="act_as_cell" style="width: 60px;">${_('Period')}</div>
+                        <div class="act_as_cell" style="width: 45px;">${_('Period')}</div>
                         ## move
-                        <div class="act_as_cell" style="width: 120px;">${_('Move')}</div>
+                        <div class="act_as_cell" style="width: 100px;">${_('Move')}</div>
                         ## journal
-                        <div class="act_as_cell" style="width: 60px;">${_('Journal')}</div>
+                        <div class="act_as_cell" style="width: 50px;">${_('Journal')}</div>
                         ## partner
                         <div class="act_as_cell" style="width: 120px;">${_('Partner')}</div>
                         ## ref
                         <div class="act_as_cell" style="width: 100px;">${_('Ref')}</div>
                         ## label
-                        <div class="act_as_cell" style="width: 200px;">${_('Label')}</div>
+                        <div class="act_as_cell" style="width: 170px;">${_('Label')}</div>
                         ## counterpart
-                        <div class="act_as_cell" style="width: 120px;">${_('Counter part')}</div>
+                        <div class="act_as_cell" style="width: 100px;">${_('Counter part')}</div>
                         ## reconcile
-                        <div class="act_as_cell" style="width: 50px;" >${_('Reconcile')}</div>
+                        <div class="act_as_cell" style="width: 45px;" >${_('Reconcile')}</div>
                         ## balance
-                        <div class="act_as_cell amount" style="width: 55px;">${_('Balance')}</div>
+                        <div class="act_as_cell amount" style="width: 70px;">${_('Balance')}</div>
                         ## balance cumulated
-                        <div class="act_as_cell amount" style="width: 55px;">${_('Cumul. Bal.')}</div>
+                        <div class="act_as_cell amount" style="width: 70px;">${_('Cumul. Bal.')}</div>
                         %if amount_currency(data):
                             ## curency code
-                            <div class="act_as_cell amount" style="width: 30px;">${_('Curr.')}</div>
+                            <div class="act_as_cell amount" style="width: 20px;">${_('Curr.')}</div>
                             ## currency balance
-                            <div class="act_as_cell amount" style="width: 55px;">${_('Curr. Balance')}</div>
+                            <div class="act_as_cell amount" style="width: 70px;">${_('Curr. Balance')}</div>
                             ## currency balance cumulated
-                            <div class="act_as_cell amount" style="width: 55px;">${_('Curr. Cumul. Bal')}</div>
+                            <div class="act_as_cell amount" style="width: 70px;">${_('Curr. Cumul. Bal')}</div>
                         %endif
                     </div>
                 </div>
@@ -125,7 +125,7 @@
                       %for line in account.ledger_lines:
                       <div class="act_as_row lines">
                           ## date
-                          <div class="act_as_cell">${formatLang(line.get('ldate') or '', date=True)}</div>
+                          <div class="act_as_cell first_column">${formatLang(line.get('ldate') or '', date=True)}</div>
                           ## period
                           <div class="act_as_cell">${line.get('period_code') or ''}</div>
                           ## move

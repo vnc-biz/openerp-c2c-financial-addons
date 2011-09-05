@@ -69,8 +69,6 @@
             <field eval="20.0" name="margin_top"/>
             <field name="css"><![CDATA[
 
-/* div version css */
-
 body, table, td, span, div {
     font-family: Helvetica, arial;
 }
@@ -102,6 +100,7 @@ act_as_colgroup {
 
 .list_table, .data_table {
     width: 1080px;
+    table-layout: fixed
 }
 
 .bg, .act_as_row.labels {
@@ -145,9 +144,11 @@ act_as_colgroup {
 }
 
 .list_table .act_as_cell{
+    padding-left: 5px;
 /*    border-right:1px solid lightGrey;  uncomment to active column lines */
 }
 .list_table .act_as_cell.first_column {
+    padding-left: 0px;
 /*    border-left:1px solid lightGrey; uncomment to active column lines */
 }
 
