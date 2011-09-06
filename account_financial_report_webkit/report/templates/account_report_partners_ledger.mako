@@ -65,7 +65,29 @@
         %for account in objects:
             %if account.ledger_lines or account.init_balance:
 
-                <div class="account_title bg" style="width: 1080px; margin-top: 10px;">${account.code} - ${account.name}</div>
+                <div class="account_title bg" style="width: 1080px; margin-top: 10px; font-size:11px; padding-top: 3px; padding-bottom: 3px; border-collapse:collapse; ">
+                    %if amount_currency(data):
+                    <%
+                        width_name = '734px'
+                        width_balance = '170px'
+                    %>
+                    %else:
+                    <%
+                        width_name = '905px'
+                        width_balance = '170px'
+                    %>
+                    %endif
+                    <div style="width: ${width_name}; display: -webkit-inline-box;">${account.code} - ${account.name}</div>
+
+                    <div style="display: -webkit-inline-box;">
+                        <div style="width: ${width_balance}; text-align: right; font-weight: normal; font-size: 9px; text-align:right;">${account.total_balance}</div>
+                    </div>
+                    %if amount_currency(data):
+                    <div style="display: -webkit-inline-box;">
+                        <div style="width:170px; text-align: right; font-weight: normal; font-size: 9px; text-align:right;">${account.total_curr_balance}</div>
+                    </div>
+                    %endif
+                </div>
                 
                 %for partner_name, p_id in account.partners_order:
                 <%
@@ -82,11 +104,11 @@
                     <div class="act_as_thead">
                         <div class="act_as_row labels">
                             ## date
-                            <div class="act_as_cell first_column" style="width: 45px;">${_('Date')}</div>
+                            <div class="act_as_cell first_column" style="width: 50px;">${_('Date')}</div>
                             ## period
                             <div class="act_as_cell" style="width: 50px;">${_('Period')}</div>
                             ## move
-                            <div class="act_as_cell" style="width: 110px;">${_('Move')}</div>
+                            <div class="act_as_cell" style="width: 110px;">${_('Entry')}</div>
                             ## journal
                             <div class="act_as_cell" style="width: 50px;">${_('Journal')}</div>
                             ## partner
@@ -96,16 +118,16 @@
                             ## label
                             <div class="act_as_cell" style="width: 220px;">${_('Label')}</div>
                             ## reconcile
-                            <div class="act_as_cell" style="width: 50px;">${_('Reconcile')}</div>
+                            <div class="act_as_cell" style="width: 20px;">${_('Rec.')}</div>
                             ## balance
-                            <div class="act_as_cell amount" style="width: 70px;">${_('Balance')}</div>
+                            <div class="act_as_cell amount" style="width: 75px;">${_('Balance')}</div>
                             ## balance cumulated
-                            <div class="act_as_cell amount" style="width: 70px;">${_('Cumul. Bal.')}</div>
+                            <div class="act_as_cell amount" style="width: 75px;">${_('Cumul. Bal.')}</div>
                             %if amount_currency(data):
                                 ## curency code
                                 <div class="act_as_cell amount" style="width: 20px;">${_('Curr.')}</div>
                                 ## currency balance
-                                <div class="act_as_cell amount" style="width: 70px;">${_('Curr. Balance')}</div>
+                                <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Balance')}</div>
                                 ## currency balance cumulated
                                 <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Cumul. Bal')}</div>
                             %endif

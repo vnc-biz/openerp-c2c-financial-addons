@@ -133,7 +133,7 @@ act_as_colgroup {
     font-style:italic;
 }
 
-.act_as_caption.account_title {
+.account_title {
     font-size:10px;
     font-weight:bold;
     page-break-after: avoid;

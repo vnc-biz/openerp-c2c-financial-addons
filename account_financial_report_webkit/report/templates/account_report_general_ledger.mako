@@ -78,7 +78,7 @@
                         ## period
                         <div class="act_as_cell" style="width: 45px;">${_('Period')}</div>
                         ## move
-                        <div class="act_as_cell" style="width: 100px;">${_('Move')}</div>
+                        <div class="act_as_cell" style="width: 100px;">${_('Entry')}</div>
                         ## journal
                         <div class="act_as_cell" style="width: 50px;">${_('Journal')}</div>
                         ## partner
@@ -90,16 +90,16 @@
                         ## counterpart
                         <div class="act_as_cell" style="width: 100px;">${_('Counter part')}</div>
                         ## reconcile
-                        <div class="act_as_cell" style="width: 45px;" >${_('Reconcile')}</div>
+                        <div class="act_as_cell" style="width: 20px;" >${_('Rec.')}</div>
                         ## balance
-                        <div class="act_as_cell amount" style="width: 70px;">${_('Balance')}</div>
+                        <div class="act_as_cell amount" style="width: 75px;">${_('Balance')}</div>
                         ## balance cumulated
-                        <div class="act_as_cell amount" style="width: 70px;">${_('Cumul. Bal.')}</div>
+                        <div class="act_as_cell amount" style="width: 75px;">${_('Cumul. Bal.')}</div>
                         %if amount_currency(data):
                             ## curency code
                             <div class="act_as_cell amount" style="width: 20px;">${_('Curr.')}</div>
                             ## currency balance
-                            <div class="act_as_cell amount" style="width: 70px;">${_('Curr. Balance')}</div>
+                            <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Balance')}</div>
                             ## currency balance cumulated
                             <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Cumul. Bal')}</div>
                         %endif

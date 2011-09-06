@@ -18,12 +18,14 @@
 #
 ##############################################################################
 import time
-from collections import defaultdict
+import pooler
 
+from collections import defaultdict
+from operator import add
 from report import report_sxw
 from osv import osv
 from tools.translate import _
-import pooler
+
 from common_partners_report_header_webkit import CommonPartnersReportHeaderWebkit
 
 
@@ -125,6 +127,26 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
                 init_bal_lines_pids = []
             account.partners_order = self._order_partners(ledg_lines_pids, init_bal_lines_pids)
             account.ledger_lines = ledger_lines_memoizer.get(account.id, {})
+            
+            # total balance sums per account
+            account.total_balance = 0.0
+            account.total_curr_balance = 0.0
+            currencies = []
+            for partner_name, partner_id in account.partners_order:
+                if partner_id in account.ledger_lines:
+                    for ledger_line in account.ledger_lines[partner_id]:
+                        account.total_balance += ledger_line['balance'] or 0.0
+                        account.total_curr_balance += ledger_line['amount_currency'] or 0.0
+                        currencies.append(ledger_line['currency_id'])
+                # when no line, we add initial balance to the cumulated total balance
+                else:
+                    
+                    account.total_balance += account.init_balance[partner_id]['init_balance'] or 0.0
+                    account.total_curr_balance += account.init_balance[partner_id]['init_balance_currency'] or 0.0
+            # total currency balance is a nonsense with many currencies
+            if list(set(currencies)) != 1:
+                account.total_curr_balance = 0.0
+
             objects.append(account)
 
         self.localcontext.update({
