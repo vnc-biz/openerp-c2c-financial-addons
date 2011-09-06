@@ -145,7 +145,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
                     account.total_curr_balance += account.init_balance[partner_id]['init_balance_currency'] or 0.0
             # total currency balance is a nonsense with many currencies
             if list(set(currencies)) != 1:
-                account.total_curr_balance = 0.0
+                account.total_curr_balance = u''
 
             objects.append(account)
 

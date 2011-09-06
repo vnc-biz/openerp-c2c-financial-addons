@@ -183,7 +183,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         if not partner_ids:
             return []
         # We may use orm here as the performance optimization is not that big
-        sql = ("SELECT name|| ' ' ||CASE WHEN ref IS NOT NULL THEN ref ELSE '' END, id"
+        sql = ("SELECT name|| ' ' ||CASE WHEN ref IS NOT NULL THEN '('||ref||')' ELSE '' END, id"
                "  FROM res_partner WHERE id IN %s ORDER BY name, ref")
         self.cursor.execute(sql, (tuple(set(partner_ids)),))
         res = self.cursor.fetchall()

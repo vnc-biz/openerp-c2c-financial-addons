@@ -98,7 +98,7 @@
                   part_cumul_balance_curr = 0.0 
                 %>
                 <div class="act_as_table list_table" style="margin-top: 5px;">
-                    <div class="act_as_caption account_title" style="padding-left:30px">
+                    <div class="act_as_caption account_title">
                         ${partner_name}
                     </div>
                     <div class="act_as_thead">
