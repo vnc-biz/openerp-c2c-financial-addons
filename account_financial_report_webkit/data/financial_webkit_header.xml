@@ -153,6 +153,11 @@ act_as_colgroup {
 /*    border-left:1px solid lightGrey; uncomment to active column lines */
 }
 
+.sep_left {
+    border-left: 1px solid lightGrey;
+}
+
+
 ]]>
             </field>
             <field name="name">Financial Landscape Header</field>
