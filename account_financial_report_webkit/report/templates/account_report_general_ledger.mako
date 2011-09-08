@@ -11,7 +11,7 @@
             return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
 
-        <%setLang(user.address_id and user.address_id.partner_id.lang and user.address_id.partner_id.lang or 'en_US')%>
+        <%setLang(user.context_lang)%>
 
         <div class="act_as_table data_table">
             <div class="act_as_row labels">
@@ -56,8 +56,6 @@
                 <div class="act_as_cell">${ display_target_move(data) }</div>
             </div>
         </div>
-        
-        <%setLang(user.address_id and user.address_id.partner_id.lang and user.address_id.partner_id.lang or 'en_US')%>
 
         <!-- we use div with css instead of table for tabular data because div do not cut rows at half at page breaks -->
         %for account in objects:
