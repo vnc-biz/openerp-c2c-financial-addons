@@ -97,7 +97,7 @@
                         <div class="act_as_cell amount" style="width: 75px;">${_('Cumul. Bal.')}</div>
                         %if amount_currency(data):
                             ## curency code
-                            <div class="act_as_cell amount" style="width: 20px;">${_('Curr.')}</div>
+                            <div class="act_as_cell" style="width: 20px; text-align: center;">${_('Curr.')}</div>
                             ## currency balance
                             <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Balance')}</div>
                             ## currency balance cumulated
@@ -177,7 +177,7 @@
                           <div class="act_as_cell amount">${ formatLang(cumul_balance) | amount }</div>
                           %if amount_currency(data):
                               ## curency code
-                              <div class="act_as_cell amount">${line.get('currency_code') or ''}</div>
+                              <div class="act_as_cell" style="text-align: center;">${line.get('currency_code') or ''}</div>
                               ## currency balance
                               <div class="act_as_cell amount">${formatLang(line.get('amount_currency') or 0.0)  | amount }</div>
                               %if account.currency_id:

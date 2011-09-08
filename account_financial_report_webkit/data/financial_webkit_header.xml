@@ -56,7 +56,7 @@
     <body style="border:0; margin: 0;" onload="subst()">
         <table class="header" style="border-bottom: 0px solid black; width: 100%">
             <tr>
-                <td style="text-align:left; font-size:11; font-weight: bold;">${report_name} - ${company.partner_id.name | entity} - ${company.currency_id.name | entity}</td>
+                <td style="text-align:left; font-size:11px; font-weight: bold;"><span style="text-transform:uppercase; font-size:12px;">${report_name}</span> - ${company.partner_id.name | entity} - ${company.currency_id.name | entity}</td>
             </tr>
         </table> ${_debug or ''|n} </body>
 </html>]]>
@@ -141,7 +141,7 @@ act_as_colgroup {
 
 .act_as_cell.amount {
     word-wrap:normal;
-    text-align:right
+    text-align:right;
 }
 
 .list_table .act_as_cell{

@@ -17,6 +17,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
+import time
+
 from osv import fields, osv
 
 
@@ -61,7 +64,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         if not fiscalyear:
             res['value'] = {'initial_balance': False}
         return res
-        
+
     def pre_print_report(self, cr, uid, ids, data, context=None):
         data = super(AccountReportGeneralLedgerWizard, self).pre_print_report(cr, uid, ids, data, context)
         if context is None:
