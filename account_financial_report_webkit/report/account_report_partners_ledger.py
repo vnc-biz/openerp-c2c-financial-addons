@@ -109,11 +109,12 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
                                          filter_type=filter_type)
 
         if init_bal and main_filter in ('filter_no', 'filter_period'):
-            init_balance_memoizer = self._compute_partners_inital_balances(accounts,
-                                                                           start_period,
-                                                                           fiscalyear,
-                                                                           main_filter,
-                                                                           partner_filter=partner_ids)
+            init_balance_memoizer = self._compute_partners_initial_balances(accounts,
+                                                                            start_period,
+                                                                            fiscalyear,
+                                                                            main_filter,
+                                                                            partner_filter=partner_ids,
+                                                                            exclude_reconcile=exclude_reconcile)
         # computation of ledeger lines
         if main_filter == 'filter_date':
             start = start_date

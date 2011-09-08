@@ -131,7 +131,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             return []
 
      ####################Initial Partner Balance helper ########################
-    def _compute_partners_inital_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None):
+    def _compute_partners_initial_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None, exclude_reconcile=False):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
@@ -152,10 +152,11 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                    "     sum(debit-credit) as init_balance,"
                    "     sum(amount_currency) as init_balance_currency"
                    "   FROM account_move_line "
-                   "   WHERE ((reconcile_id IS NULL)"
-                   "           OR (reconcile_id IS NOT NULL AND last_rec_date > date(%(date_start)s)))"
-                   "     AND period_id in %(period_ids)s"
-                   "     AND account_id in %(account_ids)s")
+                   "  WHERE period_id in %(period_ids)s"
+                   "    AND account_id in %(account_ids)s")
+            if exclude_reconcile:
+                sql += ("    AND ((reconcile_id IS NULL)"
+                       "           OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_start)s)))")
             if partner_filter:
                 sql += "   AND partner_id in %(partner_ids)s"
             sql += " group by account_id, partner_id"
