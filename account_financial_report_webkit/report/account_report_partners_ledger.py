@@ -25,8 +25,10 @@ from operator import add
 from report import report_sxw
 from osv import osv
 from tools.translate import _
+from datetime import datetime
 
 from common_partners_report_header_webkit import CommonPartnersReportHeaderWebkit
+from webkit_parser_header_fix import HeaderFooterTextWebKitParser
 
 
 class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebkit):
@@ -35,6 +37,12 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         super(PartnersLedgerWebkit, self).__init__(cursor, uid, name, context=context)
         self.pool = pooler.get_pool(self.cr.dbname)
         self.cursor = self.cr
+
+        company = self.pool.get('res.users').browse(self.cr, uid, uid, context=context).company_id
+        header_report_name = ' - '.join((_('PARTNER LEDGER'), company.name, company.currency_id.name))
+
+        footer_date_time = self.formatLang(str(datetime.today()), date_time=True)
+
         self.localcontext.update({
             'cr': cursor,
             'uid': uid,
@@ -46,6 +54,16 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             'amount_currency': self._get_amount_currency,
             'display_partner_account': self._get_display_partner_account,
             'display_target_move': self._get_display_target_move,
+            'additional_args': [
+                ('--header-font-name', 'Helvetica'),
+                ('--footer-font-name', 'Helvetica'),
+                ('--header-font-size', '10'),
+                ('--footer-font-size', '6'),
+                ('--header-left', header_report_name),
+                ('--footer-left', footer_date_time),
+                ('--footer-right', ' '.join((_('Page'), '[page]', _('of'), '[topage]'))),
+                ('--footer-line',),
+            ],
         })
 
     def set_context(self, objects, data, ids, report_type=None):
@@ -186,7 +204,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         return res
 
 
-report_sxw.report_sxw('report.account.account_report_partners_ledger_webkit',
-                      'account.account',
-                      'addons/account_financial_report_webkit/report/templates/account_report_partners_ledger.mako',
-                      parser=PartnersLedgerWebkit)
+HeaderFooterTextWebKitParser('report.account.account_report_partners_ledger_webkit',
+                             'account.account',
+                             'addons/account_financial_report_webkit/report/templates/account_report_partners_ledger.mako',
+                             parser=PartnersLedgerWebkit)
