@@ -1092,6 +1092,8 @@ class account_bank_statement(osv.osv):
                 if line.voucher_id:
                     voucher_ids.append(line.voucher_id.id)
             voucher_obj.cancel_voucher(cr, uid, voucher_ids, context)
+            ## And we call action to place the voucher in draft
+            voucher_obj.action_cancel_draft(cr,uid,voucher_ids,context)
         return super(account_bank_statement, self).button_cancel(cr, uid, ids, context=context)
 
     def create_move_from_st_line(self, cr, uid, st_line_id, company_currency_id, next_number, context=None):
