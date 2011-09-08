@@ -455,7 +455,7 @@ class account_voucher(osv.osv):
 
         return default
 
-    def onchange_partner_id(self, cr, uid, ids, partner_id, journal_id, price, voucher_currency_id, ttype, date, context=None):
+    def onchange_partner_id(self, cr, uid, ids, partner_id, journal_id, price, currency_id, ttype, date, context=None):
         """price
         Returns a dict that contains new values and context
 
@@ -465,6 +465,7 @@ class account_voucher(osv.osv):
 
         @return: Returns a dict which contains new values, and context
         """
+        voucher_currency_id = currency_id
         if not journal_id:
             return {}
         if context is None:
