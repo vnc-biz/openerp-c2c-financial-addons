@@ -23,7 +23,7 @@
     'name': 'Webkit based extended report financial report',
     'description': """TODO""",
     'version': '1.0',
-    'author': 'Camptocamp SA',
+    'author': 'Camptocamp',
     'category': 'Accounting',
     'website': 'http://www.camptocamp.com',
 
