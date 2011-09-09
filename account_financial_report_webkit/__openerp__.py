@@ -35,8 +35,13 @@ Forthcoming :
  - Partner Balance
  - Aged Partner Balance
 
-Warning : depends of the pending merge : https://code.launchpad.net/~c2c/openobject-addons/6.0-webkit-improvements/+merge/66428
-Meanwhile you can merge it to your addons branch in order to use the webkit financial reports.
+
+Note : html headers and footers are deactivated for these reports because of an issue of wkhtmltopdf : http://code.google.com/p/wkhtmltopdf/issues/detail?id=656
+       Instead, the header and footer are created as text with arguments passed to wkhtmltopdf. The texts are defined inside the report classes.
+
+This module depends of the pending merge : https://code.launchpad.net/~c2c/openobject-addons/6.0-webkit-improvements/+merge/66428
+This merge add the ability to pass dynamically values to html headers and footers.
+
 """,
     'version': '1.0',
     'author': 'Camptocamp',
