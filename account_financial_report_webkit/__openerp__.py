@@ -1,7 +1,8 @@
 # -*- encoding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi. Copyright Camptocamp SA
+#    Authors: Nicolas Bessi, Guewen Baconnier
+#    Copyright Camptocamp SA 2011
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -45,7 +46,7 @@ This merge add the ability to pass dynamically values to html headers and footer
 """,
     'version': '1.0',
     'author': 'Camptocamp',
-    'category': 'Accounting',
+    'category': 'Finance',
     'website': 'http://www.camptocamp.com',
 
     'depends': ['account',
