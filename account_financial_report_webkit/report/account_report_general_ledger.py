@@ -49,7 +49,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             'report_name': _('General Ledger'),
             'display_account': self._get_display_account,
             'display_account_raw': self._get_display_account_raw,
-            'filter': self._get_filter,
+            'filter_form': self._get_filter,
             'target_move': self._get_target_move,
             'initial_balance': self._get_initial_balance,
             'amount_currency': self._get_amount_currency,

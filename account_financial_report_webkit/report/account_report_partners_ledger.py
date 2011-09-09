@@ -48,7 +48,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             'uid': uid,
             'report_name':_('Partner Ledger'),
             'display_account_raw': self._get_display_account_raw,
-            'filter': self._get_filter,
+            'filter_form': self._get_filter,
             'target_move': self._get_target_move,
             'initial_balance': self._get_initial_balance,
             'amount_currency': self._get_amount_currency,

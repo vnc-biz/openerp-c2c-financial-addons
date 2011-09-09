@@ -18,7 +18,7 @@
                 <div class="act_as_cell">${_('Chart of Account')}</div>
                 <div class="act_as_cell">${_('Fiscal Year')}</div>
                 <div class="act_as_cell">
-                    %if filter(data) == 'filter_date':
+                    %if filter_form(data) == 'filter_date':
                         ${_('Dates')}
                     %else:
                         ${_('Periods')}
@@ -35,13 +35,13 @@
                 <div class="act_as_cell">${ fiscalyear.name if fiscalyear else '-' }</div>
                 <div class="act_as_cell">
                     ${_('From:')}
-                    %if filter(data) == 'filter_date':
+                    %if filter_form(data) == 'filter_date':
                         ${formatLang(start_date, date=True) if start_date else u'' }
                     %else:
                         ${start_period.name if start_period else u''}
                     %endif
                     ${_('To:')}
-                    %if filter(data) == 'filter_date':
+                    %if filter_form(data) == 'filter_date':
                         ${ formatLang(stop_date, date=True) if stop_date else u'' }
                     %else:
                         ${stop_period.name if stop_period else u'' }
