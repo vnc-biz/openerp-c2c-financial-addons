@@ -150,7 +150,7 @@ class CommonReportHeaderWebkit(common_report_header):
         acc_obj = self.pool.get('account.account')
         for account_id in account_ids:
             accounts.append(account_id)
-            accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id)
+            accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id, context=context)
         res_ids = list(set(accounts))
 
         res_ids = self.sort_accounts_with_structure(res_ids, context=context)

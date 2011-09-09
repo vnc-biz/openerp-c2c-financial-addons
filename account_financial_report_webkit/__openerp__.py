@@ -23,18 +23,44 @@
 {
     'name': 'Webkit based extended report financial report',
     'description': """
+This module will provide with basic legal financial reports. All report uses the webkit technology and the library 'wkhtmltopdf' for the pdf rendering. (this library path must be added to you company settings)
 
- - General Ledger
-     Accounting > Reporting > Legal Reports > Accounting Reports > General Ledger Webkit
-     With an option "Centralized" on accounts to group entries per period on the report.
+The reports provided are:
 
- - Partner Ledger
-     Accounting > Reporting > Legal Reports > Accounting Reports > Partner Ledger Webkit
+* The General leder: details of all entries posted in your books sorted by account.
+    - Filter by account in the wizard (no need to go to the Chart of account to do this anymore) or by view account (the report will display all regular children account) ie: you can select all P&L accounts.
+    - The report will now print only account with movements OR with a balance not null. No more endless report with accounts with no data. (field: display account is hidden)
+    - Correct opening balance calculation : even if you do not have created your opening entries yet. If you did so, system will simply uses your opening entries amounts otherwise it will be calculated backwards until the last opening entries posted. (it remains important to post opening entries if you do not want to loose performance but with few data it is not mandatory anymore)
+    - Reports now show cumulative balances
+    - You can filter, for exemple from the 02/2011 to 06/2011 with an opening balance that will includes not only previous years data but also data from begining of  fiscal year until the period start of your filter ; so you will always match with your trial balance.
+    - Thanks to a new checkbox in account form, you will have possibility to centralize any accounts you like. ie: you do not want to see all entries posted under the account 'VAT on sales' ; you will only see aggregated amounts by periods. This option can save hundreds of useless pages !
+    - User name added on foot page (+ date, time, page of course)
+    - Counterpart account displayed for each transaction (3 accounts max.) to ease searching.
+    - Better ergonomy on the wizard: important information at the top, filters in the middle, options at the bottom, more specific filtering on a different tab. No more unique wizard layout for all financial reports (ie: we have removed the journal tab useless for the GL report)
+    - And obviously an improved style
 
-Forthcoming :
- - Trial Balance
- - Partner Balance
- - Aged Partner Balance
+ * The partner ledger: details of entries relative to payable & receivable accounts posted in your books sorted by account and partner.
+    - Filter by partner now possible
+    - Possibility to print unreconcilied transactions only at any date in the past (thanks to the brand-new field: last_rec_date which calculated the last move line reconciled date). No more pain to get open invoices at the last closing date.
+    - Now you can see accounts then Partner with subtotals for each account allowing you to check you data with trial balance and partner balance for instance & accounts are ordered the same way than in the Chart of account
+    - period have been added (date only is uncompleted)
+    - Reconciliation mark added
+    - same as GL report: The report will now print only account with movements OR with a balance not null. No more endless report with accounts with no data. (field: display account is hidden)
+    - same as GL report: opening balance is fully calculated ; no need to generate opening entry anymore
+    - same as GL report: Reports now show cumulative balances
+    - same as GL report: You can filter, for example from the 02/2011 to 06/2011 with an opening balance that will includes not only previous years data but also data from beginning of  fiscal year until the period start of your filter ; so you will always match with your trial balance.
+    - same as GL report: User name added on foot page (+ date, time, page of course)
+    - same as GL report: Better ergonomy on the wizard
+    - And an improved style
+
+
+ * The Trial balance: still to be added
+
+ * The Partner balance: still to be added
+
+ * A printscreen of the entries selected: still to be added
+
+ * A printscreen of invoices selected: still to be added
 
 
 Note : html headers and footers are deactivated for these reports because of an issue of wkhtmltopdf : http://code.google.com/p/wkhtmltopdf/issues/detail?id=656
