@@ -21,7 +21,23 @@
 # By using properties we will have a more simple signature in fuctions
 {
     'name': 'Webkit based extended report financial report',
-    'description': """TODO""",
+    'description': """
+
+ - General Ledger
+     Accounting > Reporting > Legal Reports > Accounting Reports > General Ledger Webkit
+     With an option "Centralized" on accounts to group entries per period on the report.
+
+ - Partner Ledger
+     Accounting > Reporting > Legal Reports > Accounting Reports > Partner Ledger Webkit
+
+Forthcoming :
+ - Trial Balance
+ - Partner Balance
+ - Aged Partner Balance
+
+Warning : depends of the pending merge : https://code.launchpad.net/~c2c/openobject-addons/6.0-webkit-improvements/+merge/66428
+Meanwhile you can merge it to your addons branch in order to use the webkit financial reports.
+""",
     'version': '1.0',
     'author': 'Camptocamp',
     'category': 'Accounting',
