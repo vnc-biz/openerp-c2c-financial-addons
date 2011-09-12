@@ -1138,7 +1138,7 @@ class account_bank_statement_line(osv.osv):
             account_id = self.pool.get('account.move.line').browse(cr, uid, move_line_id, context=context).account_id.id
             vals = {'voucher_id': voucher_id,
                     'account_id': account_id,
-                    'amount': data.amount,
+                    'amount': abs(data.amount),
                     'type': line_type, 
                     'move_line_id': move_line_id, 
             }
