@@ -60,6 +60,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
                 ('--header-font-size', '10'),
                 ('--footer-font-size', '6'),
                 ('--header-left', header_report_name),
+                ('--header-spacing', '2'),
                 ('--footer-left', footer_date_time),
                 ('--footer-right', ' '.join((_('Page'), '[page]', _('of'), '[topage]'))),
                 ('--footer-line',),
