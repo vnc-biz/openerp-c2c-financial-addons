@@ -346,7 +346,7 @@
                             on_change="onchange_date(partner_id, journal_id, amount, 
                                        currency_id, type, date, context)"/>
                         <field name="reference" colspan="4" select="1"  string="Payment Ref"/>
-                        <field name="namefgxdgdgdfgdf" colspan="4" />
+                        <field name="name" colspan="4" />
                         <field name="company_id" colspan="4" widget="selection" groups="base.group_multi_company"/>
                         <field name="account_id" colspan="4"
                             widget="selection"/>
