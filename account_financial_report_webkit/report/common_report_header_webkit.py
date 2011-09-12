@@ -139,6 +139,8 @@ class CommonReportHeaderWebkit(common_report_header):
         max_level = max(levels)
         sorted_accounts = recursive_sort_by_code(start_level, max_level, accounts)
 
+        assert len(account_ids) == len(sorted_accounts), 'Accounts Sorting Error'
+
         return sorted_accounts
 
     def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, context=None):

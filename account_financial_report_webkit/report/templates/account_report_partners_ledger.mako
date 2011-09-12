@@ -79,7 +79,7 @@
                 %>
                 <div class="act_as_table list_table" style="margin-top: 5px;">
                     <div class="act_as_caption account_title">
-                        ${partner_name}
+                        ${partner_name or _('No Partner')}
                     </div>
                     <div class="act_as_thead">
                         <div class="act_as_row labels">

@@ -177,17 +177,26 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         """We get the partner linked to all current accounts that are used.
             We also use ensure that partner are ordered bay name
             args must be list"""
+        res = []
         partner_ids = []
         for arg in args:
             if arg:
                 partner_ids += arg
         if not partner_ids:
             return []
-        # We may use orm here as the performance optimization is not that big
-        sql = ("SELECT name|| ' ' ||CASE WHEN ref IS NOT NULL THEN '('||ref||')' ELSE '' END, id"
-               "  FROM res_partner WHERE id IN %s ORDER BY name, ref")
-        self.cursor.execute(sql, (tuple(set(partner_ids)),))
-        res = self.cursor.fetchall()
+
+        existing_partner_ids = [partner_id for partner_id in partner_ids if partner_id]
+        if existing_partner_ids:
+            # We may use orm here as the performance optimization is not that big
+            sql = ("SELECT name|| ' ' ||CASE WHEN ref IS NOT NULL THEN '('||ref||')' ELSE '' END, id"
+                   "  FROM res_partner WHERE id IN %s ORDER BY name, ref")
+            self.cursor.execute(sql, (tuple(set(existing_partner_ids)),))
+            res = self.cursor.fetchall()
+
+        # move lines without partners, set None for empty partner
+        if not all(partner_ids):
+            res.append((None, None))
+
         if not res:
             return []
         return res
