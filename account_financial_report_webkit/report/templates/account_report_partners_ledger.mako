@@ -67,7 +67,7 @@
                 account_balance_cumul_curr = 0.0
                 %>
 
-                <div class="account_title bg" style="width: 1080px; margin-top: 10px;">${account.code} - ${account.name}</div>
+                <div class="account_title bg" style="width: 1080px; margin-top: 20px; font-size: 12px;">${account.code} - ${account.name}</div>
                 
                 %for partner_name, p_id in account.partners_order:
                 <%
