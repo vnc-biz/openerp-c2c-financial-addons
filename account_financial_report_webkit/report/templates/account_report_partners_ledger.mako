@@ -88,7 +88,7 @@
                             ## period
                             <div class="act_as_cell" style="width: 50px;">${_('Period')}</div>
                             ## move
-                            <div class="act_as_cell" style="width: 110px;">${_('Entry')}</div>
+                            <div class="act_as_cell" style="width: 80px;">${_('Entry')}</div>
                             ## journal
                             <div class="act_as_cell" style="width: 50px;">${_('Journal')}</div>
                             ## partner
@@ -96,16 +96,16 @@
                             ## ref
                             <div class="act_as_cell" style="width: 110px;">${_('Ref')}</div>
                             ## label
-                            <div class="act_as_cell" style="width: 220px;">${_('Label')}</div>
+                            <div class="act_as_cell" style="width: 170px;">${_('Label')}</div>
                             ## reconcile
-                            <div class="act_as_cell" style="width: 20px;">${_('Rec.')}</div>
+                            <div class="act_as_cell" style="width: 70px;">${_('Rec.')}</div>
                             ## balance
                             <div class="act_as_cell amount" style="width: 75px;">${_('Balance')}</div>
                             ## balance cumulated
                             <div class="act_as_cell amount" style="width: 75px;">${_('Cumul. Bal.')}</div>
                             %if amount_currency(data):
                                 ## curency code
-                                <div class="act_as_cell amount sep_left" style="width: 25px; text-align: center;">${_('Curr.')}</div>
+                                <div class="act_as_cell amount sep_left" style="width: 30px; text-align: right;">${_('Curr.')}</div>
                                 ## currency balance
                                 <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Balance')}</div>
                                 ## currency balance cumulated
@@ -184,7 +184,7 @@
                               <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(cumul_balance) | amount }</div>
                               %if amount_currency(data):
                                   ## curency code
-                                  <div class="act_as_cell sep_left" style="text-align: center; word-wrap: normal;">${line.get('currency_code') or ''}</div>
+                                  <div class="act_as_cell sep_left" style="text-align: right; ">${line.get('currency_code') or ''}</div>
                                   ## currency balance
                                   <div class="act_as_cell amount">${formatLang(line.get('amount_currency') or 0.0) | amount }</div>
                                   %if account.currency_id:
@@ -206,18 +206,18 @@
                 %endfor
                 <div class="act_as_table list_table" style="margin-top:5px;">
                     <div class="act_as_row labels" style="font-weight: bold;">
-                            <div class="act_as_cell first_column" style="width: 490px;">${account.code} - ${account.name}</div>
+                            <div class="act_as_cell first_column" style="width: 460px;">${account.code} - ${account.name}</div>
                             ## label
-                            <div class="act_as_cell" style="width: 220px;">Cumulated Balance on Account</div>
+                            <div class="act_as_cell" style="width: 200px;">Cumulated Balance on Account</div>
                             ## reconcile
-                            <div class="act_as_cell" style="width: 20px;"></div>
+                            <div class="act_as_cell" style="width: 40px;"></div>
                             ## balance
                             <div class="act_as_cell amount" style="width: 75px;"></div>
                             ## balance cumulated
-                            <div class="act_as_cell amount" style="width: 75px;">${ formatLang(account_balance_cumul) | amount }</div>
+                            <div class="act_as_cell amount" style="width: 75px; padding-right: 1px;">${ formatLang(account_balance_cumul) | amount }</div>
                             %if amount_currency(data):
                                 ## curency code
-                                <div class="act_as_cell amount sep_left" style="width: 25px; word-wrap: normal;">${ account.currency_id.name if account.currency_id else u'' }</div>
+                                <div class="act_as_cell amount sep_left" style="width: 30px; text-align: right;">${ account.currency_id.name if account.currency_id else u'' }</div>
                                 ## currency balance
                                 <div class="act_as_cell amount" style="width: 75px;"></div>
                                 ## currency balance cumulated
