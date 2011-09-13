@@ -1,7 +1,8 @@
 # -*- encoding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi. Copyright Camptocamp SA
+#    Author: Nicolas Bessi, Guewen Baconnier
+#    Copyright Camptocamp SA 2011
 #    SQL inspired from OpenERP original code
 #
 #    This program is free software: you can redistribute it and/or modify
