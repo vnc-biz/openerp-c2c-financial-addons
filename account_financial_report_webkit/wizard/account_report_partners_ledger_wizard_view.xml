@@ -70,7 +70,7 @@
         </record>
 
         <menuitem icon="STOCK_PRINT" name="Partner Ledger Webkit"
-            parent="account.final_accounting_reports" action="action_account_partners_ledger_menu_webkit"
+            parent="account.next_id_22" action="action_account_partners_ledger_menu_webkit"
             groups="account.group_account_manager,account.group_account_user" id="menu_partners_ledger_webkit"/>
 
     </data>
