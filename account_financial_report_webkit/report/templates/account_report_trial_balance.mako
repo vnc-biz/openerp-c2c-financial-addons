@@ -57,7 +57,76 @@
             </div>
         </div>
 
+        %for index, params in comp_params.iteritems():
+            <div class="act_as_table data_table">
+                <div class="act_as_row labels">
+                    <div class="act_as_cell">${_('Comparison %s') % (index + 1,)}</div>
+                    <div class="act_as_cell">${_('Fiscal Year')}</div>
+                    <div class="act_as_cell">
+                        %if filter_form(data) == 'filter_date':
+                            ${_('Dates')}
+                        %else:
+                            ${_('Periods')}
+                        %endif
+                    </div>
+                    <div class="act_as_cell"></div>
+                    <div class="act_as_cell"></div>
+
+                </div>
+                <div class="act_as_row">
+                    <div class="act_as_cell"></div>
+                    <div class="act_as_cell">${ params.get('fiscalyear', False) and params['fiscalyear'].name or u'-'}</div>
+                    <div class="act_as_cell">
+                        ${_('From:')}
+                        %if params['comparison_filter'] == 'filter_date':
+                            ${formatLang(params['start'], date=True) }
+                        %else:
+                            ${params['start'].name}
+                        %endif
+                        ${_('To:')}
+                        %if params['comparison_filter'] == 'filter_date':
+                            ${formatLang(params['stop'], date=True) }
+                        %else:
+                            ${params['stop'].name}
+                        %endif
+                    </div>
+                    <div class="act_as_cell"></div>
+                    <div class="act_as_cell"></div>
+                </div>
+            </div>
+        %endfor
+
         <div class="act_as_table list_table" style="margin-top: 5px;">
+
+            <div class="act_as_thead">
+                <div class="act_as_row labels">
+                    ## code
+                    <div class="act_as_cell first_column" style="width: 20px;">${_('Code')}</div>
+                    ## account name
+                    <div class="act_as_cell" style="width: 50px;">${_('Account')}</div>
+                    %if comparison_mode == 'no_comparison':
+                        %if initial_balance:
+                            ## initial balance
+                            <div class="act_as_cell amount" style="width: 50px;">${_('Opening Balance')}</div>
+                        %endif
+                        ## debit
+                        <div class="act_as_cell amount" style="width: 50px;">${_('Debit')}</div>
+                        ## credit
+                        <div class="act_as_cell amount" style="width: 50px;">${_('Credit')}</div>
+                    %endif
+                    ## balance
+                    <div class="act_as_cell amount" style="width: 50px;">${_('Balance')}</div>
+                    %if comparison_mode in ('single', 'multiple'):
+                        %for index in range(nb_comparison):
+                            <div class="act_as_cell amount" style="width: 50px;">${_('Balance Comparison %s') % (index + 1,)}</div>
+                            %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
+                                <div class="act_as_cell amount" style="width: 50px;">${_('Difference')}</div>
+                                <div class="act_as_cell amount" style="width: 50px;">${_('Percent Difference')}</div>
+                            %endif
+                        %endfor
+                    %endif
+                </div>
+            </div>
 
             <div class="act_as_tbody">
                 %for account_at in objects:
