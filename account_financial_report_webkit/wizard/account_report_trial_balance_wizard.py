@@ -50,26 +50,6 @@ class AccountTrialBalanceLedgerWizard(osv.osv_memory):
         'account_ids': fields.many2many('account.account', 'wiz_account_rel',
                                         'account_id', 'wiz_id', 'Filter on accounts',
                                          help="Only selected accounts will be printed. Leave empty to print all accounts."),
-
-#        'comp1_filter': fields.selection([('filter_no', 'No Comparison'),
-#                                          ('filter_year', 'Fiscal Year'),
-#                                          ('filter_date', 'Date'),
-#                                          ('filter_period', 'Periods'),], "Filter by", required=True),
-#        'comp1_fiscalyear_id': fields.many2one('account.fiscalyear', 'Fiscal year'),
-#        'comp1_period_from': fields.many2one('account.period', 'Start period'),
-#        'comp1_period_to': fields.many2one('account.period', 'End period'),
-#        'comp1_date_from': fields.date("Start Date"),
-#        'comp1_date_to': fields.date("End Date"),
-
-#        'comp2_filter': fields.selection([('filter_no', 'No Comparison'),
-#                                          ('filter_year', 'Fiscal Year'),
-#                                          ('filter_date', 'Date'),
-#                                          ('filter_period', 'Periods'),], "Filter by", required=True),
-#        'comp2_fiscalyear_id': fields.many2one('account.fiscalyear', 'Fiscal year'),
-#        'comp2_period_from': fields.many2one('account.period', 'Start period'),
-#        'comp2_period_to': fields.many2one('account.period', 'End period'),
-#        'comp2_date_from': fields.date("Start Date"),
-#        'comp2_date_to': fields.date("End Date"),
     }
     _defaults = {
         'amount_currency': False,
@@ -173,7 +153,7 @@ class AccountTrialBalanceLedgerWizard(osv.osv_memory):
         if fiscalyear_id:
             fiscalyear = fy_obj.browse(cr, uid, fiscalyear_id, context=context)
             last_fiscalyear_ids = fy_obj.search(cr, uid, [('date_stop', '<', fiscalyear.date_start)],
-                                                limit=2, order='date_start desc', context=context)
+                                                limit=COMPARISON_LEVEL, order='date_start desc', context=context)
             if last_fiscalyear_ids:
                 if len(last_fiscalyear_ids) > index:
                     last_fiscalyear_id = last_fiscalyear_ids[index]  # first element for the comparison 1, second element for the comparison 2
@@ -225,8 +205,7 @@ class AccountTrialBalanceLedgerWizard(osv.osv_memory):
         fields_to_read = ['amount_currency', 'account_ids',]
 
         # comparison fields
-        for i in range(COMPARISON_LEVEL):
-            index = i + 1
+        for index in range(COMPARISON_LEVEL):
             fields_to_read.extend([
                 "comp%s_filter" % (index,),
                 "comp%s_fiscalyear_id" % (index,),

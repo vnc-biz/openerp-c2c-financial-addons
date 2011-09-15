@@ -107,15 +107,27 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
         new_ids = data['form']['account_ids'] or data['form']['chart_account_id']
 
         # Reading form
+        max_comparison = self._get_form_param('max_comparison', data, default=0)
         main_filter = self._get_form_param('filter', data, default='filter_no')
-        comp1_filter = self._get_form_param('comp1_filter', data, default='filter_no')
-        comp2_filter = self._get_form_param('comp2_filter', data, default='filter_no')
+
+        comp_filters = []
+        for index in range(max_comparison):
+            comp_filters.append(self._get_form_param("comp%s_filter" % (index,), data, default='filter_no'))
+
         fiscalyear = self.get_fiscalyear_br(data)
+
+        nb_comparisons = len([comp_filter for comp_filter in comp_filters if comp_filter != 'filter_no'])
+
+        if not nb_comparisons:
+            comparison_mode = 'no_comparison'
+        elif nb_comparisons > 1:
+            comparison_mode = 'multiple'
+        else:
+            comparison_mode = 'single'
 
         init_bal = False
         if main_filter in ('filter_no', 'filter_period') \
-            and comp1_filter == 'filter_no' \
-            and fiscalyear:
+            and comparison_mode == 'no_comparison' and fiscalyear:
             init_bal = True
         
         target_move = self._get_form_param('target_move', data, default='all')
@@ -143,13 +155,10 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
         accounts_by_ids = self._get_account_details(account_ids, target_move, init_bal,
                                                     fiscalyear, main_filter, start, stop)
 
-        comp1_accounts_by_ids = {}
-        if comp1_filter != 'filter_no':
-            comp1_accounts_by_ids = self._get_comparison_details(data, account_ids, target_move, comp1_filter, 1)
-
-        comp2_accounts_by_ids = {}
-        if comp2_filter != 'filter_no':
-            comp2_accounts_by_ids = self._get_comparison_details(data, account_ids, target_move, comp1_filter, 2)
+        comp_accounts_by_ids = []
+        for index in range(max_comparison):
+            if comp_filters[index] != 'filter_no':
+                comp_accounts_by_ids.append(self._get_comparison_details(data, account_ids, target_move, comp_filters[index], index))
 
         objects = []
         for account_id in account_ids:
@@ -157,14 +166,12 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
                 continue
             accounts = {}
             accounts['current'] = accounts_by_ids[account_id]
-            if comp1_accounts_by_ids:
-                accounts['comparison1'] = comp1_accounts_by_ids[account_id]
-                accounts['comparison1'].update(self._get_diff(accounts['comparison1']['balance'], accounts['current']['balance']))
-
-            if comp2_accounts_by_ids:
-                accounts['comparison2'] = comp2_accounts_by_ids[account_id]
-                accounts['comparison2'].update(self._get_diff(accounts['comparison2']['balance'], accounts['current']['balance']))
-
+            comp_accounts = []
+            for comp_account_by_id in comp_accounts_by_ids:
+                values = comp_account_by_id.get(account_id)
+                values.update(self._get_diff(values['balance'], accounts['current']['balance']))
+                comp_accounts.append(values)
+            accounts['comparisons'] = comp_accounts
             objects.append(accounts)
 
         self.localcontext.update({
@@ -174,7 +181,7 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
             'start_period': start_period,
             'stop_period': stop_period,
             'chart_account': chart_account,
-            'comparison_mode': comp1_filter != 'filter_no',
+            'comparison_mode': comparison_mode,
             'initial_balance': init_bal,
         })
 
