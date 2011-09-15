@@ -51,7 +51,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
 
     def _get_query_params_from_periods(self, period_start, period_stop):
         # we do not want opening period so we exclude opening
-        periods = self._get_period_range_form_periods(period_start, period_stop, 'exclude_opening')
+        periods = self._get_period_range_from_periods(period_start, period_stop, 'exclude_opening')
         if not periods:
             return []
 
@@ -137,7 +137,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
         final_res = defaultdict(dict)
-        period_ids = self._get_period_range_form_start_period(start_period, fiscalyear=False,
+        period_ids = self._get_period_range_from_start_period(start_period, fiscalyear=False,
                                                                        include_opening=False)
         if not period_ids:
             period_ids = [-1]

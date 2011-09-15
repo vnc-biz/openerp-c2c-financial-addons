@@ -207,7 +207,7 @@ class CommonReportHeaderWebkit(common_report_header):
                 return False
         return res
 
-    def _get_period_range_form_periods(self, start_period, stop_period, mode):
+    def _get_period_range_from_periods(self, start_period, stop_period, mode):
         # TODO test date type
         period_obj = self.pool.get('account.period')
         search_period = [('date_start', '>=', start_period.date_start),
@@ -218,7 +218,7 @@ class CommonReportHeaderWebkit(common_report_header):
         res = period_obj.search(self.cursor, self.uid, search_period)
         return res
 
-    def _get_period_range_form_start_period(self, start_period, include_opening=False,
+    def _get_period_range_from_start_period(self, start_period, include_opening=False,
                                             fiscalyear=False, stop_at_previous_opening=False):
         """We retrieve all periods before start period"""
         opening_period_id = False
@@ -264,14 +264,11 @@ class CommonReportHeaderWebkit(common_report_header):
             periods.remove(start_period.id)
         return periods
 
-
     def get_first_fiscalyear_period(self, fiscalyear):
         return self._get_st_fiscalyear_period(fiscalyear)
 
-
     def get_last_fiscalyear_period(self, fiscalyear):
         return self._get_st_fiscalyear_period(fiscalyear, order='DESC')
-
 
     def _get_st_fiscalyear_period(self, fiscalyear, order='ASC'):
         period_obj = self.pool.get('account.period')
@@ -305,7 +302,7 @@ class CommonReportHeaderWebkit(common_report_header):
         return {'init_balance': res[0] or 0.0, 'init_balance_currency': res[1] or 0.0, 'state': mode}
 
 
-    def _compute_inital_balances(self, account_ids, start_period, fiscalyear, main_filter):
+    def _compute_initial_balances(self, account_ids, start_period, fiscalyear, main_filter):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
@@ -319,10 +316,10 @@ class CommonReportHeaderWebkit(common_report_header):
             # PNL and Balance accounts are not computed the same way look for attached doc
             # We include opening period in pnl account in order to see if opening entries
             # were created by error on this account
-            pnl_periods_ids = self._get_period_range_form_start_period(start_period, fiscalyear=fiscalyear,
+            pnl_periods_ids = self._get_period_range_from_start_period(start_period, fiscalyear=fiscalyear,
                                                                        include_opening=True)
 
-            bs_period_ids = self._get_period_range_form_start_period(start_period, include_opening=True,
+            bs_period_ids = self._get_period_range_from_start_period(start_period, include_opening=True,
                                                                      stop_at_previous_opening=True)
             nil_res = {'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'computed'}
             for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
@@ -347,7 +344,7 @@ class CommonReportHeaderWebkit(common_report_header):
     def _get_move_ids_from_periods(self, account_id, period_start, period_stop, mode, valid_only=False):
         move_line_obj = self.pool.get('account.move.line')
         # we filter opening period here
-        periods = self._get_period_range_form_periods(period_start, period_stop, mode)
+        periods = self._get_period_range_from_periods(period_start, period_stop, mode)
         if not periods:
             return []
         search = [('period_id', 'in', periods), ('account_id', '=', account_id)]
