@@ -24,7 +24,7 @@ from osv import fields, osv
 from lxml import etree
 from tools.translate import _
 
-COMPARISON_LEVEL = 2
+COMPARISON_LEVEL = 3
 
 class AccountTrialBalanceLedgerWizard(osv.osv_memory):
     """Will launch trial balance report and pass required args"""
@@ -45,14 +45,11 @@ class AccountTrialBalanceLedgerWizard(osv.osv_memory):
         return res
 
     _columns = {
-        'amount_currency': fields.boolean("With Currency",
-                                          help="It adds the currency column"),
         'account_ids': fields.many2many('account.account', 'wiz_account_rel',
                                         'account_id', 'wiz_id', 'Filter on accounts',
                                          help="Only selected accounts will be printed. Leave empty to print all accounts."),
     }
     _defaults = {
-        'amount_currency': False,
         'account_ids': _get_account_ids,
     }
 
@@ -202,7 +199,7 @@ class AccountTrialBalanceLedgerWizard(osv.osv_memory):
         if context is None:
             context = {}
 
-        fields_to_read = ['amount_currency', 'account_ids',]
+        fields_to_read = ['account_ids',]
 
         # comparison fields
         for index in range(COMPARISON_LEVEL):

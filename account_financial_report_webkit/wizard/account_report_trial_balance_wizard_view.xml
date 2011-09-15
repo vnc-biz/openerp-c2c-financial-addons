@@ -16,10 +16,6 @@
                     <field name="chart_account_id" position='attributes'>
                         <attribute name="colspan">4</attribute>
                     </field>
-                    <xpath expr="/form/notebook[1]" position="after">
-                        <separator string="Options" colspan="4"/>
-                        <field name="amount_currency"/>
-                    </xpath>
                     <page name="filters" position="after">
                         <page string="Accounts Filters" name="accounts">
                             <separator string="Print only" colspan="4"/>

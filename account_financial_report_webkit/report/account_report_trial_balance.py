@@ -30,6 +30,8 @@ from datetime import datetime
 from common_balance_report_header_webkit import CommonBalanceReportHeaderWebkit
 from webkit_parser_header_fix import HeaderFooterTextWebKitParser
 
+def sign(number):
+    return cmp(number, 0)
 
 class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
 
@@ -51,7 +53,6 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
             'display_account_raw': self._get_display_account_raw,
             'filter_form': self._get_filter,
             'target_move': self._get_target_move,
-            'amount_currency': self._get_amount_currency,
             'display_target_move': self._get_display_target_move,
             'accounts': self._get_accounts_br,
             'additional_args': [
@@ -100,12 +101,12 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
                                                         fiscalyear, details_filter,
                                                         start, stop)
 
-            self.localcontext['comp_params'].update({index:{
+            self.localcontext['comp_params'].append({
                 'comparison_filter': comparison_filter,
                 'fiscalyear': fiscalyear,
                 'start': start,
                 'stop': stop,
-            }})
+            })
 
         return accounts_by_ids
 
@@ -163,7 +164,7 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
         accounts_by_ids = self._get_account_details(account_ids, target_move, init_bal,
                                                     fiscalyear, main_filter, start, stop)
 
-        self.localcontext['comp_params'] = {}
+        self.localcontext['comp_params'] = []
         comp_accounts_by_ids = []
         for index in range(max_comparison):
             if comp_filters[index] != 'filter_no':
@@ -178,7 +179,7 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
             comp_accounts = []
             for comp_account_by_id in comp_accounts_by_ids:
                 values = comp_account_by_id.get(account_id)
-                values.update(self._get_diff(values['balance'], accounts['current']['balance']))
+                values.update(self._get_diff(accounts['current']['balance'], values['balance']))
                 comp_accounts.append(values)
             accounts['comparisons'] = comp_accounts
             objects.append(accounts)
@@ -209,8 +210,15 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
 
         obj_precision = self.pool.get('decimal.precision')
         precision = obj_precision.precision_get(self.cr, self.uid, 'Account')
-        if diff and balance:
-            percent_diff = round(diff / balance * 100, precision)
+        if last_balance != 0 and balance == 0:
+            percent_diff = sign(last_balance) * -100.0
+        elif last_balance == 0 and balance != 0:
+            percent_diff = sign(balance) * 100.0
+        elif last_balance == 0:
+            percent_diff = 0.0
+        else:
+            percent_diff = round(diff / last_balance * -100, precision)
+
         return {'diff': diff, 'percent_diff': percent_diff}
 
 HeaderFooterTextWebKitParser('report.account.account_report_trial_balance_webkit',

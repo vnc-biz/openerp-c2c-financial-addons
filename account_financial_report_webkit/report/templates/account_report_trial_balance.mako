@@ -3,6 +3,12 @@
     <head>
         <style type="text/css">
             ${css}
+
+            .list_table .act_as_row {
+                margin-top: 10px;
+                margin-bottom: 10px;
+                font-size:10px;
+            }
         </style>
     </head>
     <body>
@@ -51,13 +57,12 @@
                     %else:
                         ${_('All')}
                     %endif
-
                 </div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
             </div>
         </div>
 
-        %for index, params in comp_params.iteritems():
+        %for index, params in enumerate(comp_params):
             <div class="act_as_table data_table">
                 <div class="act_as_row labels">
                     <div class="act_as_cell">${_('Comparison %s') % (index + 1,)}</div>
@@ -74,7 +79,7 @@
 
                 </div>
                 <div class="act_as_row">
-                    <div class="act_as_cell"></div>
+                    <div class="act_as_cell">${"C%s" % (index + 1,)}</div>
                     <div class="act_as_cell">${ params.get('fiscalyear', False) and params['fiscalyear'].name or u'-'}</div>
                     <div class="act_as_cell">
                         ${_('From:')}
@@ -96,32 +101,32 @@
             </div>
         %endfor
 
-        <div class="act_as_table list_table" style="margin-top: 5px;">
+        <div class="act_as_table list_table" style="margin-top: 20px;">
 
             <div class="act_as_thead">
                 <div class="act_as_row labels">
                     ## code
                     <div class="act_as_cell first_column" style="width: 20px;">${_('Code')}</div>
                     ## account name
-                    <div class="act_as_cell" style="width: 50px;">${_('Account')}</div>
+                    <div class="act_as_cell" style="width: 80px;">${_('Account')}</div>
                     %if comparison_mode == 'no_comparison':
                         %if initial_balance:
                             ## initial balance
-                            <div class="act_as_cell amount" style="width: 50px;">${_('Opening Balance')}</div>
+                            <div class="act_as_cell amount" style="width: 30px;">${_('Initial Balance')}</div>
                         %endif
                         ## debit
-                        <div class="act_as_cell amount" style="width: 50px;">${_('Debit')}</div>
+                        <div class="act_as_cell amount" style="width: 30px;">${_('Debit')}</div>
                         ## credit
-                        <div class="act_as_cell amount" style="width: 50px;">${_('Credit')}</div>
+                        <div class="act_as_cell amount" style="width: 30px;">${_('Credit')}</div>
                     %endif
                     ## balance
-                    <div class="act_as_cell amount" style="width: 50px;">${_('Balance')}</div>
+                    <div class="act_as_cell amount" style="width: 30px;">${_('Balance')}</div>
                     %if comparison_mode in ('single', 'multiple'):
                         %for index in range(nb_comparison):
-                            <div class="act_as_cell amount" style="width: 50px;">${_('Balance Comparison %s') % (index + 1,)}</div>
+                            <div class="act_as_cell amount" style="width: 30px;">${_('Balance C%s') % (index + 1,)}</div>
                             %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
-                                <div class="act_as_cell amount" style="width: 50px;">${_('Difference')}</div>
-                                <div class="act_as_cell amount" style="width: 50px;">${_('Percent Difference')}</div>
+                                <div class="act_as_cell amount" style="width: 30px;">${_('Difference')}</div>
+                                <div class="act_as_cell amount" style="width: 30px;">${_('% Difference')}</div>
                             %endif
                         %endfor
                     %endif
@@ -134,7 +139,7 @@
                     current_account = account_at['current']
                     %>
 
-                    <div class="act_as_row lines">
+                    <div class="act_as_row lines ${"account_level_%s" % (current_account['level'])}">
                         ## code
                         <div class="act_as_cell first_column">${current_account['code']}</div>
                         ## account name

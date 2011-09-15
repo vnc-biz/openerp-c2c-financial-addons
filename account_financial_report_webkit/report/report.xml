@@ -50,7 +50,7 @@
              <field name="type">ir.actions.report.xml</field>
              <field name="name">Trial Balance Webkit</field>
              <field name="report_file">account_financial_report_webkit/report/templates/account_report_trial_balance.mako</field>
-             <field name="webkit_header" ref="financial_landscape_header"/>
+             <field name="webkit_header" ref="financial_portrait_header"/>
          </record>
     </data>
 </openerp>
