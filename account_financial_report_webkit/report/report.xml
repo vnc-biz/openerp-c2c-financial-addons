@@ -12,6 +12,7 @@
             <field name="model">account.account</field>
             <field name="type">ir.actions.report.xml</field>
             <field name="name">General Ledger Webkit</field>
+            <field name="report_rml">account_financial_report_webkit/report/templates/account_report_general_ledger.mako</field>
             <field name="report_file">account_financial_report_webkit/report/templates/account_report_general_ledger.mako</field>
             <field name="webkit_header" ref="financial_landscape_header"/>
         </record> 
@@ -35,6 +36,7 @@
             <field name="model">account.account</field>
             <field name="type">ir.actions.report.xml</field>
             <field name="name">Partner Ledger Webkit</field>
+            <field name="report_rml">account_financial_report_webkit/report/templates/account_report_partners_ledger.mako</field>
             <field name="report_file">account_financial_report_webkit/report/templates/account_report_partners_ledger.mako</field>
             <field name="webkit_header" ref="financial_landscape_header"/>
         </record>
@@ -49,6 +51,7 @@
              <field name="model">account.account</field>
              <field name="type">ir.actions.report.xml</field>
              <field name="name">Trial Balance Webkit</field>
+             <field name="report_rml">account_financial_report_webkit/report/templates/account_report_trial_balance.mako</field>
              <field name="report_file">account_financial_report_webkit/report/templates/account_report_trial_balance.mako</field>
              <field name="webkit_header" ref="financial_portrait_header"/>
          </record>

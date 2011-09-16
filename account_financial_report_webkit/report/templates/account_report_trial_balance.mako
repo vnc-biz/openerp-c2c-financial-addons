@@ -63,42 +63,32 @@
         </div>
 
         %for index, params in enumerate(comp_params):
+            %if params['comparison_filter'] in ('filter_date','filter_period'):
             <div class="act_as_table data_table">
-                <div class="act_as_row labels">
-                    <div class="act_as_cell">${_('Comparison %s') % (index + 1,)}</div>
-                    <div class="act_as_cell">${_('Fiscal Year')}</div>
-                    <div class="act_as_cell">
-                        %if filter_form(data) == 'filter_date':
-                            ${_('Dates')}
-                        %else:
-                            ${_('Periods')}
-                        %endif
-                    </div>
-                    <div class="act_as_cell"></div>
-                    <div class="act_as_cell"></div>
-
-                </div>
                 <div class="act_as_row">
-                    <div class="act_as_cell">${"C%s" % (index + 1,)}</div>
-                    <div class="act_as_cell">${ params.get('fiscalyear', False) and params['fiscalyear'].name or u'-'}</div>
+                    <div class="act_as_cell">${_('Comparison %s') % (index + 1,)} (${"C%s" % (index + 1,)})</div>
                     <div class="act_as_cell">
-                        ${_('From:')}
+                        %if params['comparison_filter'] == 'filter_date':
+                            ${_('Dates : ')}
+                        %else:
+                            ${_('Periods : ')}
+                        %endif
                         %if params['comparison_filter'] == 'filter_date':
                             ${formatLang(params['start'], date=True) }
                         %else:
                             ${params['start'].name}
                         %endif
-                        ${_('To:')}
+                        &nbsp;-&nbsp;
                         %if params['comparison_filter'] == 'filter_date':
                             ${formatLang(params['stop'], date=True) }
                         %else:
                             ${params['stop'].name}
                         %endif
                     </div>
-                    <div class="act_as_cell"></div>
-                    <div class="act_as_cell"></div>
+
                 </div>
             </div>
+            %endif
         %endfor
 
         <div class="act_as_table list_table" style="margin-top: 20px;">
@@ -120,10 +110,22 @@
                         <div class="act_as_cell amount" style="width: 30px;">${_('Credit')}</div>
                     %endif
                     ## balance
-                    <div class="act_as_cell amount" style="width: 30px;">${_('Balance')}</div>
+                    <div class="act_as_cell amount" style="width: 30px;">
+                    %if comparison_mode == 'no_comparison' or not fiscalyear:
+                        ${_('Balance')}
+                    %else:
+                        ${_('Balance %s') % (fiscalyear.name,)}
+                    %endif
+                    </div>
                     %if comparison_mode in ('single', 'multiple'):
                         %for index in range(nb_comparison):
-                            <div class="act_as_cell amount" style="width: 30px;">${_('Balance C%s') % (index + 1,)}</div>
+                            <div class="act_as_cell amount" style="width: 30px;">
+                                %if comp_params[index]['comparison_filter'] == 'filter_year' and comp_params[index].get('fiscalyear', False):
+                                    ${_('Balance %s') % (comp_params[index]['fiscalyear'].name,)}
+                                %else:
+                                    ${_('Balance C%s') % (index + 1,)}
+                                %endif
+                            </div>
                             %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
                                 <div class="act_as_cell amount" style="width: 30px;">${_('Difference')}</div>
                                 <div class="act_as_cell amount" style="width: 30px;">${_('% Difference')}</div>
@@ -143,7 +145,7 @@
                         ## code
                         <div class="act_as_cell first_column">${current_account['code']}</div>
                         ## account name
-                        <div class="act_as_cell" style="padding-left: ${current_account.get('level', 0) * 3}px;">${current_account['name']}</div>
+                        <div class="act_as_cell" style="padding-left: ${current_account.get('level', 0) * 5}px;">${current_account['name']}</div>
                         %if comparison_mode == 'no_comparison':
                             %if initial_balance:
                                 ## opening balance

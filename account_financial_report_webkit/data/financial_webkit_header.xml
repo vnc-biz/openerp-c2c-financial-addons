@@ -328,20 +328,40 @@ act_as_colgroup {
 .account_level_1 {
     text-transform: uppercase;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 15px;
     background-color:#F0F0F0;
+}
+
+.account_level_1 .act_as_cell {
+    height: 30px;
+    vertical-align: bottom;
 }
 
 .account_level_2 {
     text-transform: uppercase;
     font-weight: bold;
+    font-size: 12px;
+    background-color:#F0F0F0;
+}
+
+.account_level_2 .act_as_cell {
+    height: 20px;
+    vertical-align: bottom;
 }
 
 .account_level_3 {
-
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 11px;
+    background-color:#FAFAFA;
 }
 
 .account_level_4 {
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.account_level_5 {
 
 }
 
