@@ -89,7 +89,8 @@ This merge add the ability to pass dynamically values to html headers and footer
                    'wizard/account_report_trial_balance_wizard_view.xml',
                    ],
     # tests order matter
-    'test': ['tests/general_ledger.yml'],
+    'test': ['tests/general_ledger.yml',
+             'tests/partner_ledger.yml',],
     #'tests/account_move_line.yml'
     'active': False,
     'installable': True,
