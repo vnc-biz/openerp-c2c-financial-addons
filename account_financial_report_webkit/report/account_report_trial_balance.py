@@ -68,48 +68,6 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
             ],
         })
 
-    def _get_comparison_details(self, data, account_ids, target_move, comparison_filter, index):
-        """
-
-        @param data: data of the wizard form
-        @param account_ids: ids of the accounts to get details
-        @param comparison_filter: selected filter on the form for the comparison (filter_no, filter_year, filter_period, filter_date)
-        @param index: index of the fields to get (ie. comp1_fiscalyear_id where 1 is the index)
-        @return: dict of account details (key = account id)
-        """
-        fiscalyear = self._get_info(data, "comp%s_fiscalyear_id" % (index,), 'account.fiscalyear')
-        start_period = self._get_info(data, "comp%s_period_from" % (index,), 'account.period')
-        stop_period = self._get_info(data, "comp%s_period_to" % (index,), 'account.period')
-        start_date = self._get_form_param("comp%s_date_from" % (index,), data)
-        stop_date = self._get_form_param("comp%s_date_to" % (index,), data)
-
-        accounts_by_ids = {}
-        if comparison_filter != 'filter_no':
-            details_filter = comparison_filter
-            if comparison_filter == 'filter_year':
-                start = self.get_first_fiscalyear_period(fiscalyear)
-                stop = self.get_last_fiscalyear_period(fiscalyear)
-                details_filter = 'filter_period'  # same behavior as filter periods
-            elif comparison_filter == 'filter_date':
-                start = start_date
-                stop = stop_date
-            else:
-                start = start_period
-                stop = stop_period
-
-            accounts_by_ids = self._get_account_details(account_ids, target_move, False,
-                                                        fiscalyear, details_filter,
-                                                        start, stop)
-
-            self.localcontext['comp_params'].append({
-                'comparison_filter': comparison_filter,
-                'fiscalyear': fiscalyear,
-                'start': start,
-                'stop': stop,
-            })
-
-        return accounts_by_ids
-
     def set_context(self, objects, data, ids, report_type=None):
         """Populate a ledger_lines attribute on each browse record that will be used
         by mako template"""
@@ -164,11 +122,13 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
         accounts_by_ids = self._get_account_details(account_ids, target_move, init_bal,
                                                     fiscalyear, main_filter, start, stop)
 
-        self.localcontext['comp_params'] = []
+        comparison_params = []
         comp_accounts_by_ids = []
         for index in range(max_comparison):
             if comp_filters[index] != 'filter_no':
-                comp_accounts_by_ids.append(self._get_comparison_details(data, account_ids, target_move, comp_filters[index], index))
+                comparison_result, comp_params = self._get_comparison_details(data, account_ids, target_move, comp_filters[index], index) 
+                comparison_params.append(comp_params)
+                comp_accounts_by_ids.append(comparison_result)
 
         objects = []
         for account_id in account_ids:
@@ -194,6 +154,7 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
             'comparison_mode': comparison_mode,
             'nb_comparison': nb_comparisons,
             'initial_balance': init_bal,
+            'comp_params': comparison_params,
         })
 
         return super(TrialBalanceWebkit, self).set_context(objects, data, new_ids,
