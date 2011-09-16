@@ -19,6 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from operator import add
 
 from common_report_header_webkit import CommonReportHeaderWebkit
 from tools.translate import _
@@ -69,7 +70,14 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         accounts_by_id = {}
         for account in accounts:
             if init_balance:
-                account.update(init_balance[account['id']])
+                # sum for top level views accounts
+                child_ids = account_obj._get_children_and_consol(self.cr, self.uid, account['id'], ctx)
+                if child_ids:
+                    child_init_balances = [init_bal['init_balance'] for acnt_id, init_bal in init_balance.iteritems() if acnt_id in child_ids ]
+                    top_init_balance = reduce(add, child_init_balances)
+                    account['init_balance'] = top_init_balance
+                else:
+                    account.update(init_balance[account['id']])
                 account['balance'] = account['init_balance'] + account['debit'] - account['credit']
             accounts_by_id[account['id']] = account
 
