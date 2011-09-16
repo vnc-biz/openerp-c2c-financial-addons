@@ -205,19 +205,15 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
         @param last_balance: last balance
         @return: dict of form {'diff': difference, 'percent_diff': diff in percentage}
         """
-        diff = last_balance - balance
+        diff = balance - last_balance
         percent_diff = 0.0
 
         obj_precision = self.pool.get('decimal.precision')
         precision = obj_precision.precision_get(self.cr, self.uid, 'Account')
-        if last_balance != 0 and balance == 0:
-            percent_diff = sign(last_balance) * -100.0
-        elif last_balance == 0 and balance != 0:
-            percent_diff = sign(balance) * 100.0
-        elif last_balance == 0:
-            percent_diff = 0.0
+        if last_balance == 0:
+            percent_diff = False
         else:
-            percent_diff = round(diff / last_balance * -100, precision)
+            percent_diff = round(diff / last_balance * 100, precision)
 
         return {'diff': diff, 'percent_diff': percent_diff}
 

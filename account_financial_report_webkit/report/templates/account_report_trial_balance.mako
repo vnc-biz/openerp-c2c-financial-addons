@@ -164,7 +164,13 @@
                                 <div class="act_as_cell amount">${comp_account['balance'] | amount}</div>
                                 %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
                                     <div class="act_as_cell amount">${comp_account['diff'] | amount}</div>
-                                    <div class="act_as_cell amount">${comp_account['percent_diff'] | amount} &#37;</div>
+                                    <div class="act_as_cell amount"> 
+                                    %if comp_account['percent_diff'] is False:
+                                     ${ '-' }
+                                    %else:
+                                       ${comp_account['percent_diff'] | amount} &#37;
+                                    %endif
+                                    </div>
                                 %endif
                             %endfor
                         %endif
