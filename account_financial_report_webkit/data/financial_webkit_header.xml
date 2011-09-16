@@ -226,7 +226,8 @@ act_as_colgroup {
         </table> ${_debug or ''|n} </body>
 </html>]]>
             </field>
-            <field eval="0.0" name="margin_top"/>
+            <field eval="17.0" name="margin_top"/>
+            <field eval="15.0" name="margin_bottom"/>
             <field name="css"><![CDATA[
 
 body, table, td, span, div {

@@ -18,13 +18,23 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import time
 
+from _collections import defaultdict
 from osv import fields, osv
 from lxml import etree
 from tools.translate import _
+from datetime import datetime
 
 COMPARISON_LEVEL = 3
+
+def previous_year_date(date, nb_prev=1):
+    if not date:
+        return False
+    parsed_date = datetime.strptime(date, '%Y-%m-%d')
+    previous_date = datetime(year=parsed_date.year - nb_prev,
+                             month=parsed_date.month,
+                             day=parsed_date.day)
+    return previous_date
 
 class AccountTrialBalanceLedgerWizard(osv.osv_memory):
     """Will launch trial balance report and pass required args"""
@@ -131,7 +141,7 @@ class AccountTrialBalanceLedgerWizard(osv.osv_memory):
                 page = etree.Element('page', {'name': "comp%s" % (index+1,), 'string': _("Comparison %s") % (index+1,)})
                 page.append(etree.Element('field', {'name': "comp%s_filter" % (index,),
                                                     'colspan': '4', 
-                                                    'on_change': "onchange_comp_filter(%(index)s, comp%(index)s_filter, fiscalyear_id)" % {'index': index}}))
+                                                    'on_change': "onchange_comp_filter(%(index)s, filter, comp%(index)s_filter, fiscalyear_id, date_from, date_to)" % {'index': index}}))
                 page.append(etree.Element('field', {'name': "comp%s_fiscalyear_id" % (index,),
                                                     'colspan': '4',
                                                     'attrs': "{'required': [('comp%(index)s_filter','=','filter_year')], 'readonly':[('comp%(index)s_filter','!=','filter_year')]}" % {'index': index}}))
@@ -153,7 +163,7 @@ class AccountTrialBalanceLedgerWizard(osv.osv_memory):
         res['arch'] = etree.tostring(eview)
         return res
 
-    def onchange_comp_filter(self, cr, uid, ids, index, comp_filter='filter_no', fiscalyear_id=False, context=None):
+    def onchange_comp_filter(self, cr, uid, ids, index, main_filter='filter_no', comp_filter='filter_no', fiscalyear_id=False, start_date=False, stop_date=False, context=None):
         res = {}
         fy_obj = self.pool.get('account.fiscalyear')
         last_fiscalyear_id = False
@@ -176,8 +186,15 @@ class AccountTrialBalanceLedgerWizard(osv.osv_memory):
         if comp_filter == 'filter_year':
             res['value'] = {fy_id_field: last_fiscalyear_id, period_from_field: False, period_to_field: False, date_from_field: False ,date_to_field: False}
         if comp_filter == 'filter_date':
-            # todo one or 2 years ago
-            res['value'] = {fy_id_field: False, period_from_field: False, period_to_field: False, date_from_field: time.strftime('%Y-01-01'), date_to_field: time.strftime('%Y-%m-%d')}
+            dates = {}
+            if main_filter == 'filter_date':
+                dates = {
+                    'date_start': previous_year_date(start_date, index + 1).strftime('%Y-%m-%d'),
+                    'date_stop': previous_year_date(stop_date, index + 1).strftime('%Y-%m-%d'),}
+            elif last_fiscalyear_id:
+                dates = fy_obj.read(cr, uid, last_fiscalyear_id, ['date_start', 'date_stop'], context=context)
+
+            res['value'] = {fy_id_field: False, period_from_field: False, period_to_field: False, date_from_field: dates.get('date_start', False), date_to_field: dates.get('date_stop', False)}
         if comp_filter == 'filter_period' and last_fiscalyear_id:
             start_period = end_period = False
             cr.execute('''
