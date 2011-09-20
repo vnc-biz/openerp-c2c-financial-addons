@@ -66,8 +66,8 @@
              <field name="model">account.account</field>
              <field name="type">ir.actions.report.xml</field>
              <field name="name">Profit and Loss Webkit</field>
-             <field name="report_rml">account_financial_report_webkit/report/templates/account_report_trial_balance.mako</field>
-             <field name="report_file">account_financial_report_webkit/report/templates/account_report_trial_balance.mako</field>
+             <field name="report_rml">account_financial_report_webkit/report/templates/account_report_profit_loss.mako</field>
+             <field name="report_file">account_financial_report_webkit/report/templates/account_report_profit_loss.mako</field>
              <field name="webkit_header" ref="financial_portrait_header"/>
          </record>
     </data>

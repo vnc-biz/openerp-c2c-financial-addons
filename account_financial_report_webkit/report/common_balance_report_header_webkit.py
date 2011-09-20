@@ -28,6 +28,9 @@ from tools.translate import _
 class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
     """Define common helper for balance (trial balance, P&L, BS oriented financial report"""
 
+    def _get_numbers_display(self, data):
+        return self._get_form_param('numbers_display', data)
+
     def _get_account_details(self, account_ids, target_move, init_balance, fiscalyear, main_filter, start, stop, context=None):
         """
         Get details of accounts to display on the report
@@ -150,7 +153,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
 
         return {'diff': diff, 'percent_diff': percent_diff}
 
-    def compute_balance_data(self, data):
+    def compute_balance_data(self, data, filter_report_type=None):
         new_ids = data['form']['account_ids'] or data['form']['chart_account_id']
         max_comparison = self._get_form_param('max_comparison', data, default=0)
         main_filter = self._get_form_param('filter', data, default='filter_no')
@@ -183,7 +186,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
 
         # Retrieving accounts
-        account_ids = self.get_all_accounts(new_ids, filter_view=False)
+        account_ids = self.get_all_accounts(new_ids, filter_view=False, filter_report_type=filter_report_type)
 
         # computation of ledger lines
         if main_filter == 'filter_date':
