@@ -2,9 +2,13 @@
 <openerp>
     <data>
 
+        <!-- inheriting views from more than 2 differents inherited models like
+        account.report.trial.balance.webkit -> account.common.balance.report -> account.common.account.report
+        is not supported so we have to copy paste the same view for trial balance, balance sheet, profit & loss
+          -->
         <record id="account_trial_balance_view_webkit" model="ir.ui.view">
             <field name="name">Trial Balance Webkit</field>
-            <field name="model">account.report.balance.webkit</field>
+            <field name="model">account.report.trial.balance.webkit</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="account.account_common_report_view"/>
             <field name="arch" type="xml">
@@ -19,7 +23,14 @@
                     <page name="filters" position="after">
                         <page string="Accounts Filters" name="accounts">
                             <separator string="Print only" colspan="4"/>
-                            <field name="account_ids" colspan="4" nolabel="1" domain="[('type', '=', 'view')]"/>
+                            <field name="account_ids" colspan="4" nolabel="1" domain="[('type', '=', 'view')]">
+                                <tree>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                    <field name="company_id"/>
+                                </tree>
+                            </field>
                         </page>
                         <page name="placeholder"/>
                     </page>
@@ -33,7 +44,7 @@
         <record id="action_account_trial_balance_menu_webkit" model="ir.actions.act_window">
             <field name="name">Trial Balance Webkit</field>
             <field name="type">ir.actions.act_window</field>
-            <field name="res_model">account.report.balance.webkit</field>
+            <field name="res_model">account.report.trial.balance.webkit</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="view_id" ref="account_trial_balance_view_webkit"/>
