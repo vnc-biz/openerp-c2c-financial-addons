@@ -97,6 +97,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         stop_period = self._get_info(data, "comp%s_period_to" % (index,), 'account.period')
         start_date = self._get_form_param("comp%s_date_from" % (index,), data)
         stop_date = self._get_form_param("comp%s_date_to" % (index,), data)
+        init_balance = self.is_initial_balance_enabled(comparison_filter)
 
         accounts_by_ids = {}
         comp_params = {}
@@ -113,7 +114,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
                 start = start_period
                 stop = stop_period
 
-            accounts_by_ids = self._get_account_details(account_ids, target_move, False,
+            accounts_by_ids = self._get_account_details(account_ids, target_move, init_balance,
                                                         fiscalyear, details_filter,
                                                         start, stop)
             comp_params = {
@@ -121,6 +122,12 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
                 'fiscalyear': fiscalyear,
                 'start': start,
                 'stop': stop,
+                'initial_balance': init_balance,
             }
 
         return accounts_by_ids, comp_params
+
+    def is_initial_balance_enabled(self, main_filter):
+        if main_filter not in ('filter_no', 'filter_year'):
+            return False
+        return True

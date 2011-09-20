@@ -92,11 +92,7 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
         else:
             comparison_mode = 'single'
 
-        init_bal = False
-        if main_filter in ('filter_no', 'filter_period') \
-            and comparison_mode == 'no_comparison' and fiscalyear:
-            init_bal = True
-        
+        init_bal = self.is_initial_balance_enabled(main_filter)
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
         stop_date = self._get_form_param('date_to', data)
@@ -126,7 +122,7 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
         comp_accounts_by_ids = []
         for index in range(max_comparison):
             if comp_filters[index] != 'filter_no':
-                comparison_result, comp_params = self._get_comparison_details(data, account_ids, target_move, comp_filters[index], index) 
+                comparison_result, comp_params = self._get_comparison_details(data, account_ids, target_move, comp_filters[index], index)
                 comparison_params.append(comp_params)
                 comp_accounts_by_ids.append(comparison_result)
 

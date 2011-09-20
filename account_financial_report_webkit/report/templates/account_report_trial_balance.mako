@@ -32,7 +32,7 @@
                 </div>
                 <div class="act_as_cell">${_('Displayed Accounts')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
-
+                <div class="act_as_cell">${_('Initial Balance')}</div>
             </div>
             <div class="act_as_row">
                 <div class="act_as_cell">${ chart_account.name }</div>
@@ -59,36 +59,26 @@
                     %endif
                 </div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
+                <div class="act_as_cell">${ _('Yes') if initial_balance else _('No') }</div>
             </div>
         </div>
 
         %for index, params in enumerate(comp_params):
-            %if params['comparison_filter'] in ('filter_date','filter_period'):
             <div class="act_as_table data_table">
                 <div class="act_as_row">
                     <div class="act_as_cell">${_('Comparison %s') % (index + 1,)} (${"C%s" % (index + 1,)})</div>
                     <div class="act_as_cell">
                         %if params['comparison_filter'] == 'filter_date':
-                            ${_('Dates : ')}
+                            ${_('Dates : ')}&nbsp;${formatLang(params['start'], date=True) }&nbsp;-&nbsp;${formatLang(params['stop'], date=True) }
+                        %elif params['comparison_filter'] == 'filter_period':
+                            ${_('Periods : ')}&nbsp;${params['start'].name}&nbsp;-&nbsp;${params['stop'].name}
                         %else:
-                            ${_('Periods : ')}
-                        %endif
-                        %if params['comparison_filter'] == 'filter_date':
-                            ${formatLang(params['start'], date=True) }
-                        %else:
-                            ${params['start'].name}
-                        %endif
-                        &nbsp;-&nbsp;
-                        %if params['comparison_filter'] == 'filter_date':
-                            ${formatLang(params['stop'], date=True) }
-                        %else:
-                            ${params['stop'].name}
+                            ${_('Fiscal Year : ')}&nbsp;${params['fiscalyear'].name}
                         %endif
                     </div>
-
+                    <div class="act_as_cell">${_('Initial Balance:')} ${ _('Yes') if params['initial_balance'] else _('No') }</div>
                 </div>
             </div>
-            %endif
         %endfor
 
         <div class="act_as_table list_table" style="margin-top: 20px;">
