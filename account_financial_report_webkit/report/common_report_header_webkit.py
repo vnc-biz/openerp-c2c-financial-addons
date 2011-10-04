@@ -144,7 +144,7 @@ class CommonReportHeaderWebkit(common_report_header):
 
         return sorted_accounts
 
-    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, context=None):
+    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, filter_report_type=None, context=None):
         """Get all account passed in params with their childrens"""
         context = context or {}
         accounts = []
@@ -158,16 +158,24 @@ class CommonReportHeaderWebkit(common_report_header):
 
         res_ids = self.sort_accounts_with_structure(res_ids, context=context)
 
-        if filter_view or filter_type:
-            format_list = [tuple(res_ids)]
-            sql = "SELECT id FROM account_account WHERE id IN %s "
+        if filter_view or filter_type or filter_report_type:
+            format_list = {'ids': tuple(res_ids)}
+            sql_select = "SELECT a.id FROM account_account a"
+            sql_join = ""
+            sql_where = "WHERE a.id IN %(ids)s"
             if filter_view:
-                sql += " AND type != 'view'"
+                sql_where += " AND a.type != 'view'"
             if filter_type:
-                sql += " AND type in %s"
-                format_list.append(tuple(filter_type))
+                sql_where += " AND a.type IN %(filter_type)s"
+                format_list.update({'filter_type': tuple(filter_type)})
+            if filter_report_type:
+                sql_join += "INNER JOIN account_account_type t" \
+                            " ON t.id = a.user_type"
+                sql_join += " AND t.report_type IN %(report_type)s"
+                format_list.update({'report_type': tuple(filter_report_type)})
 
-            self.cursor.execute(sql, tuple(format_list))
+            sql = ' '.join((sql_select, sql_join, sql_where))
+            self.cursor.execute(sql, format_list)
             fetch_only_ids = self.cursor.fetchall()
             if not fetch_only_ids:
                 return []

@@ -97,7 +97,9 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         """
         res = super(AccountBalanceCommonWizard, self).default_get(cr, uid, fields, context=context)
         for index in range(COMPARISON_LEVEL):
-            res["comp%s_filter" % (index,)] = 'filter_no'
+            field = "comp%s_filter" % (index,)
+            if not res.get(field, False):
+                res[field] = 'filter_no'
         return res
 
     def view_init(self, cr, uid, fields_list, context=None):
@@ -146,8 +148,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                 res['fields']["comp%s_date_from" % (index,)] = {'string': "Start Date", 'type': 'date'}
                 res['fields']["comp%s_date_to" % (index,)] = {'string': "End Date", 'type': 'date'}
 
-
-                page = etree.Element('page', {'name': "comp%s" % (index+1,), 'string': _("Comparison %s") % (index+1,)})
+                page = etree.Element('page', {'name': "comp%s" % (index,), 'string': _("Comparison %s") % (index+1,)})
                 page.append(etree.Element('field', {'name': "comp%s_filter" % (index,),
                                                     'colspan': '4',
                                                     'on_change': "onchange_comp_filter(%(index)s, filter, comp%(index)s_filter, fiscalyear_id, date_from, date_to)" % {'index': index}}))
