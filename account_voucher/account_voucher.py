@@ -455,7 +455,7 @@ class account_voucher(osv.osv):
 
         return default
 
-    def onchange_partner_id(self, cr, uid, ids, partner_id, journal_id, price, voucher_currency_id, ttype, date, context=None):
+    def onchange_partner_id(self, cr, uid, ids, partner_id, journal_id, price, currency_id, ttype, date, context=None):
         """price
         Returns a dict that contains new values and context
 
@@ -465,6 +465,7 @@ class account_voucher(osv.osv):
 
         @return: Returns a dict which contains new values, and context
         """
+        voucher_currency_id = currency_id
         if not journal_id:
             return {}
         if context is None:
@@ -1091,6 +1092,8 @@ class account_bank_statement(osv.osv):
                 if line.voucher_id:
                     voucher_ids.append(line.voucher_id.id)
             voucher_obj.cancel_voucher(cr, uid, voucher_ids, context)
+            ## And we call action to place the voucher in draft
+            voucher_obj.action_cancel_draft(cr,uid,voucher_ids,context)
         return super(account_bank_statement, self).button_cancel(cr, uid, ids, context=context)
 
     def create_move_from_st_line(self, cr, uid, st_line_id, company_currency_id, next_number, context=None):
@@ -1137,7 +1140,7 @@ class account_bank_statement_line(osv.osv):
             account_id = self.pool.get('account.move.line').browse(cr, uid, move_line_id, context=context).account_id.id
             vals = {'voucher_id': voucher_id,
                     'account_id': account_id,
-                    'amount': data.amount,
+                    'amount': abs(data.amount),
                     'type': line_type, 
                     'move_line_id': move_line_id, 
             }
