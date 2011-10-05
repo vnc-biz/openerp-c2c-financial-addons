@@ -34,8 +34,6 @@ from lxml import etree
 from tools.translate import _
 from datetime import datetime
 
-COMPARISON_LEVEL = 3
-
 def previous_year_date(date, nb_prev=1):
     if not date:
         return False
@@ -52,6 +50,8 @@ class AccountBalanceCommonWizard(osv.osv_memory):
     _name = "account.common.balance.report"
     _description = "Common Balance Report"
 
+    COMPARISON_LEVEL = 3
+    
     COMPARE_SELECTION = [('filter_no', 'No Comparison'),
                          ('filter_year', 'Fiscal Year'),
                          ('filter_date', 'Date'),
@@ -96,7 +96,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
 
         """
         res = super(AccountBalanceCommonWizard, self).default_get(cr, uid, fields, context=context)
-        for index in range(COMPARISON_LEVEL):
+        for index in range(self.COMPARISON_LEVEL):
             field = "comp%s_filter" % (index,)
             if not res.get(field, False):
                 res[field] = 'filter_no'
@@ -112,7 +112,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
          @return: New arch of view with new columns.
         """
         res = super(AccountBalanceCommonWizard, self).view_init(cr, uid, fields_list, context=context)
-        for index in range(COMPARISON_LEVEL):
+        for index in range(self.COMPARISON_LEVEL):
             # create columns for each comparison page
             self._columns.update({
                 "comp%s_filter" % (index,):
@@ -139,7 +139,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         placeholder = eview.xpath("//page[@name='placeholder']")
         if placeholder:
             placeholder = placeholder[0]
-            for index in range(COMPARISON_LEVEL):
+            for index in range(self.COMPARISON_LEVEL):
                 # add fields
                 res['fields']["comp%s_filter" % (index,)] = {'string': "Compare By", 'type': 'selection', 'selection': self.COMPARE_SELECTION, 'required': True}
                 res['fields']["comp%s_fiscalyear_id" % (index,)] = {'string': "Fiscal Year", 'type': 'many2one', 'relation': 'account.fiscalyear'}
@@ -180,7 +180,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         if fiscalyear_id:
             fiscalyear = fy_obj.browse(cr, uid, fiscalyear_id, context=context)
             last_fiscalyear_ids = fy_obj.search(cr, uid, [('date_stop', '<', fiscalyear.date_start)],
-                                                limit=COMPARISON_LEVEL, order='date_start desc', context=context)
+                                                limit=self.COMPARISON_LEVEL, order='date_start desc', context=context)
             if last_fiscalyear_ids:
                 if len(last_fiscalyear_ids) > index:
                     last_fiscalyear_id = last_fiscalyear_ids[index]  # first element for the comparison 1, second element for the comparison 2
@@ -239,7 +239,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         fields_to_read = ['account_ids',]
 
         # comparison fields
-        for index in range(COMPARISON_LEVEL):
+        for index in range(self.COMPARISON_LEVEL):
             fields_to_read.extend([
                 "comp%s_filter" % (index,),
                 "comp%s_fiscalyear_id" % (index,),
@@ -250,7 +250,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
             ])
 
         vals = self.read(cr, uid, ids, fields_to_read,context=context)[0]
-        vals['max_comparison'] = COMPARISON_LEVEL
+        vals['max_comparison'] = self.COMPARISON_LEVEL
         data['form'].update(vals)
         return data
 
