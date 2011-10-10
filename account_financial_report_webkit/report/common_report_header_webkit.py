@@ -138,11 +138,12 @@ class CommonReportHeaderWebkit(common_report_header):
         levels = [x['level'] for x in accounts]
         start_level = min(levels)
         max_level = max(levels)
-        sorted_accounts = recursive_sort_by_code(start_level, max_level, accounts)
-
-        assert len(account_ids) == len(sorted_accounts), 'Accounts Sorting Error'
-
-        return sorted_accounts
+#        sorted_accounts = recursive_sort_by_code(start_level, max_level, accounts)
+#
+#        assert len(account_ids) == len(sorted_accounts), 'Accounts Sorting Error'
+#
+#        return sorted_accounts
+        return account_ids
 
     def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, context=None):
         """Get all account passed in params with their childrens"""
