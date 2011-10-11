@@ -40,6 +40,9 @@
                     <page name="journal_ids" position="attributes">
                         <attribute name="invisible">True</attribute>
                     </page>
+                    <page name="filters" position="attributes">
+                        <attribute name="string">Time Filters</attribute>
+                    </page>
                 </data>
             </field>
         </record>
