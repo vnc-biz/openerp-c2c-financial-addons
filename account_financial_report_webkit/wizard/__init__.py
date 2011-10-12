@@ -22,4 +22,5 @@ from . import account_report_balance_common
 from . import account_report_general_ledger_wizard
 from . import account_report_partners_ledger_wizard
 from . import account_report_trial_balance_wizard
-from . import account_report_profit_loss_wizard
+from . import account_report_partner_balance_wizard
+#from . import account_report_profit_loss_wizard

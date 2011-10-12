@@ -147,8 +147,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         if main_filter in ('filter_period', 'filter_no'):
             search_param = {'date_start': start_period.date_start,
                             'period_ids': tuple(period_ids),
-                            'account_ids': tuple(account_ids),
-                            'partner_ids': tuple(partner_filter)}
+                            'account_ids': tuple(account_ids),}
             sql = ("SELECT account_id, partner_id,"
                    "     sum(debit-credit) as init_balance,"
                    "     sum(amount_currency) as init_balance_currency"
@@ -160,6 +159,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                        "           OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_start)s)))")
             if partner_filter:
                 sql += "   AND partner_id in %(partner_ids)s"
+                search_param.update({'partner_ids': tuple(partner_filter)})
             sql += " group by account_id, partner_id"
             self.cursor.execute(sql, search_param)
             res = self.cursor.dictfetchall()
@@ -176,7 +176,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
     ####################Partner specific helper ################################
     def _order_partners(self, *args):
         """We get the partner linked to all current accounts that are used.
-            We also use ensure that partner are ordered bay name
+            We also use ensure that partner are ordered by name
             args must be list"""
         res = []
         partner_ids = []
@@ -189,14 +189,14 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         existing_partner_ids = [partner_id for partner_id in partner_ids if partner_id]
         if existing_partner_ids:
             # We may use orm here as the performance optimization is not that big
-            sql = ("SELECT name|| ' ' ||CASE WHEN ref IS NOT NULL THEN '('||ref||')' ELSE '' END, id"
+            sql = ("SELECT name|| ' ' ||CASE WHEN ref IS NOT NULL THEN '('||ref||')' ELSE '' END, id, ref, name"
                    "  FROM res_partner WHERE id IN %s ORDER BY name, ref")
             self.cursor.execute(sql, (tuple(set(existing_partner_ids)),))
             res = self.cursor.fetchall()
 
         # move lines without partners, set None for empty partner
         if not all(partner_ids):
-            res.append((None, None))
+            res.append((None, None, None, None))
 
         if not res:
             return []

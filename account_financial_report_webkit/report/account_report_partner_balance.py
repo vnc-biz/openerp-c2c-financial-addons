@@ -25,28 +25,26 @@ from tools.translate import _
 import pooler
 from datetime import datetime
 
-from common_balance_report_header_webkit import CommonBalanceReportHeaderWebkit
+from partner_balance_header_webkit import CommonPartnerBalanceReportHeaderWebkit
 from webkit_parser_header_fix import HeaderFooterTextWebKitParser
 
-def sign(number):
-    return cmp(number, 0)
 
-class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
+class PartnerBalanceWebkit(report_sxw.rml_parse, CommonPartnerBalanceReportHeaderWebkit):
 
     def __init__(self, cursor, uid, name, context):
-        super(TrialBalanceWebkit, self).__init__(cursor, uid, name, context=context)
+        super(PartnerBalanceWebkit, self).__init__(cursor, uid, name, context=context)
         self.pool = pooler.get_pool(self.cr.dbname)
         self.cursor = self.cr
         
         company = self.pool.get('res.users').browse(self.cr, uid, uid, context=context).company_id
-        header_report_name = ' - '.join((_('TRIAL BALANCE'), company.name, company.currency_id.name))
+        header_report_name = ' - '.join((_('PARTNER BALANCE'), company.name, company.currency_id.name))
 
         footer_date_time = self.formatLang(str(datetime.today()), date_time=True)
 
         self.localcontext.update({
             'cr': cursor,
             'uid': uid,
-            'report_name': _('Trial Balance'),
+            'report_name': _('Partner Balance'),
             'display_account': self._get_display_account,
             'display_account_raw': self._get_display_account_raw,
             'filter_form': self._get_filter,
@@ -69,14 +67,14 @@ class TrialBalanceWebkit(report_sxw.rml_parse, CommonBalanceReportHeaderWebkit):
     def set_context(self, objects, data, ids, report_type=None):
         """Populate a ledger_lines attribute on each browse record that will be used
         by mako template"""
-        objects, new_ids, context_report_values = self.compute_balance_data(data)
+        objects, new_ids, context_report_values = self.compute_partner_balance_data(data)
 
         self.localcontext.update(context_report_values)
 
-        return super(TrialBalanceWebkit, self).set_context(objects, data, new_ids,
+        return super(PartnerBalanceWebkit, self).set_context(objects, data, new_ids,
                                                             report_type=report_type)
 
-HeaderFooterTextWebKitParser('report.account.account_report_trial_balance_webkit',
+HeaderFooterTextWebKitParser('report.account.account_report_partner_balance_webkit',
                              'account.account',
-                             'addons/account_financial_report_webkit/report/templates/account_report_trial_balance.mako',
-                             parser=TrialBalanceWebkit)
+                             'addons/account_financial_report_webkit/report/templates/account_report_partner_balance.mako',
+                             parser=PartnerBalanceWebkit)

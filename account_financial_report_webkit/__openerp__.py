@@ -88,7 +88,8 @@ This merge add the ability to pass dynamically values to html headers and footer
                    'wizard/account_report_general_ledger_wizard_view.xml',
                    'wizard/account_report_partners_ledger_wizard_view.xml',
                    'wizard/account_report_trial_balance_wizard_view.xml',
-                   'wizard/account_report_profit_loss_wizard_view.xml',
+                   'wizard/account_report_partner_balance_wizard_view.xml',
+#                   'wizard/account_report_profit_loss_wizard_view.xml',
                    ],
     # tests order matter
     'test': ['tests/general_ledger.yml',

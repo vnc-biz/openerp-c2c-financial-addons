@@ -19,6 +19,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
+from collections import defaultdict
 from operator import add
 
 from common_report_header_webkit import CommonReportHeaderWebkit
@@ -176,25 +178,46 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
 
         return {'diff': diff, 'percent_diff': percent_diff}
 
-    def compute_balance_data(self, data, filter_report_type=None):
-        new_ids = data['form']['account_ids'] or data['form']['chart_account_id']
-        max_comparison = self._get_form_param('max_comparison', data, default=0)
-        main_filter = self._get_form_param('filter', data, default='filter_no')
-
+    def _comp_filters(self, data, comparison_number):
+        """ 
+        @param data: data of the report
+        @param comparison_number: number of comparisons
+        @return: list of comparison filters, nb of comparisons used and comparison mode (no_comparison, single, multiple)
+        """
         comp_filters = []
-        for index in range(max_comparison):
+        for index in range(comparison_number):
             comp_filters.append(self._get_form_param("comp%s_filter" % (index,), data, default='filter_no'))
-
-        fiscalyear = self.get_fiscalyear_br(data)
-
+            
         nb_comparisons = len([comp_filter for comp_filter in comp_filters if comp_filter != 'filter_no'])
-
         if not nb_comparisons:
             comparison_mode = 'no_comparison'
         elif nb_comparisons > 1:
             comparison_mode = 'multiple'
         else:
             comparison_mode = 'single'
+        return comp_filters, nb_comparisons, comparison_mode
+
+    def _get_start_stop_for_filter(self, main_filter, fiscalyear, start_date, stop_date, start_period, stop_period):
+        if main_filter == 'filter_no':
+            start_period = self.get_first_fiscalyear_period(fiscalyear)
+            stop_period = self.get_last_fiscalyear_period(fiscalyear)
+        if main_filter == 'filter_date':
+            start = start_date
+            stop = stop_date
+        else:
+            start = start_period
+            stop = stop_period
+
+        return start_period, stop_period, start, stop
+
+    def compute_balance_data(self, data, filter_report_type=None):
+        new_ids = data['form']['account_ids'] or data['form']['chart_account_id']
+        max_comparison = self._get_form_param('max_comparison', data, default=0)
+        main_filter = self._get_form_param('filter', data, default='filter_no')
+
+        comp_filters, nb_comparisons, comparison_mode = self._comp_filters(data, max_comparison)
+
+        fiscalyear = self.get_fiscalyear_br(data)
 
         start_period = self.get_start_period_br(data)
         stop_period = self.get_end_period_br(data)
@@ -204,21 +227,13 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         stop_date = self._get_form_param('date_to', data)
         chart_account = self._get_chart_account_id_br(data)
 
-        if main_filter == 'filter_no':
-            start_period = self.get_first_fiscalyear_period(fiscalyear)
-            stop_period = self.get_last_fiscalyear_period(fiscalyear)
+        start_period, stop_period, start, stop = \
+            self._get_start_stop_for_filter(main_filter, fiscalyear, start_date, stop_date, start_period, stop_period)
 
         # Retrieving accounts
         account_ids = self.get_all_accounts(new_ids, filter_view=False, filter_report_type=filter_report_type)
 
-        # computation of ledger lines
-        if main_filter == 'filter_date':
-            start = start_date
-            stop = stop_date
-        else:
-            start = start_period
-            stop = stop_period
-
+        # get details for each accounts, total of debit / credit / balance
         accounts_by_ids = self._get_account_details(account_ids, target_move, init_bal,
                                                     fiscalyear, main_filter, start, stop)
 
