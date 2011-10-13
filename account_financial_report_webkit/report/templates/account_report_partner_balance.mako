@@ -43,6 +43,7 @@
                     %endif
                 </div>
                 <div class="act_as_cell">${_('Displayed Accounts')}</div>
+                <div class="act_as_cell">${_('Partners')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
                 <div class="act_as_cell">${_('Initial Balance')}</div>
             </div>
@@ -70,6 +71,7 @@
                         ${_('All')}
                     %endif
                 </div>
+                <div class="act_as_cell">${display_partner_account(data)}</div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
                 <div class="act_as_cell">${ _('Yes') if initial_balance else _('No') }</div>
             </div>

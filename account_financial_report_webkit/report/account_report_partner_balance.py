@@ -50,6 +50,7 @@ class PartnerBalanceWebkit(report_sxw.rml_parse, CommonPartnerBalanceReportHeade
             'filter_form': self._get_filter,
             'target_move': self._get_target_move,
             'display_target_move': self._get_display_target_move,
+            'display_partner_account': self._get_display_partner_account,
             'accounts': self._get_accounts_br,
             'additional_args': [
                 ('--header-font-name', 'Helvetica'),
