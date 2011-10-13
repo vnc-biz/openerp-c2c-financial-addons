@@ -228,33 +228,35 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
                 comp_accounts_by_ids.append(comparison_result)
         objects = []
 
-        for account_id in account_ids:
-            if not accounts_by_ids[account_id]['parent_id']:  # hide top level account
+        for account in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
+            if not account.parent_id:  # hide top level account
                 continue
-            accounts = defaultdict(dict)
-            accounts['current']['account'] = accounts_by_ids[account_id]
-            accounts['current']['partners_amounts'] = partner_details_by_ids[account_id]
+            account.debit = accounts_by_ids[account.id]['debit']
+            account.credit = accounts_by_ids[account.id]['credit']
+            account.balance = accounts_by_ids[account.id]['balance']
+            account.init_balance = accounts_by_ids[account.id]['init_balance']
+            account.partners_amounts = partner_details_by_ids[account.id]
             comp_accounts = []
             for comp_account_by_id in comp_accounts_by_ids:
-                values = comp_account_by_id.get(account_id)
+                values = comp_account_by_id.get(account.id)
 
-                values['account'].update(self._get_diff(accounts['current']['account']['balance'], values['account'].get('balance', 0.0)))
+                values['account'].update(self._get_diff(account.balance, values['account'].get('balance', 0.0)))
                 comp_accounts.append(values)
 
                 for partner_id, partner_values in values['partners_amounts'].copy().iteritems():
-                    base_partner_balance = accounts['current']['partners_amounts'][partner_id]['balance'] if \
-                                           accounts['current']['partners_amounts'].get(partner_id) else 0.0
+                    base_partner_balance = account.partners_amounts[partner_id]['balance'] if \
+                                           account.partners_amounts.get(partner_id) else 0.0
                     partner_values.update(self._get_diff(base_partner_balance,
                                                          partner_values.get('balance', 0.0)))
                     values['partners_amounts'][partner_id].update(partner_values)
 
-            accounts['comparisons'] = comp_accounts
+            account.comparisons = comp_accounts
 
             all_partner_ids = reduce(add, [comp['partners_amounts'].keys() for comp in comp_accounts],
-                                     accounts['current']['partners_amounts'].keys())
+                                     account.partners_amounts.keys())
 
-            accounts['partners_order'] = self._order_partners(all_partner_ids)
-            objects.append(accounts)
+            account.partners_order = self._order_partners(all_partner_ids)
+            objects.append(account)
 
         context_report_values = {
             'fiscalyear': fiscalyear,

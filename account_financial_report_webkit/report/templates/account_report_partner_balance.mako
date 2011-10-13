@@ -94,14 +94,18 @@
         %endfor
 
 
-        %for partner_balance_data in objects:
+        %for current_account in objects:
             <%
-            current = partner_balance_data['current']
-            current_account = current['account']
-            current_partner_amounts = current.get('partners_amounts', {})
-            partners_order = partner_balance_data['partners_order']
-            comparisons = partner_balance_data['comparisons']
+            partners_order = current_account.partners_order
+
+            # do not display accounts without partners
+            if not partners_order:
+                continue
+
+            current_partner_amounts = current_account.partners_amounts
+            comparisons = current_account.comparisons
             %>
+
             <div class="act_as_table list_table" style="margin-top: 20px;">
 
                 <div class="act_as_thead">
@@ -150,24 +154,24 @@
 
                     <div class="act_as_row lines account_line">
                         ## code
-                        <div class="act_as_cell first_column">${current_account['code']}</div>
+                        <div class="act_as_cell first_column">${current_account.code}</div>
                         ## account name
-                        <div class="act_as_cell">${current_account['name']}</div>
+                        <div class="act_as_cell">${current_account.name}</div>
                         %if comparison_mode == 'no_comparison':
                             %if initial_balance:
                                 ## opening balance
-                                <div class="act_as_cell amount">${current_account['init_balance'] | amount}</div>
+                                <div class="act_as_cell amount">${current_account.init_balance | amount}</div>
                             %endif
                             ## debit
-                            <div class="act_as_cell amount">${current_account['debit'] | amount}</div>
+                            <div class="act_as_cell amount">${current_account.debit | amount}</div>
                             ## credit
-                            <div class="act_as_cell amount">${current_account['credit'] and current_account['credit'] * -1 or 0.0 | amount}</div>
+                            <div class="act_as_cell amount">${current_account.credit and current_account.credit * -1 or 0.0 | amount}</div>
                         %endif
                         ## balance
-                        <div class="act_as_cell amount">${current_account['balance'] | amount}</div>
+                        <div class="act_as_cell amount">${current_account.balance | amount}</div>
 
                         %if comparison_mode in ('single', 'multiple'):
-                            %for comp in partner_balance_data['comparisons']:
+                            %for comp in comparisons:
                                 <%
                                 comp_account = comp['account']
                                 %>
@@ -184,12 +188,10 @@
                                 %endif
                             %endfor
                         %endif
-                    </div>
-                
+                    </div>                                
+
                     %for (partner_code_name, partner_id, partner_ref, partner_name) in partners_order:
                         <%
-                        current = partner_balance_data['current']
-                        current_account = current['account']
                         partner = current_partner_amounts.get(partner_id)
                         %>
                         <div class="act_as_row lines">
@@ -205,7 +207,7 @@
                             <div class="act_as_cell amount">${partner['balance'] if partner else 0.0 | amount}</div>
 
                             %if comparison_mode in ('single', 'multiple'):
-                                %for comp in partner_balance_data['comparisons']:
+                                %for comp in comparisons:
                                     <%
                                     comp_partners = comp['partners_amounts']
                                     balance = diff = percent_diff = 0
