@@ -349,18 +349,18 @@ class CommonReportHeaderWebkit(common_report_header):
         return res
 
     ####################Account move retrieval helper ##########################
-    def _get_move_ids_from_periods(self, account_id, period_start, period_stop, mode, valid_only=False):
+    def _get_move_ids_from_periods(self, account_id, period_start, period_stop, mode, target_move):
         move_line_obj = self.pool.get('account.move.line')
         # we filter opening period here
         periods = self._get_period_range_from_periods(period_start, period_stop, mode)
         if not periods:
             return []
         search = [('period_id', 'in', periods), ('account_id', '=', account_id)]
-        if valid_only:
-            search += [('state', '=', 'valid')]
+        if target_move == 'posted':
+            search += [('move_id.state', '=', 'posted')]
         return move_line_obj.search(self.cursor, self.uid, search)
 
-    def _get_move_ids_from_dates(self, account_id, date_start, date_stop, mode, valid_only=False):
+    def _get_move_ids_from_dates(self, account_id, date_start, date_stop, mode, target_move):
         # TODO imporve perfomance by setting opening period as a property
         move_line_obj = self.pool.get('account.move.line')
         search_period = [('date', '>=', date_start), 
@@ -372,21 +372,21 @@ class CommonReportHeaderWebkit(common_report_header):
             if opening:
                 search_period += ['period_id', 'not in', opening]
                 
-        if valid_only:
-            search_period += [('state', '=', 'valid')]
+        if target_move == 'posted':
+            search_period += [('move_id.state', '=', 'posted')]
         return move_line_obj.search(self.cursor, self.uid, search_period)
 
-    def get_move_lines_ids(self, account_id, main_filter, start, stop, mode='include_opening', valid_only=False):
+    def get_move_lines_ids(self, account_id, main_filter, start, stop, target_move, mode='include_opening'):
         """Get account move lines base on form data"""
         res = {}
         if mode not in ('include_opening', 'exclude_opening'):
             raise osv.except_osv(_('Invalid query mode'), _('Must be in include_opening, exclude_opening'))
 
         if main_filter in ('filter_period', 'filter_no'):
-            return self._get_move_ids_from_periods(account_id, start, stop, mode, valid_only=valid_only)
+            return self._get_move_ids_from_periods(account_id, start, stop, mode, target_move)
             
         elif main_filter == 'filter_date':
-            return self._get_move_ids_from_dates(account_id, start, stop, mode, valid_only=valid_only)
+            return self._get_move_ids_from_dates(account_id, start, stop, mode, target_move)
             
         else:
             raise osv.except_osv(_('No valid filter'), _('Please set a valid time filter'))

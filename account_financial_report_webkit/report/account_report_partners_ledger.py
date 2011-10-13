@@ -168,9 +168,6 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
     def _compute_partner_ledger_lines(self, accounts_ids, main_filter, target_move, start,
                                       stop, date_until, exclude_reconcile=True, partner_filter=False):
         res = defaultdict(dict)
-        valid_only = True
-        if target_move == 'all':
-            valid_only = False
         ## we check if until date and date stop have the same value
         if main_filter in ('filter_period', 'filter_no'):
             date_stop = stop.date_stop
@@ -191,8 +188,8 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
                                                              main_filter,
                                                              start,
                                                              stop,
+                                                             target_move,
                                                              exclude_reconcile=exclude_reconcile,
-                                                             valid_only=valid_only,
                                                              partner_filter=partner_filter)
             if not move_line_ids_dict:
                 #not really useful as it is default dict

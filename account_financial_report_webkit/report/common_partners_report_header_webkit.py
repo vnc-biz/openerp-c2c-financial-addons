@@ -32,8 +32,8 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
     """Define common helper for partner oriented financial report"""
 
     ####################Account move line retrieval helper ##########################
-    def get_partners_move_lines_ids(self, account_id, main_filter, start, stop, exclude_reconcile=True,
-                                    valid_only=False, partner_filter=False):
+    def get_partners_move_lines_ids(self, account_id, main_filter, start, stop, target_move,
+                                    exclude_reconcile=True, partner_filter=False):
         filter_from = False
         if main_filter in ('filter_period', 'filter_no'):
             filter_from = 'period'
@@ -44,8 +44,8 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                                                account_id,
                                                start,
                                                stop,
+                                               target_move,
                                                exclude_reconcile=exclude_reconcile,
-                                               valid_only=valid_only,
                                                partner_filter=partner_filter)
 
 
@@ -58,7 +58,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         search_params = {'period_ids': tuple(periods),
                          'date_stop': period_stop.date_stop}
 
-        sql_conditions = "  AND period_id in %(period_ids)s"
+        sql_conditions = "  AND account_move_line.period_id in %(period_ids)s"
 
         return sql_conditions, search_params
 
@@ -72,37 +72,43 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                          'date_start': date_start,
                          'date_stop': date_stop}
 
-        sql_conditions = "  AND period_id not in %(period_ids)s" \
-                         "  AND date between date(%(date_start)s) and date((%(date_stop)s))"
+        sql_conditions = "  AND account_move_line.period_id not in %(period_ids)s" \
+                         "  AND account_move_line.date between date(%(date_start)s) and date((%(date_stop)s))"
 
         return sql_conditions, search_params
 
-    def _get_partners_move_ids(self, filter_from, account_id, start, stop,
-                   exclude_reconcile=True, valid_only=False, partner_filter=False):
+    def _get_partners_move_ids(self, filter_from, account_id, start, stop, target_move,
+                   exclude_reconcile=True,partner_filter=False):
 
         final_res = defaultdict(list)
 
-        sql = "SELECT id, partner_id FROM account_move_line " \
-              " WHERE account_id = %(account_ids)s "
-
+        sql_select = "SELECT account_move_line.id, account_move_line.partner_id FROM account_move_line"
+        sql_joins = ''
+        sql_where = " WHERE account_move_line.account_id = %(account_ids)s " \
+                    " AND account_move_line.state = 'valid' "
+        
         sql_conditions, search_params = getattr(self, '_get_query_params_from_'+filter_from+'s')(start, stop)
 
-        sql += sql_conditions
-        
-        if exclude_reconcile:
-            sql += ("  AND ((reconcile_id IS NULL)"
-                    "   OR (reconcile_id IS NOT NULL AND last_rec_date > date(%(date_stop)s)))")
-        if partner_filter:
-            sql += "   AND partner_id in %(partner_ids)s"
+        sql_where += sql_conditions
 
-        if valid_only:
-            sql += "   AND state = 'valid'"
+        if exclude_reconcile:
+            sql_where += ("  AND ((account_move_line.reconcile_id IS NULL)"
+                         "   OR (account_move_line.reconcile_id IS NOT NULL AND account_move_line.last_rec_date > date(%(date_stop)s)))")
+
+        if partner_filter:
+            sql_where += "   AND account_move_line.partner_id in %(partner_ids)s"
+
+        if target_move == 'posted':
+            sql_joins += "INNER JOIN account_move ON account_move_line.move_id = account_move.id"
+            sql_where += " AND account_move.state = %(target_move)s"
+            search_params.update({'target_move': target_move,})
 
         search_params.update({
             'account_ids': account_id,
             'partner_ids': tuple(partner_filter),
         })
 
+        sql = ' '.join((sql_select, sql_joins, sql_where))
         self.cursor.execute(sql, search_params)
         res = self.cursor.dictfetchall()
         if res:
