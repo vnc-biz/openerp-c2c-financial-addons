@@ -27,11 +27,16 @@ from common_report_header_webkit import CommonReportHeaderWebkit
 from tools.translate import _
 
 
+
 class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
     """Define common helper for balance (trial balance, P&L, BS oriented financial report"""
 
     def _get_numbers_display(self, data):
         return self._get_form_param('numbers_display', data)
+
+    @staticmethod
+    def find_key_by_value_in_list(dic, value):
+        return [key for key, val in dic.iteritems() if value in val][0]
 
     def _get_account_details(self, account_ids, target_move, init_balance, fiscalyear, main_filter, start, stop, context=None):
         """
@@ -96,6 +101,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
                 else:
                     account.update(init_balance[account['id']])
                 account['balance'] = account['init_balance'] + account['debit'] - account['credit']
+            account['opening_mode'] = self.find_key_by_value_in_list(modes, account['id'])
             accounts_by_id[account['id']] = account
         return accounts_by_id
 

@@ -197,10 +197,10 @@
                             <div class="act_as_cell">${partner_name if partner_name else _('Unallocated') }</div>
                             %if comparison_mode == 'no_comparison':
                                 %if initial_balance:
-                                    <div class="act_as_cell amount">${partner['init_balance'] | amount}</div>
+                                    <div class="act_as_cell amount">${partner.get('init_balance', 0.0) | amount}</div>
                                 %endif
-                                <div class="act_as_cell amount">${partner['debit'] if partner else 0.0 | amount}</div>
-                                <div class="act_as_cell amount">${(partner['credit'] and partner['credit'] * -1 or 0.0) if partner else 0.0 | amount}</div>
+                                <div class="act_as_cell amount">${partner.get('debit', 0.0) if partner else 0.0 | amount}</div>
+                                <div class="act_as_cell amount">${(partner.get('credit') and partner['credit'] * -1 or 0.0) if partner else 0.0 | amount}</div>
                             %endif
                             <div class="act_as_cell amount">${partner['balance'] if partner else 0.0 | amount}</div>
 

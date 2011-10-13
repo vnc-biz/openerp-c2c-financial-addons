@@ -70,7 +70,6 @@ class PartnerBalanceWebkit(report_sxw.rml_parse, CommonPartnerBalanceReportHeade
         objects, new_ids, context_report_values = self.compute_partner_balance_data(data)
 
         self.localcontext.update(context_report_values)
-
         return super(PartnerBalanceWebkit, self).set_context(objects, data, new_ids,
                                                             report_type=report_type)
 

@@ -49,9 +49,9 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                                                partner_filter=partner_filter)
 
 
-    def _get_query_params_from_periods(self, period_start, period_stop):
+    def _get_query_params_from_periods(self, period_start, period_stop, mode='exclude_opening'):
         # we do not want opening period so we exclude opening
-        periods = self._get_period_range_from_periods(period_start, period_stop, 'exclude_opening')
+        periods = self._get_period_range_from_periods(period_start, period_stop, mode)
         if not periods:
             return []
 
@@ -62,7 +62,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
 
         return sql_conditions, search_params
 
-    def _get_query_params_from_dates(self, date_start, date_stop):
+    def _get_query_params_from_dates(self, date_start, date_stop, **args):
 
         periods = self._get_opening_periods()
         if not periods:
@@ -138,10 +138,12 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             return []
 
      ####################Initial Partner Balance helper ########################
-    def _compute_partners_initial_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None, exclude_reconcile=False, force_period_ids=False, mode='computed'):
+    def _compute_partners_initial_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None, exclude_reconcile=False, force_period_ids=False):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
+        if isinstance(account_ids, (int, long)):
+            account_ids = [account_ids]
         final_res = defaultdict(dict)
         period_ids = force_period_ids \
                      if force_period_ids \
@@ -169,14 +171,14 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                 sql += "   AND partner_id in %(partner_ids)s"
                 search_param.update({'partner_ids': tuple(partner_filter)})
             sql += " group by account_id, partner_id"
+            
             self.cursor.execute(sql, search_param)
             res = self.cursor.dictfetchall()
             if res:
                 for row in res:
                     final_res[row['account_id']][row['partner_id']] = \
                         {'init_balance': row['init_balance'],
-                         'init_balance_currency': row['init_balance_currency'],
-                         'mode': mode}
+                         'init_balance_currency': row['init_balance_currency'],}
         if not final_res:
             for acc_id in account_ids:
                 final_res[acc_id] = {}
