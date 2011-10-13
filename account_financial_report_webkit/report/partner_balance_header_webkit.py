@@ -239,9 +239,6 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
 
             accounts['comparisons'] = comp_accounts
 
-            # TODO compute unallocated = difference between sum of partners and account  
-            accounts['unallocated'] = {}
-
             all_partner_ids = reduce(add, [comp['partners_amounts'].keys() for comp in comp_accounts],
                                      accounts['current']['partners_amounts'].keys())
             accounts['partners_order'] = self._order_partners(all_partner_ids)

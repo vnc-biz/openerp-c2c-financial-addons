@@ -191,8 +191,8 @@
                         %>
                         %if partner:
                             <div class="act_as_row lines">
-                                <div class="act_as_cell first_column">${partner_ref}</div>
-                                <div class="act_as_cell">${partner_name}</div>
+                                <div class="act_as_cell first_column">${partner_ref if partner_ref else ''}</div>
+                                <div class="act_as_cell">${partner_name if partner_name else _('Unallocated') }</div>
                                 %if comparison_mode == 'no_comparison':
                                     %if initial_balance:
                                         <div class="act_as_cell amount">${partner['init_balance'] | amount}</div>
