@@ -138,13 +138,15 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             return []
 
      ####################Initial Partner Balance helper ########################
-    def _compute_partners_initial_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None, exclude_reconcile=False):
+    def _compute_partners_initial_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None, exclude_reconcile=False, force_period_ids=False, mode='computed'):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
         final_res = defaultdict(dict)
-        period_ids = self._get_period_range_from_start_period(start_period, fiscalyear=False,
-                                                                       include_opening=False)
+        period_ids = force_period_ids \
+                     if force_period_ids \
+                     else self._get_period_range_from_start_period(start_period, fiscalyear=False, include_opening=False)
+        
         if not period_ids:
             period_ids = [-1]
         # if opening period is included in start period we do not need to compute init balance
@@ -172,7 +174,9 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             if res:
                 for row in res:
                     final_res[row['account_id']][row['partner_id']] = \
-                        {'init_balance': row['init_balance'], 'init_balance_currency': row['init_balance_currency']}
+                        {'init_balance': row['init_balance'],
+                         'init_balance_currency': row['init_balance_currency'],
+                         'mode': mode}
         if not final_res:
             for acc_id in account_ids:
                 final_res[acc_id] = {}

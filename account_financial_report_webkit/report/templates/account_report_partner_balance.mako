@@ -165,20 +165,23 @@
                         %endif
                         ## balance
                         <div class="act_as_cell amount">${current_account['balance'] | amount}</div>
-                        %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
+
+                        %if comparison_mode in ('single', 'multiple'):
                             %for comp in partner_balance_data['comparisons']:
                                 <%
                                 comp_account = comp['account']
                                 %>
                                 <div class="act_as_cell amount">${comp_account['balance'] | amount}</div>
-                                <div class="act_as_cell amount">${comp_account['diff'] | amount}</div>
-                                <div class="act_as_cell amount">
-                                %if comp_account['percent_diff'] is False:
-                                 ${ '-' }
-                                %else:
-                                   ${comp_account['percent_diff'] | amount} &#37;
+                                %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
+                                    <div class="act_as_cell amount">${comp_account['diff'] | amount}</div>
+                                    <div class="act_as_cell amount">
+                                    %if comp_account['percent_diff'] is False:
+                                     ${ '-' }
+                                    %else:
+                                       ${comp_account['percent_diff'] | amount} &#37;
+                                    %endif
+                                    </div>
                                 %endif
-                                </div>
                             %endfor
                         %endif
                     </div>
@@ -189,44 +192,42 @@
                         current_account = current['account']
                         partner = current_partner_amounts.get(partner_id)
                         %>
-                        %if partner:
-                            <div class="act_as_row lines">
-                                <div class="act_as_cell first_column">${partner_ref if partner_ref else ''}</div>
-                                <div class="act_as_cell">${partner_name if partner_name else _('Unallocated') }</div>
-                                %if comparison_mode == 'no_comparison':
-                                    %if initial_balance:
-                                        <div class="act_as_cell amount">${partner['init_balance'] | amount}</div>
-                                    %endif
-                                    <div class="act_as_cell amount">${partner['debit'] | amount}</div>
-                                    <div class="act_as_cell amount">${partner['credit'] and partner['credit'] * -1 or 0.0 | amount}</div>
+                        <div class="act_as_row lines">
+                            <div class="act_as_cell first_column">${partner_ref if partner_ref else ''}</div>
+                            <div class="act_as_cell">${partner_name if partner_name else _('Unallocated') }</div>
+                            %if comparison_mode == 'no_comparison':
+                                %if initial_balance:
+                                    <div class="act_as_cell amount">${partner['init_balance'] | amount}</div>
                                 %endif
-                                <div class="act_as_cell amount">${partner['balance'] | amount}</div>
+                                <div class="act_as_cell amount">${partner['debit'] if partner else 0.0 | amount}</div>
+                                <div class="act_as_cell amount">${(partner['credit'] and partner['credit'] * -1 or 0.0) if partner else 0.0 | amount}</div>
+                            %endif
+                            <div class="act_as_cell amount">${partner['balance'] if partner else 0.0 | amount}</div>
 
-                                %if comparison_mode in ('single', 'multiple'):
-                                    %for comp in partner_balance_data['comparisons']:
-                                        <%
-                                        comp_partners = comp['partners_amounts']
-                                        balance = diff = percent_diff = 0
-                                        if comp_partners.get(partner_id):
-                                            balance = comp_partners[partner_id]['balance']
-                                            diff = comp_partners[partner_id]['diff']
-                                            percent_diff = comp_partners[partner_id]['percent_diff']
-                                        %>
-                                        <div class="act_as_cell amount">${balance | amount}</div>
-                                        %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
-                                            <div class="act_as_cell amount">${diff | amount}</div>
-                                            <div class="act_as_cell amount">
-                                            %if percent_diff is False:
-                                             ${ '-' }
-                                            %else:
-                                               ${percent_diff | amount} &#37;
-                                            %endif
-                                            </div>
+                            %if comparison_mode in ('single', 'multiple'):
+                                %for comp in partner_balance_data['comparisons']:
+                                    <%
+                                    comp_partners = comp['partners_amounts']
+                                    balance = diff = percent_diff = 0
+                                    if comp_partners.get(partner_id):
+                                        balance = comp_partners[partner_id]['balance']
+                                        diff = comp_partners[partner_id]['diff']
+                                        percent_diff = comp_partners[partner_id]['percent_diff']
+                                    %>
+                                    <div class="act_as_cell amount">${balance | amount}</div>
+                                    %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
+                                        <div class="act_as_cell amount">${diff | amount}</div>
+                                        <div class="act_as_cell amount">
+                                        %if percent_diff is False:
+                                         ${ '-' }
+                                        %else:
+                                           ${percent_diff | amount} &#37;
                                         %endif
-                                    %endfor
-                                %endif
-                            </div>
-                        %endif
+                                        </div>
+                                    %endif
+                                %endfor
+                            %endif
+                        </div>
                     %endfor
 
                 </div>

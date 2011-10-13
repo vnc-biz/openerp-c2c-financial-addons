@@ -59,7 +59,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
                                                         partner_filter_ids=partner_filter_ids)
             for partner_id, partner_details in details.iteritems():
                 # merge partner credit / debit and initial balance
-                if partners_init_balances_by_ids[account_id].get(partner_id):
+                if partners_init_balances_by_ids.get(account_id) and partners_init_balances_by_ids[account_id].get(partner_id):
                     details[partner_id] = dict(partner_details.items() +
                                                partners_init_balances_by_ids[account_id][partner_id].items())
 
@@ -130,7 +130,6 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
         stop_date = self._get_form_param("comp%s_date_to" % (index,), data)
         init_balance = self.is_initial_balance_enabled(comparison_filter)
 
-        accounts_by_ids = {}
         comp_params = {}
         accounts_details_by_ids = defaultdict(dict)
         if comparison_filter != 'filter_no':
@@ -153,7 +152,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
             partner_details_by_ids = self._get_account_partners_details(account_ids, details_filter, fiscalyear,
                                                                         target_move, start, stop,
                                                                         partner_filter_ids=partner_filter_ids)
-            
+
             for account_id in account_ids:
                 accounts_details_by_ids[account_id]['account'] = accounts_by_ids[account_id]
                 accounts_details_by_ids[account_id]['partners_amounts'] = partner_details_by_ids[account_id]
@@ -241,6 +240,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
 
             all_partner_ids = reduce(add, [comp['partners_amounts'].keys() for comp in comp_accounts],
                                      accounts['current']['partners_amounts'].keys())
+
             accounts['partners_order'] = self._order_partners(all_partner_ids)
             objects.append(accounts)
 

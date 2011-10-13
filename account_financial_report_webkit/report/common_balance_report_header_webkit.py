@@ -42,7 +42,6 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         @param main_filter: selection filter period / date or none
         @param start: start date or start period browse instance
         @param stop: stop date or stop period browse instance
-        @param context: context container
         @return: dict of list containing accounts details, keys are the account ids
         """
         if context is None:
@@ -55,7 +54,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         if init_balance:
             init_balance = self._compute_initial_balances(account_ids, start, fiscalyear, main_filter)
             # if init_balance has been read from the initial period, we'll compute values excluding the opening period
-            # if it has beem computed from previous periods, we'll include the opening period
+            # if it has been computed from previous periods, we'll include the opening period
             for account_id in account_ids:
                 if init_balance[account_id].get('state') == 'read':
                     modes['exclude_opening'].append(account_id)
