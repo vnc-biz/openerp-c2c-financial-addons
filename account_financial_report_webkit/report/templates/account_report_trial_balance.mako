@@ -14,7 +14,8 @@
     <body>
         <%!
         def amount(text):
-            return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
+            amount_text = "%.2f" % (float(text),)
+            return amount_text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
 
         <%setLang(user.context_lang)%>
