@@ -126,31 +126,30 @@
             </div>
 
             <div class="act_as_tbody">
-                %for account_at in objects:
+                %for current_account in objects:
                     <%
-                    current_account = account_at['current']
+                    comparisons = current_account.comparisons
                     %>
-
-                    <div class="act_as_row lines ${"account_level_%s" % (current_account['level'])}">
+                    <div class="act_as_row lines ${"account_level_%s" % (current_account.level,)}">
                         ## code
-                        <div class="act_as_cell first_column">${current_account['code']}</div>
+                        <div class="act_as_cell first_column">${current_account.code}</div>
                         ## account name
-                        <div class="act_as_cell" style="padding-left: ${current_account.get('level', 0) * 5}px;">${current_account['name']}</div>
+                        <div class="act_as_cell" style="padding-left: ${(current_account.level if current_account.level else 0) * 5}px;">${current_account.name}</div>
                         %if comparison_mode == 'no_comparison':
                             %if initial_balance:
                                 ## opening balance
-                                <div class="act_as_cell amount">${current_account['init_balance'] | amount}</div>
+                                <div class="act_as_cell amount">${current_account.init_balance | amount}</div>
                             %endif
                             ## debit
-                            <div class="act_as_cell amount">${current_account['debit'] | amount}</div>
+                            <div class="act_as_cell amount">${current_account.debit | amount}</div>
                             ## credit
-                            <div class="act_as_cell amount">${current_account['credit'] and current_account['credit'] * -1 or 0.0 | amount}</div>
+                            <div class="act_as_cell amount">${current_account.credit and current_account.credit * -1 or 0.0 | amount}</div>
                         %endif
                         ## balance
-                        <div class="act_as_cell amount">${current_account['balance'] | amount}</div>
+                        <div class="act_as_cell amount">${current_account.balance | amount}</div>
 
                         %if comparison_mode in ('single', 'multiple'):
-                            %for comp_account in account_at['comparisons']:
+                            %for comp_account in comparisons:
                                 <div class="act_as_cell amount">${comp_account['balance'] | amount}</div>
                                 %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
                                     <div class="act_as_cell amount">${comp_account['diff'] | amount}</div>

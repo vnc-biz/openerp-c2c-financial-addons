@@ -251,18 +251,20 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
                 comp_accounts_by_ids.append(comparison_result)
 
         objects = []
-        for account_id in account_ids:
-            if not accounts_by_ids[account_id]['parent_id']:  # hide top level account
+        for account in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
+            if not account.parent_id:  # hide top level account
                 continue
-            accounts = {}
-            accounts['current'] = accounts_by_ids[account_id]
+            account.debit = accounts_by_ids[account.id]['debit']
+            account.credit = accounts_by_ids[account.id]['credit']
+            account.balance = accounts_by_ids[account.id]['balance']
+            account.init_balance = accounts_by_ids[account.id]['init_balance']
             comp_accounts = []
             for comp_account_by_id in comp_accounts_by_ids:
-                values = comp_account_by_id.get(account_id)
-                values.update(self._get_diff(accounts['current']['balance'], values['balance']))
+                values = comp_account_by_id.get(account.id)
+                values.update(self._get_diff(account.balance, values['balance']))
                 comp_accounts.append(values)
-            accounts['comparisons'] = comp_accounts
-            objects.append(accounts)
+            account.comparisons = comp_accounts
+            objects.append(account)
 
         context_report_values = {
             'fiscalyear': fiscalyear,
