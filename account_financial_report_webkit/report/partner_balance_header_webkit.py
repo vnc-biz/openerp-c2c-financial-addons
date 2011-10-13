@@ -35,7 +35,6 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
     def _get_account_partners_details(self, account_ids, main_filter, fiscalyear, target_move, start,
                               stop, partner_filter_ids=False):
         res = {}
-        valid_only = True if target_move == 'all' else False
         filter_from = False
         if main_filter in ('filter_period', 'filter_no'):
             filter_from = 'period'
@@ -56,7 +55,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
                                                         account_id,
                                                         start,
                                                         stop,
-                                                        valid_only=valid_only,
+                                                        target_move,
                                                         partner_filter_ids=partner_filter_ids)
             for partner_id, partner_details in details.iteritems():
                 # merge partner credit / debit and initial balance
@@ -74,28 +73,30 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
 
         return res
 
-    def _get_partners_totals_account(self, filter_from, account_id, start, stop, valid_only=False, partner_filter_ids=False):
+    def _get_partners_totals_account(self, filter_from, account_id, start, stop, target_move, partner_filter_ids=False):
         final_res = {}
         sql_select = """
-                 SELECT partner_id,
-                        sum(debit) AS debit,
-                        sum(credit) AS credit
+                 SELECT account_move_line.partner_id,
+                        sum(account_move_line.debit) AS debit,
+                        sum(account_move_line.credit) AS credit
                  FROM account_move_line"""
-
-        sql_where = "WHERE account_id = %(account_id)s "
+        sql_joins = ''
+        sql_where = "WHERE account_move_line.account_id = %(account_id)s AND account_move_line.state = 'valid' "
         sql_conditions, search_params = getattr(self, '_get_query_params_from_'+filter_from+'s')(start, stop)
         sql_where += sql_conditions
 
         if partner_filter_ids:
-            sql_where += "   AND partner_id in %(partner_ids)s"
+            sql_where += "   AND account_move_line.partner_id in %(partner_ids)s"
             search_params.update({'partner_ids': tuple(partner_filter_ids),})
-        if valid_only:
-            sql_where += "   AND state = 'valid' "
+        if target_move == 'posted':
+            sql_joins += "INNER JOIN account_move ON account_move_line.move_id = account_move.id"
+            sql_where += " AND account_move.state = %(target_move)s"
+            search_params.update({'target_move': target_move,})
 
-        sql_groupby = "GROUP BY partner_id"
+        sql_groupby = "GROUP BY account_move_line.partner_id"
 
         search_params.update({'account_id': account_id,})
-        query = ' '.join((sql_select, sql_where, sql_groupby))
+        query = ' '.join((sql_select, sql_joins, sql_where, sql_groupby))
 
         self.cursor.execute(query, search_params)
         res = self.cursor.dictfetchall()
