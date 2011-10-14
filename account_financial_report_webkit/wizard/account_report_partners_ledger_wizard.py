@@ -37,7 +37,12 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
                                              help="TODO"),
         'until_date': fields.date("Clearance date",
                                   required=True,
-                                  help="Allows you to excludes entries reconciled between the end date of the report and this date' ; generally used for audit/provisionning purposes."),
+                                  help="""The clearance date is essentially a tool used for debtors provisionning calculation.
+                                        
+By default, this date is equal to the the end date (ie: 31/12/2011 if you select fy 2011).
+
+By amending the clearance date, you will be, for instance, able to answer the question : 'based on my last year end debtors open invoices, which invoices are still unpaid today (today is my clearance date)?'
+"""),
         'partner_ids': fields.many2many('res.partner', 'wiz_part_rel',
                                         'partner_id', 'wiz_id', 'Filter on partner',
                                          help="Only selected partners will be printed. Leave empty to print all partners."),

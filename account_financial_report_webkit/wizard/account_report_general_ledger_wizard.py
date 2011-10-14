@@ -51,12 +51,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
                                             required=True),
         'account_ids': fields.many2many('account.account', 'wiz_account_rel',
                                         'account_id', 'wiz_id', 'Filter on accounts',
-                                         help="""The clearance date is essentially a tool used for debtors provisionning calculation.
-                                         
-                                         By default, this date is equal to the the end date (ie: 31/12/2011 if you select fy 2011).
-
-                                         By amending the clearance date, you will be, for instance, able to answer the question : 'based on my last year end debtors open invoices, which invoices are still unpaid today (today is my clearance date)?'
-                                         """),
+                                         help="""Only selected accounts will be printed. Leave empty to print all accounts."""),
     }
     _defaults = {
         'amount_currency': False,
