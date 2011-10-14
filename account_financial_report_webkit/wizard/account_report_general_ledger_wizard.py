@@ -51,7 +51,12 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
                                             required=True),
         'account_ids': fields.many2many('account.account', 'wiz_account_rel',
                                         'account_id', 'wiz_id', 'Filter on accounts',
-                                         help="Only selected accounts will be printed. Leave empty to print all accounts."),
+                                         help="""The clearance date is essentially a tool used for debtors provisionning calculation.
+                                         
+                                         By default, this date is equal to the the end date (ie: 31/12/2011 if you select fy 2011).
+
+                                         By amending the clearance date, you will be, for instance, able to answer the question : 'based on my last year end debtors open invoices, which invoices are still unpaid today (today is my clearance date)?'
+                                         """),
     }
     _defaults = {
         'amount_currency': False,
@@ -59,6 +64,16 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         'display_account': 'bal_mix',
         'account_ids': _get_account_ids,
     }
+
+    def _check_fiscalyear(self, cr, uid, ids, context=None):
+        obj = self.read(cr, uid, ids[0], ['fiscalyear_id', 'filter'], context=context)
+        if not obj['fiscalyear_id'] and obj['filter'] == 'filter_no':
+            return False
+        return True
+
+    _constraints = [
+        (_check_fiscalyear, 'When no Fiscal year is selected, you must choose to filter by periods or by date.', ['filter']),
+    ]
 
     def onchange_fiscalyear(self, cursor, uid, ids, fiscalyear=False, context=None):
         res = {}

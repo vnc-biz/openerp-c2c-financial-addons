@@ -139,7 +139,7 @@ class CommonReportHeaderWebkit(common_report_header):
 
         return sorted_accounts
 
-    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, context=None):
+    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, filter_report_type=None, context=None):
         """Get all account passed in params with their childrens"""
         context = context or {}
         accounts = []
@@ -152,16 +152,24 @@ class CommonReportHeaderWebkit(common_report_header):
         res_ids = list(set(accounts))
         res_ids = self.sort_accounts_with_structure(res_ids, context=context)
 
-        if filter_view or filter_type:
-            format_list = [tuple(res_ids)]
-            sql = "SELECT id FROM account_account WHERE id IN %s "
+        if filter_view or filter_type or filter_report_type:
+            format_list = {'ids': tuple(res_ids)}
+            sql_select = "SELECT a.id FROM account_account a"
+            sql_join = ""
+            sql_where = "WHERE a.id IN %(ids)s"
             if filter_view:
-                sql += " AND type != 'view'"
+                sql_where += " AND a.type != 'view'"
             if filter_type:
-                sql += " AND type in %s"
-                format_list.append(tuple(filter_type))
+                sql_where += " AND a.type IN %(filter_type)s"
+                format_list.update({'filter_type': tuple(filter_type)})
+            if filter_report_type:
+                sql_join += "INNER JOIN account_account_type t" \
+                            " ON t.id = a.user_type"
+                sql_join += " AND t.report_type IN %(report_type)s"
+                format_list.update({'report_type': tuple(filter_report_type)})
 
-            self.cursor.execute(sql, tuple(format_list))
+            sql = ' '.join((sql_select, sql_join, sql_where))
+            self.cursor.execute(sql, format_list)
             fetch_only_ids = self.cursor.fetchall()
             if not fetch_only_ids:
                 return []
@@ -201,7 +209,7 @@ class CommonReportHeaderWebkit(common_report_header):
                 return False
         return res
 
-    def _get_period_range_form_periods(self, start_period, stop_period, mode):
+    def _get_period_range_from_periods(self, start_period, stop_period, mode):
         # TODO test date type
         period_obj = self.pool.get('account.period')
         search_period = [('date_start', '>=', start_period.date_start),
@@ -212,7 +220,7 @@ class CommonReportHeaderWebkit(common_report_header):
         res = period_obj.search(self.cursor, self.uid, search_period)
         return res
 
-    def _get_period_range_form_start_period(self, start_period, include_opening=False,
+    def _get_period_range_from_start_period(self, start_period, include_opening=False,
                                             fiscalyear=False, stop_at_previous_opening=False):
         """We retrieve all periods before start period"""
         opening_period_id = False
@@ -258,14 +266,11 @@ class CommonReportHeaderWebkit(common_report_header):
             periods.remove(start_period.id)
         return periods
 
-
     def get_first_fiscalyear_period(self, fiscalyear):
         return self._get_st_fiscalyear_period(fiscalyear)
 
-
     def get_last_fiscalyear_period(self, fiscalyear):
         return self._get_st_fiscalyear_period(fiscalyear, order='DESC')
-
 
     def _get_st_fiscalyear_period(self, fiscalyear, order='ASC'):
         period_obj = self.pool.get('account.period')
@@ -299,7 +304,7 @@ class CommonReportHeaderWebkit(common_report_header):
         return {'init_balance': res[0] or 0.0, 'init_balance_currency': res[1] or 0.0, 'state': mode}
 
 
-    def _compute_inital_balances(self, account_ids, start_period, fiscalyear, main_filter):
+    def _compute_initial_balances(self, account_ids, start_period, fiscalyear, main_filter):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
@@ -313,10 +318,10 @@ class CommonReportHeaderWebkit(common_report_header):
             # PNL and Balance accounts are not computed the same way look for attached doc
             # We include opening period in pnl account in order to see if opening entries
             # were created by error on this account
-            pnl_periods_ids = self._get_period_range_form_start_period(start_period, fiscalyear=fiscalyear,
+            pnl_periods_ids = self._get_period_range_from_start_period(start_period, fiscalyear=fiscalyear,
                                                                        include_opening=True)
 
-            bs_period_ids = self._get_period_range_form_start_period(start_period, include_opening=True,
+            bs_period_ids = self._get_period_range_from_start_period(start_period, include_opening=True,
                                                                      stop_at_previous_opening=True)
             nil_res = {'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'computed'}
             for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
@@ -341,7 +346,7 @@ class CommonReportHeaderWebkit(common_report_header):
     def _get_move_ids_from_periods(self, account_id, period_start, period_stop, mode, target_move):
         move_line_obj = self.pool.get('account.move.line')
         # we filter opening period here
-        periods = self._get_period_range_form_periods(period_start, period_stop, mode)
+        periods = self._get_period_range_from_periods(period_start, period_stop, mode)
         if not periods:
             return []
         search = [('period_id', 'in', periods), ('account_id', '=', account_id)]
