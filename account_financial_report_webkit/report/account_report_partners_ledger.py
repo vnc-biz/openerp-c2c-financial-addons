@@ -141,13 +141,12 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             ## that are not in ledger line and vice versa
             ledg_lines_pids = ledger_lines_memoizer.get(account.id, {}).keys()
             if init_bal:
-                init_bal_lines_pids = init_balance_memoizer.get(account.id, {}).keys()
-                account.init_balance = init_balance_memoizer.get(account.id, {})
+                non_null_init_balances = dict([(ib, amounts) for ib, amounts in account.init_balance.iteritems()
+                                                             if amounts['init_balance'] or amounts['init_balance_currency']])
+                init_bal_lines_pids = non_null_init_balances.keys()
             else:
                 account.init_balance = {}
                 init_bal_lines_pids = []
-            if account.code == '1100':
-                import pdb; pdb.set_trace()
             account.partners_order = self._order_partners(ledg_lines_pids, init_bal_lines_pids)
             account.ledger_lines = ledger_lines_memoizer.get(account.id, {})
             objects.append(account)
