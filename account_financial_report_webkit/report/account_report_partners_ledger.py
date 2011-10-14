@@ -110,6 +110,9 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         accounts = self.get_all_accounts(new_ids, filter_view=True,
                                          filter_type=filter_type)
 
+        if not accounts:
+            raise osv.except_osv(_('Error'), _('No accounts to print.'))
+
         if init_bal and main_filter in ('filter_no', 'filter_period'):
             init_balance_memoizer = self._compute_partners_initial_balances(accounts,
                                                                             start_period,
@@ -141,8 +144,9 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             ## that are not in ledger line and vice versa
             ledg_lines_pids = ledger_lines_memoizer.get(account.id, {}).keys()
             if init_bal:
-                init_bal_lines_pids = init_balance_memoizer.get(account.id, {}).keys()
-                account.init_balance = init_balance_memoizer.get(account.id, {})
+                non_null_init_balances = dict([(ib, amounts) for ib, amounts in account.init_balance.iteritems()
+                                                             if amounts['init_balance'] or amounts['init_balance_currency']])
+                init_bal_lines_pids = non_null_init_balances.keys()
             else:
                 account.init_balance = {}
                 init_bal_lines_pids = []

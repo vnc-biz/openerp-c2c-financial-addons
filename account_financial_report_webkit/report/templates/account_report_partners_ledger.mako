@@ -63,6 +63,8 @@
         %for account in objects:
             %if account.ledger_lines or account.init_balance:
                 <%
+                if not account.partners_order:
+                    continue
                 account_balance_cumul = 0.0
                 account_balance_cumul_curr = 0.0
                 %>
@@ -114,7 +116,7 @@
                         </div>
                     </div>
                     <div class="act_as_tbody">
-                          %if initial_balance(data) and account.init_balance.get(p_id, {}).get('init_balance'):
+                          %if initial_balance(data) and (account.init_balance.get(p_id, {}).get('init_balance') or account.init_balance.get(p_id, {}).get('init_balance_currency')):
                             <%
                               part_cumul_balance = account.init_balance.get(p_id, {}).get('init_balance') or 0.0
                               part_cumul_balance_curr = account.init_balance.get(p_id, {}).get('init_balance_currency') or 0.0
