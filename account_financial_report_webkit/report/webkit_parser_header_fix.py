@@ -164,7 +164,6 @@ class HeaderFooterTextWebKitParser(webkit_report.WebKitParser):
         if not template and report_xml.report_webkit_data :
             template =  report_xml.report_webkit_data
         if not template :
-            import pdb; pdb.set_trace()
             raise except_osv(_('Error!'), _('Webkit Report template not found !'))
         header = report_xml.webkit_header.html
         footer = report_xml.webkit_header.footer_html
