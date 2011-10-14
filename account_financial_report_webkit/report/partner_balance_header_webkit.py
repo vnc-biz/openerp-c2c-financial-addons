@@ -234,7 +234,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
             account.debit = accounts_by_ids[account.id]['debit']
             account.credit = accounts_by_ids[account.id]['credit']
             account.balance = accounts_by_ids[account.id]['balance']
-            account.init_balance = accounts_by_ids[account.id]['init_balance']
+            account.init_balance = accounts_by_ids[account.id].get('init_balance', 0.0)
             account.partners_amounts = partner_details_by_ids[account.id]
             comp_accounts = []
             for comp_account_by_id in comp_accounts_by_ids:
