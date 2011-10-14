@@ -110,6 +110,9 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         accounts = self.get_all_accounts(new_ids, filter_view=True,
                                          filter_type=filter_type)
 
+        if not accounts:
+            raise osv.except_osv(_('Error'), _('No accounts to print.'))
+
         if init_bal and main_filter in ('filter_no', 'filter_period'):
             init_balance_memoizer = self._compute_partners_initial_balances(accounts,
                                                                             start_period,
