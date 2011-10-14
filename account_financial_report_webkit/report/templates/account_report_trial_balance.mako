@@ -129,6 +129,9 @@
             <div class="act_as_tbody">
                 %for current_account in objects:
                     <%
+                    if not current_account.to_display:
+                        continue
+
                     comparisons = current_account.comparisons
                     %>
                     <div class="act_as_row lines ${"account_level_%s" % (current_account.level,)}">
