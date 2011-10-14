@@ -94,7 +94,8 @@ This merge add the ability to pass dynamically values to html headers and footer
     # tests order matter
     'test': ['tests/general_ledger.yml',
              'tests/partner_ledger.yml',
-             'tests/trial_balance.yml',],
+             'tests/trial_balance.yml',
+             'tests/partner_balance.yml',],
     #'tests/account_move_line.yml'
     'active': False,
     'installable': True,
