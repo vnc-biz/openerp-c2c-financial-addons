@@ -264,7 +264,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             for comp_account_by_id in comp_accounts_by_ids:
                 values = comp_account_by_id.get(account.id)
                 values.update(self._get_diff(account.balance, values['balance']))
-                to_display = any((values['credit'], values['debit'], values['balance'], values['init_balance']))
+                to_display = any((values.get('credit', 0.0), values.get('debit', 0.0), values.get('balance', 0.0), values.get('init_balance', 0.0)))
                 comp_accounts.append(values)
             account.comparisons = comp_accounts
             # we have to display the account if a comparison as an amount or if we have an amount in the main column
