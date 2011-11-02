@@ -120,6 +120,7 @@
                             <%
                               part_cumul_balance = account.init_balance.get(p_id, {}).get('init_balance') or 0.0
                               part_cumul_balance_curr = account.init_balance.get(p_id, {}).get('init_balance_currency') or 0.0
+                              balance_forward_currency = account.init_balance.get(p_id, {}).get('currency_name') or ''
 
                               cumul_balance += part_cumul_balance
                               cumul_balance_curr += part_cumul_balance_curr
@@ -147,7 +148,7 @@
                               <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(part_cumul_balance) | amount }</div>
                              %if amount_currency(data):
                                   ## curency code
-                                  <div class="act_as_cell sep_left"></div>
+                                  <div class="act_as_cell sep_left">${balance_forward_currency}</div>
                                   ## currency balance
                                   <div class="act_as_cell amount">${formatLang(part_cumul_balance_curr) | amount }</div>
                                   %if account.currency_id:
