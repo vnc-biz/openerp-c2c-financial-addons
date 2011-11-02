@@ -150,6 +150,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             else:
                 account.init_balance = {}
                 init_bal_lines_pids = []
+
             account.partners_order = self._order_partners(ledg_lines_pids, init_bal_lines_pids)
             account.ledger_lines = ledger_lines_memoizer.get(account.id, {})
             objects.append(account)
