@@ -150,17 +150,19 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                             'account_ids': tuple(account_ids),
                             'partner_ids': tuple(partner_filter)}
             sql = ("SELECT account_id, partner_id,"
-                   "     sum(debit-credit) as init_balance,"
-                   "     sum(amount_currency) as init_balance_currency"
-                   "   FROM account_move_line "
-                   "  WHERE period_id in %(period_ids)s"
-                   "    AND account_id in %(account_ids)s")
+                   "       sum(debit-credit) as init_balance,"
+                   "       CASE WHEN a.currency_id ISNULL THEN 0.0 ELSE sum(amount_currency) END as init_balance_currency "
+                   "FROM account_move_line "
+                   "INNER JOIN account_account a "
+                   "ON a.id = account_id "
+                   "WHERE period_id in %(period_ids)s"
+                   "AND account_id in %(account_ids)s")
             if exclude_reconcile:
-                sql += ("    AND ((reconcile_id IS NULL)"
-                       "           OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_start)s)))")
+                sql += ("AND ((reconcile_id IS NULL)"
+                       "OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_start)s)))")
             if partner_filter:
-                sql += "   AND partner_id in %(partner_ids)s"
-            sql += " group by account_id, partner_id"
+                sql += "AND partner_id in %(partner_ids)s"
+            sql += "GROUP BY account_id, partner_id, a.currency_id"
             self.cursor.execute(sql, search_param)
             res = self.cursor.dictfetchall()
             if res:
