@@ -99,7 +99,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         # Retrieving accounts
         accounts = self.get_all_accounts(new_ids, filter_view=True)
         if init_bal and main_filter in ('filter_no', 'filter_period'):
-            init_balance_memoizer = self._compute_inital_balances(accounts, start_period,
+            init_balance_memoizer = self._compute_initial_balances(accounts, start_period,
                                                                   fiscalyear, main_filter)
 
         # computation of ledeger lines
@@ -178,9 +178,6 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
     def _compute_account_ledger_lines(self, accounts_ids, init_balance_memoizer, main_filter,
                                       target_move, start, stop):
         res = {}
-        valid_only = True
-        if target_move == 'all':
-            valid_only = False
         for acc_id in accounts_ids:
             # We get the move line ids of the account depending of the
             # way the initial balance was created we include or not opening entries
@@ -188,8 +185,8 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             if acc_id in init_balance_memoizer:
                 if init_balance_memoizer[acc_id].get('state') == 'read':
                     search_mode = 'exclude_opening'
-            move_line_ids = self.get_move_lines_ids(acc_id, main_filter, start, stop,
-                                                    mode=search_mode, valid_only=valid_only)
+            move_line_ids = self.get_move_lines_ids(acc_id, main_filter, start, stop, target_move,
+                                                    mode=search_mode)
             if not move_line_ids:
                 res[acc_id] = []
                 continue

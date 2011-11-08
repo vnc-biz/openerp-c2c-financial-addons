@@ -1,7 +1,8 @@
 # -*- encoding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi. Copyright Camptocamp SA
+#    Author: Guewen Baconnier
+#    Copyright Camptocamp SA 2011
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -18,9 +19,23 @@
 #
 ##############################################################################
 
-from . import account_report_balance_common
-from . import account_report_general_ledger_wizard
-from . import account_report_partners_ledger_wizard
-from . import account_report_trial_balance_wizard
-from . import account_report_partner_balance_wizard
-#from . import account_report_profit_loss_wizard
+from osv import fields, osv
+
+
+class AccountTrialBalanceWizard(osv.osv_memory):
+    """Will launch trial balance report and pass required args"""
+
+    _inherit = "account.common.balance.report"
+    _name = "account.report.trial.balance.webkit"
+    _description = "Trial Balance Report"
+
+    def _print_report(self, cursor, uid, ids, data, context=None):
+        context = context or {}
+        # we update form with display account value
+        data = self.pre_print_report(cursor, uid, ids, data, context=context)
+
+        return {'type': 'ir.actions.report.xml',
+                'report_name': 'account.account_report_trial_balance_webkit',
+                'datas': data}
+
+AccountTrialBalanceWizard()
