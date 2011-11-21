@@ -236,7 +236,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             self._get_start_stop_for_filter(main_filter, fiscalyear, start_date, stop_date, start_period, stop_period)
 
         # Retrieving accounts
-        account_ids = self.get_all_accounts(new_ids, filter_view=False, filter_report_type=filter_report_type)
+        account_ids = self.get_all_accounts(new_ids, only_type=filter_report_type)
 
         # get details for each accounts, total of debit / credit / balance
         accounts_by_ids = self._get_account_details(account_ids, target_move, init_bal,

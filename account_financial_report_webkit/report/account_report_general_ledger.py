@@ -97,7 +97,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
 
         # Retrieving accounts
-        accounts = self.get_all_accounts(new_ids, filter_view=True)
+        accounts = self.get_all_accounts(new_ids, exclude_type=['view'])
         if init_bal and main_filter in ('filter_no', 'filter_period'):
             init_balance_memoizer = self._compute_initial_balances(accounts, start_period,
                                                                   fiscalyear, main_filter)

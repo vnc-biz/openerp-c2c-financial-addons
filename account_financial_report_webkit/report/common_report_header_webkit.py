@@ -139,8 +139,13 @@ class CommonReportHeaderWebkit(common_report_header):
 
         return sorted_accounts
 
-    def get_all_accounts(self, account_ids, filter_view=False, filter_type=None, filter_report_type=None, context=None):
-        """Get all account passed in params with their childrens"""
+    def get_all_accounts(self, account_ids, exclude_type=None, only_type=None, filter_report_type=None, context=None):
+        """Get all account passed in params with their childrens
+
+        @param exclude_type: list of types to exclude (view, receivable, payable, consolidation, other)
+        @param only_type: list of types to filter on (view, receivable, payable, consolidation, other)
+        @param filter_report_type: list of report type to filter on
+        """
         context = context or {}
         accounts = []
         if not isinstance(account_ids, list):
@@ -152,24 +157,25 @@ class CommonReportHeaderWebkit(common_report_header):
         res_ids = list(set(accounts))
         res_ids = self.sort_accounts_with_structure(res_ids, context=context)
 
-        if filter_view or filter_type or filter_report_type:
-            format_list = {'ids': tuple(res_ids)}
+        if exclude_type or only_type or filter_report_type:
+            sql_filters = {'ids': tuple(res_ids)}
             sql_select = "SELECT a.id FROM account_account a"
             sql_join = ""
             sql_where = "WHERE a.id IN %(ids)s"
-            if filter_view:
-                sql_where += " AND a.type != 'view'"
-            if filter_type:
-                sql_where += " AND a.type IN %(filter_type)s"
-                format_list.update({'filter_type': tuple(filter_type)})
+            if exclude_type:
+                sql_where += " AND a.type not in %(exclude_type)s"
+                sql_filters.update({'exclude_type': tuple(exclude_type)})
+            if only_type:
+                sql_where += " AND a.type IN %(only_type)s"
+                sql_filters.update({'only_type': tuple(only_type)})
             if filter_report_type:
                 sql_join += "INNER JOIN account_account_type t" \
                             " ON t.id = a.user_type"
                 sql_join += " AND t.report_type IN %(report_type)s"
-                format_list.update({'report_type': tuple(filter_report_type)})
+                sql_filters.update({'report_type': tuple(filter_report_type)})
 
             sql = ' '.join((sql_select, sql_join, sql_where))
-            self.cursor.execute(sql, format_list)
+            self.cursor.execute(sql, sql_filters)
             fetch_only_ids = self.cursor.fetchall()
             if not fetch_only_ids:
                 return []

@@ -107,8 +107,8 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         if result_selection == 'supplier':
             filter_type = ('payable',)
 
-        accounts = self.get_all_accounts(new_ids, filter_view=True,
-                                         filter_type=filter_type)
+        accounts = self.get_all_accounts(new_ids, exclude_type=['view'],
+                                         only_type=filter_type)
 
         if not accounts:
             raise osv.except_osv(_('Error'), _('No accounts to print.'))
