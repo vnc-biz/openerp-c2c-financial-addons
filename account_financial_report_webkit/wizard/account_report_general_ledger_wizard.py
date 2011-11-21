@@ -51,7 +51,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
                                             required=True),
         'account_ids': fields.many2many('account.account', 'wiz_account_rel',
                                         'account_id', 'wiz_id', 'Filter on accounts',
-                                         help="Only selected accounts will be printed. Leave empty to print all accounts."),
+                                         help="""Only selected accounts will be printed. Leave empty to print all accounts."""),
     }
     _defaults = {
         'amount_currency': False,
@@ -59,6 +59,16 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         'display_account': 'bal_mix',
         'account_ids': _get_account_ids,
     }
+
+    def _check_fiscalyear(self, cr, uid, ids, context=None):
+        obj = self.read(cr, uid, ids[0], ['fiscalyear_id', 'filter'], context=context)
+        if not obj['fiscalyear_id'] and obj['filter'] == 'filter_no':
+            return False
+        return True
+
+    _constraints = [
+        (_check_fiscalyear, 'When no Fiscal year is selected, you must choose to filter by periods or by date.', ['filter']),
+    ]
 
     def onchange_fiscalyear(self, cursor, uid, ids, fiscalyear=False, context=None):
         res = {}

@@ -21,9 +21,16 @@
                         <field name="initial_balance" invisible="True"/>
                     </form>
                     <page name="filters" position="after">
-                        <page string="Accounts Filters" name="partners">
+                        <page string="Accounts Filters" name="accounts">
                             <separator string="Print only" colspan="4"/>
-                            <field name="account_ids" colspan="4" nolabel="1"/>
+                            <field name="account_ids" colspan="4" nolabel="1">
+                                <tree>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                    <field name="company_id"/>
+                                </tree>
+                            </field>
                         </page>
                     </page>
                     <xpath expr="/form/notebook[1]" position="after">
@@ -32,6 +39,9 @@
                     </xpath>
                     <page name="journal_ids" position="attributes">
                         <attribute name="invisible">True</attribute>
+                    </page>
+                    <page name="filters" position="attributes">
+                        <attribute name="string">Time Filters</attribute>
                     </page>
                 </data>
             </field>
