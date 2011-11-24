@@ -112,20 +112,21 @@ class CommonReportHeaderWebkit(common_report_header):
     def sort_accounts_with_structure(self, account_ids, context=None):
         """Sort accounts by code respecting their structure"""
 
-        def recursive_sort_by_code(accounts, parent_id=False):
+        def recursive_sort_by_code(accounts, parent_ids=[]):
             sorted_accounts = []
             level_accounts = [account for account
                               in accounts
-                              if (not parent_id and not account['parent_id'] or
-                                  account['parent_id'] and account['parent_id'][0] == parent_id)]
+                              if (not parent_ids and not account['parent_id'] or
+                                  account['parent_id'] and account['parent_id'][0] in parent_ids)]
             if not level_accounts:
                 return []
 
             level_accounts = sorted(level_accounts, key=lambda a: a['code'])
 
             for level_account in level_accounts:
-                sorted_accounts.append(level_account['id'])
-                sorted_accounts.extend(recursive_sort_by_code( accounts, parent_id=level_account['id']))
+                if level_account['id'] not in sorted_accounts:
+                    sorted_accounts.append(level_account['id'])
+                    sorted_accounts.extend(recursive_sort_by_code( accounts, parent_ids=[level_account['id']]))
             return sorted_accounts
 
         if not account_ids:
@@ -134,8 +135,11 @@ class CommonReportHeaderWebkit(common_report_header):
                                                          account_ids,
                                                          ['id', 'parent_id', 'code'],
                                                          context=context)
-
-        sorted_accounts = recursive_sort_by_code(accounts)
+        parent_ids = []
+        for account in accounts:
+            if account['parent_id'] and account['parent_id'][0] not in parent_ids:
+                parent_ids.append(account['parent_id'][0])
+        sorted_accounts = recursive_sort_by_code(accounts, parent_ids)
 
         return sorted_accounts
 
