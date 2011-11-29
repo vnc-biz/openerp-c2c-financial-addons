@@ -66,8 +66,9 @@ The reports provided are:
 Note : html headers and footers are deactivated for these reports because of an issue of wkhtmltopdf : http://code.google.com/p/wkhtmltopdf/issues/detail?id=656
        Instead, the header and footer are created as text with arguments passed to wkhtmltopdf. The texts are defined inside the report classes.
 
-This module depends of the pending merge : https://code.launchpad.net/~c2c/openobject-addons/6.0-webkit-improvements/+merge/66428
-This merge add the ability to pass dynamically values to html headers and footers.
+
+Note : On the reports, the accounts are sorted by their code as in the "Chart of Accounts". If you notice that they are not sorted, you are probably affected by the bug : https://bugs.launchpad.net/openobject-addons/+bug/783670
+       The sort uses the "level" field on the accounts and if this level is miscalculated, we fallback to an unsorted report. So check if your addons branch is up-to-date with the correction.
 
 """,
     'version': '1.0',
