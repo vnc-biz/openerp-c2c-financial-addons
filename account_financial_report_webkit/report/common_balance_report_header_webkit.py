@@ -250,27 +250,36 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
                 comparison_params.append(comp_params)
                 comp_accounts_by_ids.append(comparison_result)
 
+        to_display = dict.fromkeys(account_ids, True)
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
             if not account.parent_id:  # hide top level account
                 continue
+            if account.type == 'consolidation':
+                to_display.update(dict([(a.id, False) for a in account.child_consol_ids]))
+            elif account.type == 'view':
+                to_display.update(dict([(a.id, True) for a in account.child_id]))
             account.debit = accounts_by_ids[account.id]['debit']
             account.credit = accounts_by_ids[account.id]['credit']
             account.balance = accounts_by_ids[account.id]['balance']
             account.init_balance = accounts_by_ids[account.id].get('init_balance', 0.0)
 
-            to_display = False  # if any amount is != 0 in comparisons, we have to display the whole account
+            display_account = False  # if any amount is != 0 in comparisons, we have to display the whole account
             comp_accounts = []
             for comp_account_by_id in comp_accounts_by_ids:
                 values = comp_account_by_id.get(account.id)
                 values.update(self._get_diff(account.balance, values['balance']))
-                to_display = any((values.get('credit', 0.0), values.get('debit', 0.0), values.get('balance', 0.0), values.get('init_balance', 0.0)))
+                display_account = any((values.get('credit', 0.0), values.get('debit', 0.0), values.get('balance', 0.0), values.get('init_balance', 0.0)))
                 comp_accounts.append(values)
             account.comparisons = comp_accounts
             # we have to display the account if a comparison as an amount or if we have an amount in the main column
             # we set it as a property to let the data in the report if someone want to use it in a custom report
-            account.to_display = to_display or any((account.debit, account.credit, account.balance, account.init_balance))
+            display_account = display_account or any((account.debit, account.credit, account.balance, account.init_balance))
+            to_display.update({account.id: display_account and to_display[account.id]})
             objects.append(account)
+
+        for account in objects:
+            account.to_display = to_display[account.id]
 
         context_report_values = {
             'fiscalyear': fiscalyear,
