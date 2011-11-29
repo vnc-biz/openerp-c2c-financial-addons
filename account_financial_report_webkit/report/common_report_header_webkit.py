@@ -22,6 +22,8 @@
 # TODO refactor helper in order to act more like mixin
 # By using properties we will have a more simple signature in fuctions
 
+import netsvc
+
 from account.report.common_report_header import common_report_header
 from osv import osv
 from tools.translate import _
@@ -112,34 +114,44 @@ class CommonReportHeaderWebkit(common_report_header):
     def sort_accounts_with_structure(self, account_ids, context=None):
         """Sort accounts by code respecting their structure"""
 
-        def recursive_sort_by_code(accounts, parent_ids=[]):
+        def recursive_sort_by_code(level, max_level, accounts, parent_id=False, root=True):
             sorted_accounts = []
             level_accounts = [account for account
                               in accounts
-                              if (not parent_ids and not account['parent_id'] or
-                                  account['parent_id'] and account['parent_id'][0] in parent_ids)]
+                              if account['level'] == level
+                              and (root or
+                                   account['parent_id'] and account['parent_id'][0] == parent_id)]
             if not level_accounts:
                 return []
 
             level_accounts = sorted(level_accounts, key=lambda a: a['code'])
 
             for level_account in level_accounts:
-                if level_account['id'] not in sorted_accounts:
-                    sorted_accounts.append(level_account['id'])
-                    sorted_accounts.extend(recursive_sort_by_code( accounts, parent_ids=[level_account['id']]))
+                sorted_accounts.append(level_account['id'])
+                if level < max_level:
+                    sorted_accounts.extend(recursive_sort_by_code(level + 1, max_level, accounts, parent_id=level_account['id'], root=False))
             return sorted_accounts
 
         if not account_ids:
             return []
-        accounts = self.pool.get('account.account').read(self.cr, self.uid,
+
+        accounts_data = self.pool.get('account.account').read(self.cr, self.uid,
                                                          account_ids,
-                                                         ['id', 'parent_id', 'code'],
+                                                         ['id', 'parent_id', 'level', 'code'],
                                                          context=context)
-        parent_ids = []
-        for account in accounts:
-            if account['parent_id'] and account['parent_id'][0] not in parent_ids:
-                parent_ids.append(account['parent_id'][0])
-        sorted_accounts = recursive_sort_by_code(accounts, parent_ids)
+        levels = [x['level'] for x in accounts_data]
+        start_level = min(levels)
+        max_level = max(levels)
+        sorted_accounts = recursive_sort_by_code(start_level, max_level, accounts_data)
+
+        # fallback to unsorted accounts when sort failed
+        # sort fails when the levels are miscalculated by account.account
+        # check lp:783670
+        if len(sorted_accounts) != len(account_ids):
+            logger = netsvc.Logger()
+            logger.notifyChannel('account_financial_report_webkit', netsvc.LOG_WARNING,
+                                 'Webkit financial reports: Sort of accounts failed, the level of the accounts are probably miscalculated. Check bug lp:783670 for a fix.')
+            sorted_accounts = account_ids
 
         return sorted_accounts
 
