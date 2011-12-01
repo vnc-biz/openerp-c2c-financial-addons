@@ -433,7 +433,8 @@ SELECT l.id AS lid,
             c.name AS currency_code,
             i.id AS invoice_id,
             i.type AS invoice_type,
-            i.number AS invoice_number
+            i.number AS invoice_number,
+            l.date_maturity
 FROM account_move_line l
     JOIN account_move m on (l.move_id=m.id)
     LEFT JOIN res_currency c on (l.currency_id=c.id)
