@@ -111,16 +111,19 @@ class CommonReportHeaderWebkit(common_report_header):
 
     ####################Account and account line filter helper #################
 
-    def sort_accounts_with_structure(self, account_ids, context=None):
+    def sort_accounts_with_structure(self, root_account_ids, account_ids, context=None):
         """Sort accounts by code respecting their structure"""
 
-        def recursive_sort_by_code(level, max_level, accounts, parent_id=False, root=True):
+        def recursive_sort_by_code(accounts, parent):
             sorted_accounts = []
-            level_accounts = [account for account
-                              in accounts
-                              if account['level'] == level
-                              and (root or
-                                   account['parent_id'] and account['parent_id'][0] == parent_id)]
+            # add all accounts with same parent
+            level_accounts = [account for account in accounts 
+                              if account['parent_id'] and account['parent_id'][0] == parent['id']]
+            # add consolidation children of parent, as they are logically on the same level
+            if parent.get('child_consol_ids'):
+                level_accounts.extend([account for account in accounts 
+                                       if account['id'] in parent['child_consol_ids']])
+            # stop recursion if no children found
             if not level_accounts:
                 return []
 
@@ -128,8 +131,7 @@ class CommonReportHeaderWebkit(common_report_header):
 
             for level_account in level_accounts:
                 sorted_accounts.append(level_account['id'])
-                if level < max_level:
-                    sorted_accounts.extend(recursive_sort_by_code(level + 1, max_level, accounts, parent_id=level_account['id'], root=False))
+                sorted_accounts.extend(recursive_sort_by_code(accounts, parent=level_account))
             return sorted_accounts
 
         if not account_ids:
@@ -137,12 +139,16 @@ class CommonReportHeaderWebkit(common_report_header):
 
         accounts_data = self.pool.get('account.account').read(self.cr, self.uid,
                                                          account_ids,
-                                                         ['id', 'parent_id', 'level', 'code'],
+                                                         ['id', 'parent_id', 'level', 'code', 'child_consol_ids'],
                                                          context=context)
-        levels = [x['level'] for x in accounts_data]
-        start_level = min(levels)
-        max_level = max(levels)
-        sorted_accounts = recursive_sort_by_code(start_level, max_level, accounts_data)
+                
+        sorted_accounts = []
+
+        root_accounts_data = [account_data for account_data in accounts_data
+                              if account_data['id'] in root_account_ids]
+        for root_account_data in root_accounts_data:
+            sorted_accounts.append(root_account_data['id'])
+            sorted_accounts.extend(recursive_sort_by_code(accounts_data, root_account_data))
 
         # fallback to unsorted accounts when sort failed
         # sort fails when the levels are miscalculated by account.account
@@ -150,7 +156,7 @@ class CommonReportHeaderWebkit(common_report_header):
         if len(sorted_accounts) != len(account_ids):
             logger = netsvc.Logger()
             logger.notifyChannel('account_financial_report_webkit', netsvc.LOG_WARNING,
-                                 'Webkit financial reports: Sort of accounts failed, the level of the accounts are probably miscalculated. Check bug lp:783670 for a fix.')
+                                 'Webkit financial reports: Sort of accounts failed.')
             sorted_accounts = account_ids
 
         return sorted_accounts
@@ -171,7 +177,7 @@ class CommonReportHeaderWebkit(common_report_header):
             accounts.append(account_id)
             accounts += acc_obj._get_children_and_consol(self.cursor, self.uid, account_id, context=context)
         res_ids = list(set(accounts))
-        res_ids = self.sort_accounts_with_structure(res_ids, context=context)
+        res_ids = self.sort_accounts_with_structure(account_ids, res_ids, context=context)
 
         if exclude_type or only_type or filter_report_type:
             sql_filters = {'ids': tuple(res_ids)}
@@ -433,7 +439,8 @@ SELECT l.id AS lid,
             c.name AS currency_code,
             i.id AS invoice_id,
             i.type AS invoice_type,
-            i.number AS invoice_number
+            i.number AS invoice_number,
+            l.date_maturity
 FROM account_move_line l
     JOIN account_move m on (l.move_id=m.id)
     LEFT JOIN res_currency c on (l.currency_id=c.id)
