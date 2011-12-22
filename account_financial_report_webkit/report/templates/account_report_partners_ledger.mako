@@ -217,7 +217,7 @@
                     <div class="act_as_row labels" style="font-weight: bold;">
                             <div class="act_as_cell first_column" style="width: 450px;">${account.code} - ${account.name}</div>
                             ## label
-                            <div class="act_as_cell" style="width: 200px;">Cumulated Balance on Account</div>
+                            <div class="act_as_cell" style="width: 200px;">${_("Cumulated Balance on Account")}</div>
                             ## reconcile
                             <div class="act_as_cell" style="width: 100px;"></div>
                             ## balance
