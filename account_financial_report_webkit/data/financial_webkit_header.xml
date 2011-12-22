@@ -160,6 +160,11 @@ act_as_colgroup {
     border-left: 1px solid lightGrey;
 }
 
+.overflow_ellipsis {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
 
 ]]>
             </field>
@@ -364,6 +369,12 @@ act_as_colgroup {
 
 .account_level_5 {
 
+}
+
+.overflow_ellipsis {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 ]]>

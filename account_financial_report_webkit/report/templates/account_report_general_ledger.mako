@@ -82,13 +82,13 @@
                         ## partner
                         <div class="act_as_cell" style="width: 120px;">${_('Partner')}</div>
                         ## ref
-                        ## <div class="act_as_cell" style="width: 100px;">${_('Ref')}</div>
+                        ##<div class="act_as_cell" style="width: 100px;">${_('Ref')}</div>
                         ## label
-                        <div class="act_as_cell" style="width: 150px;">${_('Label')}</div>
+                        <div class="act_as_cell" style="width: 230px;">${_('Label')}</div>
                         ## counterpart
                         <div class="act_as_cell" style="width: 100px;">${_('Counter part')}</div>
                         ## reconcile
-                        <div class="act_as_cell" style="width: 70px;" >${_('Rec.')}</div>
+                        ## <div class="act_as_cell" style="width: 70px;" >${_('Rec.')}</div>
                         ## debit
                         <div class="act_as_cell amount" style="width: 75px;">${_('Debit')}</div>
                         ## credit
@@ -130,11 +130,11 @@
                           ## counterpart
                           <div class="act_as_cell"></div>
                           ## reconcile
-                          <div class="act_as_cell"></div>
+                          ## <div class="act_as_cell"></div>
                           ## debit
-                          <div class="act_as_cell amount"></div>
+                          <div class="act_as_cell amount">${formatLang(account.init_balance.get('debit')) | amount}</div>
                           ## credit
-                          <div class="act_as_cell amount"></div>
+                          <div class="act_as_cell amount">${formatLang(account.init_balance.get('credit')) | amount}</div>
                           ## balance cumulated
                           <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(cumul_balance) | amount }</div>
                          %if amount_currency(data):
@@ -163,7 +163,7 @@
                           ## journal
                           <div class="act_as_cell">${line.get('jcode') or ''}</div>
                           ## partner
-                          <div class="act_as_cell">${line.get('partner_name') or ''}</div>
+                          <div class="act_as_cell overflow_ellipsis">${line.get('partner_name') or ''}</div>
                           ## ref
                           ## <div class="act_as_cell">${line.get('lref') or ''}</div>
                           ## label
@@ -171,7 +171,7 @@
                           ## counterpart
                           <div class="act_as_cell">${line.get('counterparts') or ''}</div>
                           ## reconcile
-                          <div class="act_as_cell">${line.get('rec_name') or ''}</div>
+                          ## <div class="act_as_cell">${line.get('rec_name') or ''}</div>
                           ## debit
                           <div class="act_as_cell amount">${ formatLang(line.get('debit', 0.0)) | amount }</div>
                           ## credit

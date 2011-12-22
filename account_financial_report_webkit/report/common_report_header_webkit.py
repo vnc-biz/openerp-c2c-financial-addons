@@ -319,17 +319,23 @@ class CommonReportHeaderWebkit(common_report_header):
             period_ids = [period_ids]
 
         try:
-            self.cursor.execute("SELECT sum(debit)-sum(credit) as balance,"
-                                " sum(amount_currency) as curr_balance"
+            self.cursor.execute("SELECT sum(debit) AS debit, "
+                                " sum(credit) AS credit, "
+                                " sum(debit)-sum(credit) AS balance, "
+                                " sum(amount_currency) AS curr_balance"
                                 " FROM account_move_line"
-                                " where period_id in %s"
-                                " And account_id = %s", (tuple(period_ids), account.id))
-            res = self.cursor.fetchone()
+                                " WHERE period_id in %s"
+                                " AND account_id = %s", (tuple(period_ids), account.id))
+            res = self.cursor.dictfetchone()
 
         except Exception, exc:
             self.cursor.rollback()
             raise exc
-        return {'init_balance': res[0] or 0.0, 'init_balance_currency': res[1] or 0.0, 'state': mode}
+        return {'debit': res['debit'] or 0.0,
+                'credit': res['credit'] or 0.0,
+                'init_balance': res['balance'] or 0.0,
+                'init_balance_currency': res['curr_balance'] or 0.0,
+                'state': mode}
 
 
     def _compute_initial_balances(self, account_ids, start_period, fiscalyear, main_filter):
@@ -351,7 +357,7 @@ class CommonReportHeaderWebkit(common_report_header):
 
             bs_period_ids = self._get_period_range_from_start_period(start_period, include_opening=True,
                                                                      stop_at_previous_opening=True)
-            nil_res = {'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'computed'}
+            nil_res = {'debit': 0.0, 'credit': 0.0, 'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'computed'}
             for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
                 if acc.user_type.close_method == 'none':
                     if pnl_periods_ids:
@@ -367,7 +373,7 @@ class CommonReportHeaderWebkit(common_report_header):
                         res[acc.id] = nil_res
         else:
             for acc_id in account_ids:
-                res[acc_id] = {'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'disable'}
+                res[acc_id] = {'debit': 0.0, 'credit': 0.0, 'init_balance': 0.0, 'init_balance_currency': 0.0, 'state': 'disable'}
         return res
 
     ####################Account move retrieval helper ##########################
