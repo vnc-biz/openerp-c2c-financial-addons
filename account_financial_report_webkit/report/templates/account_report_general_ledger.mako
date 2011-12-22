@@ -82,15 +82,17 @@
                         ## partner
                         <div class="act_as_cell" style="width: 120px;">${_('Partner')}</div>
                         ## ref
-                        <div class="act_as_cell" style="width: 100px;">${_('Ref')}</div>
+                        ## <div class="act_as_cell" style="width: 100px;">${_('Ref')}</div>
                         ## label
                         <div class="act_as_cell" style="width: 150px;">${_('Label')}</div>
                         ## counterpart
                         <div class="act_as_cell" style="width: 100px;">${_('Counter part')}</div>
                         ## reconcile
                         <div class="act_as_cell" style="width: 70px;" >${_('Rec.')}</div>
-                        ## balance
-                        <div class="act_as_cell amount" style="width: 75px;">${_('Balance')}</div>
+                        ## debit
+                        <div class="act_as_cell amount" style="width: 75px;">${_('Debit')}</div>
+                        ## credit
+                        <div class="act_as_cell amount" style="width: 75px;">${_('Credit')}</div>
                         ## balance cumulated
                         <div class="act_as_cell amount" style="width: 75px;">${_('Cumul. Bal.')}</div>
                         %if amount_currency(data):
@@ -122,15 +124,17 @@
                           ## partner
                           <div class="act_as_cell"></div>
                           ## ref
-                          <div class="act_as_cell"></div>
+                          ## <div class="act_as_cell"></div>
                           ## label
                           <div class="act_as_cell">${_('Balance brought forward')}</div>
                           ## counterpart
                           <div class="act_as_cell"></div>
                           ## reconcile
                           <div class="act_as_cell"></div>
-                          ## balance
-                          <div class="act_as_cell amount">${formatLang(cumul_balance) | amount }</div>
+                          ## debit
+                          <div class="act_as_cell amount"></div>
+                          ## credit
+                          <div class="act_as_cell amount"></div>
                           ## balance cumulated
                           <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(cumul_balance) | amount }</div>
                          %if amount_currency(data):
@@ -161,15 +165,17 @@
                           ## partner
                           <div class="act_as_cell">${line.get('partner_name') or ''}</div>
                           ## ref
-                          <div class="act_as_cell">${line.get('lref') or ''}</div>
+                          ## <div class="act_as_cell">${line.get('lref') or ''}</div>
                           ## label
                           <div class="act_as_cell">${line.get('lname') or ''}</div>
                           ## counterpart
                           <div class="act_as_cell">${line.get('counterparts') or ''}</div>
                           ## reconcile
                           <div class="act_as_cell">${line.get('rec_name') or ''}</div>
-                          ## balance
-                          <div class="act_as_cell amount">${ formatLang(line.get('balance') or 0.0) | amount }</div>
+                          ## debit
+                          <div class="act_as_cell amount">${ formatLang(line.get('debit', 0.0)) | amount }</div>
+                          ## credit
+                          <div class="act_as_cell amount">${ formatLang(line.get('credit', 0.0)) | amount }</div>
                           ## balance cumulated
                           <% cumul_balance += line.get('balance') or 0.0 %>
                           <div class="act_as_cell amount" style="padding-right: 1px;">${ formatLang(cumul_balance) | amount }</div>
