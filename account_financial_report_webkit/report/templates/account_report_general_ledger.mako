@@ -157,12 +157,16 @@
                         </div>
                       %endif
                       %for line in account.ledger_lines:
-                          <%
-                            cumul_debit += line.get('debit') or 0.0
-                            cumul_credit += line.get('credit') or 0.0
-                            cumul_balance_curr += line.get('amount_currency') or 0.0
-                            cumul_balance += line.get('balance') or 0.0
-                          %>
+                        <%
+                        cumul_debit += line.get('debit') or 0.0
+                        cumul_credit += line.get('credit') or 0.0
+                        cumul_balance_curr += line.get('amount_currency') or 0.0
+                        cumul_balance += line.get('balance') or 0.0
+                        label_elements = [line.get('lname') or '']
+                        if line.get('invoice_number'):
+                          label_elements.append("(%s)" % (line['invoice_number'],))
+                        label = ' '.join(label_elements)
+                        %>
 
                       <div class="act_as_row lines">
                           ## date
@@ -178,7 +182,7 @@
                           ## ref
                           ## <div class="act_as_cell">${line.get('lref') or ''}</div>
                           ## label
-                          <div class="act_as_cell">${line.get('lname') or ''}</div>
+                          <div class="act_as_cell">${label}</div>
                           ## counterpart
                           <div class="act_as_cell">${line.get('counterparts') or ''}</div>
                           ## reconcile
