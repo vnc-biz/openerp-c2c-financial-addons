@@ -32,11 +32,11 @@
                                 </tree>
                             </field>
                         </page>
+                        <page string="Layout Options" name="accounts">
+                            <field name="amount_currency"/>
+                            <field name="centralize"/>
+                        </page>
                     </page>
-                    <xpath expr="/form/notebook[1]" position="after">
-                        <separator string="Options" colspan="4"/>
-                        <field name="amount_currency"/>
-                    </xpath>
                     <page name="journal_ids" position="attributes">
                         <attribute name="invisible">True</attribute>
                     </page>

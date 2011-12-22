@@ -52,12 +52,14 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         'account_ids': fields.many2many('account.account', 'wiz_account_rel',
                                         'account_id', 'wiz_id', 'Filter on accounts',
                                          help="""Only selected accounts will be printed. Leave empty to print all accounts."""),
+        'centralize': fields.boolean('Activate Centralization', help='Uncheck to display all the details of centralized accounts.')
     }
     _defaults = {
         'amount_currency': False,
         'initial_balance': True,
         'display_account': 'bal_mix',
         'account_ids': _get_account_ids,
+        'centralize': True,
     }
 
     def _check_fiscalyear(self, cr, uid, ids, context=None):
@@ -81,7 +83,11 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         if context is None:
             context = {}
         vals = self.read(cr, uid, ids, 
-                         ['initial_balance', 'amount_currency', 'display_account', 'account_ids'],
+                         ['initial_balance',
+                          'amount_currency',
+                          'display_account',
+                          'account_ids',
+                          'centralize'],
                          context=context)[0]
         data['form'].update(vals)
         return data
@@ -90,9 +96,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         context = context or {}
         # we update form with display account value
         data = self.pre_print_report(cursor, uid, ids, data, context=context)
-        vals = self.read(cursor, uid, ids, ['initial_balance', 'amount_currency'])[0]
 
-        data['form'].update(vals)
         # GTK client problem onchange does not consider in save record
         if not data['form']['fiscalyear_id']:
             data['form'].update({'initial_balance': False})
