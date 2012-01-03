@@ -26,8 +26,7 @@
     <body>
         <%!
         def amount(text):
-            amount_text = "%.2f" % (float(text),)
-            return amount_text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
+            return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
 
         <%setLang(user.context_lang)%>
@@ -163,24 +162,24 @@
                         %if comparison_mode == 'no_comparison':
                             %if initial_balance:
                                 ## opening balance
-                                <div class="act_as_cell amount">${current_account.init_balance | amount}</div>
+                                <div class="act_as_cell amount">${formatLang(current_account.init_balance) | amount}</div>
                             %endif
                             ## debit
-                            <div class="act_as_cell amount">${current_account.debit | amount}</div>
+                            <div class="act_as_cell amount">${formatLang(current_account.debit) | amount}</div>
                             ## credit
-                            <div class="act_as_cell amount">${current_account.credit and current_account.credit * -1 or 0.0 | amount}</div>
+                            <div class="act_as_cell amount">${formatLang(current_account.credit and current_account.credit * -1 or 0.0) | amount}</div>
                         %endif
                         ## balance
-                        <div class="act_as_cell amount">${current_account.balance | amount}</div>
+                        <div class="act_as_cell amount">${formatLang(current_account.balance) | amount}</div>
 
                         %if comparison_mode in ('single', 'multiple'):
                             %for comp in comparisons:
                                 <%
                                 comp_account = comp['account']
                                 %>
-                                <div class="act_as_cell amount">${comp_account['balance'] | amount}</div>
+                                <div class="act_as_cell amount">${formatLang(comp_account['balance']) | amount}</div>
                                 %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
-                                    <div class="act_as_cell amount">${comp_account['diff'] | amount}</div>
+                                    <div class="act_as_cell amount">${formatLang(comp_account['diff']) | amount}</div>
                                     <div class="act_as_cell amount">
                                     %if comp_account['percent_diff'] is False:
                                      ${ '-' }
@@ -202,12 +201,12 @@
                             <div class="act_as_cell">${partner_name if partner_name else _('Unallocated') }</div>
                             %if comparison_mode == 'no_comparison':
                                 %if initial_balance:
-                                    <div class="act_as_cell amount">${partner.get('init_balance', 0.0) | amount}</div>
+                                    <div class="act_as_cell amount">${formatLang(partner.get('init_balance', 0.0)) | amount}</div>
                                 %endif
-                                <div class="act_as_cell amount">${partner.get('debit', 0.0) if partner else 0.0 | amount}</div>
-                                <div class="act_as_cell amount">${(partner.get('credit') and partner['credit'] * -1 or 0.0) if partner else 0.0 | amount}</div>
+                                <div class="act_as_cell amount">${formatLang(partner.get('debit', 0.0) if partner else 0.0) | amount}</div>
+                                <div class="act_as_cell amount">${formatLang((partner.get('credit') and partner['credit'] * -1 or 0.0) if partner else 0.0) | amount}</div>
                             %endif
-                            <div class="act_as_cell amount">${partner['balance'] if partner else 0.0 | amount}</div>
+                            <div class="act_as_cell amount">${formatLang(partner['balance'] if partner else 0.0) | amount}</div>
 
                             %if comparison_mode in ('single', 'multiple'):
                                 %for comp in comparisons:
@@ -219,9 +218,9 @@
                                         diff = comp_partners[partner_id]['diff']
                                         percent_diff = comp_partners[partner_id]['percent_diff']
                                     %>
-                                    <div class="act_as_cell amount">${balance | amount}</div>
+                                    <div class="act_as_cell amount">${formatLang(balance) | amount}</div>
                                     %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
-                                        <div class="act_as_cell amount">${diff | amount}</div>
+                                        <div class="act_as_cell amount">${formatLang(diff) | amount}</div>
                                         <div class="act_as_cell amount">
                                         %if percent_diff is False:
                                          ${ '-' }

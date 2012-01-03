@@ -87,6 +87,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
         stop_date = self._get_form_param('date_to', data)
+        do_centralize = self._get_form_param('centralize', data)
         start_period = self.get_start_period_br(data)
         stop_period = self.get_end_period_br(data)
         fiscalyear = self.get_fiscalyear_br(data)
@@ -113,7 +114,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
                                                                    main_filter, target_move, start, stop)
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, accounts):
-            if account.centralized:
+            if do_centralize and account.centralized:
                 account.ledger_lines = self._centralize_lines(main_filter, ledger_lines_memoizer.get(account.id, []))
             else:
                 account.ledger_lines = ledger_lines_memoizer.get(account.id, [])
