@@ -221,7 +221,7 @@
                         <div class="act_as_cell amount" style="width: 75px; padding-right: 1px;">${ formatLang(cumul_balance) | amount }</div>
                         %if amount_currency(data):
                             ## curency code
-                            <div class="act_as_cell amount sep_left" style="width: 30px; text-align: right;">${line.get('currency_code') or ''}</div>
+                            <div class="act_as_cell amount sep_left" style="width: 30px; text-align: right;"></div>
                             ## currency balance
                             <div class="act_as_cell amount" style="width: 75px;"></div>
                             %if account.currency_id:
