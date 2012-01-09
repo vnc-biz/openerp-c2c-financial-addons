@@ -73,9 +73,9 @@
             <field name="model">account.account</field>
         </record>
 
-        <menuitem icon="STOCK_PRINT" name="Partner Ledger Webkit"
+        <menuitem icon="STOCK_PRINT" name="Partner Ledger (Webkit)"
             parent="account.next_id_22" action="action_account_partners_ledger_menu_webkit"
-            groups="account.group_account_manager,account.group_account_user" id="menu_partners_ledger_webkit"/>
+            groups="account.group_account_manager,account.group_account_user" id="account.menu_account_partner_ledger"/>
 
     </data>
 </openerp>
