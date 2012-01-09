@@ -159,6 +159,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                             'period_ids': tuple(period_ids),
                             'account_ids': tuple(account_ids),}
             sql = ("SELECT account_id, partner_id,"
+                   "       sum(debit) as debit, sum(credit) as credit,"
                    "       sum(debit-credit) as init_balance,"
                    "       CASE WHEN a.currency_id ISNULL THEN 0.0 ELSE sum(amount_currency) END as init_balance_currency, "
                    "       c.name as currency_name "
@@ -181,10 +182,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             if res:
                 for row in res:
                     final_res[row['account_id']][row['partner_id']] = \
-                        {'init_balance': row['init_balance'],
-                         'init_balance_currency': row['init_balance_currency'],
-                         'currency_name': row['currency_name'],
-                        }
+                    dict((key, row[key]) for key in ('debit', 'credit', 'init_balance', 'init_balance_currency', 'currency_name'))
         if not final_res:
             for acc_id in account_ids:
                 final_res[acc_id] = {}
