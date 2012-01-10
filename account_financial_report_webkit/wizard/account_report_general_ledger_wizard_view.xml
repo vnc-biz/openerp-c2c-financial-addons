@@ -80,9 +80,9 @@
             <field name="model">account.account</field>
         </record>
 
-        <menuitem icon="STOCK_PRINT" name="General Ledger Webkit"
+        <menuitem icon="STOCK_PRINT" name="General Ledger (Webkit)"
             parent="account.final_accounting_reports" action="action_account_general_ledger_menu_webkit"
-            groups="account.group_account_manager,account.group_account_user" id="menu_general_ledger_webkit"/>
+            groups="account.group_account_manager,account.group_account_user" id="account.menu_general_ledger"/>
 
     </data>
 </openerp>
