@@ -115,7 +115,7 @@
                       cumul_balance = account.init_balance.get('init_balance') or 0.0
                       cumul_balance_curr = account.init_balance.get('init_balance_currency') or 0.0
                       %>
-                      %if initial_balance(data) and cumul_balance:
+                      %if initial_balance(data) and (cumul_debit or cumul_credit):
                         <div class="act_as_row initial_balance">
                           ## date
                           <div class="act_as_cell first_column"></div>

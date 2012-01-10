@@ -33,8 +33,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
                                           help='It adds initial balance row'),
         'amount_currency': fields.boolean("With Currency",
                                           help="It adds the currency column"),
-        'exclude_reconciled': fields.boolean("Exclude reconciled entries",
-                                             help="TODO"),
+        'exclude_reconciled': fields.boolean("Exclude reconciled entries",),
         'until_date': fields.date("Clearance date",
                                   required=True,
                                   help="""The clearance date is essentially a tool used for debtors provisionning calculation.
