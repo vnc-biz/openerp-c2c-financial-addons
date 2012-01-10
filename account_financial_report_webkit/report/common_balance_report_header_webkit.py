@@ -72,15 +72,10 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         for mode, acc_ids in modes.iteritems():
             ctx = context.copy()
             ctx.update({'state': target_move})
-            if main_filter == 'filter_no':
+            if main_filter in ('filter_no', 'filter_period'):
                 period_ids = self._get_period_range_from_periods(start, stop, mode)
                 ctx.update({
                     'periods': period_ids
-                })
-            elif main_filter == 'filter_period':
-                ctx.update({
-                    'period_from': start.id,
-                    'period_to': stop.id
                 })
             elif main_filter == 'filter_date':
                 ctx.update({
