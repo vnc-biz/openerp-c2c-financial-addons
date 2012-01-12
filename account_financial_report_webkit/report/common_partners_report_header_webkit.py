@@ -151,38 +151,35 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         
         if not period_ids:
             period_ids = [-1]
-        # if opening period is included in start period we do not need to compute init balance
-        # we just read it from opening entries
-        res = defaultdict(dict)
-        if main_filter in ('filter_period', 'filter_no'):
-            search_param = {'date_start': start_period.date_start,
-                            'period_ids': tuple(period_ids),
-                            'account_ids': tuple(account_ids),}
-            sql = ("SELECT account_id, partner_id,"
-                   "       sum(debit) as debit, sum(credit) as credit,"
-                   "       sum(debit-credit) as init_balance,"
-                   "       CASE WHEN a.currency_id ISNULL THEN 0.0 ELSE sum(amount_currency) END as init_balance_currency, "
-                   "       c.name as currency_name "
-                   "FROM account_move_line "
-                   "INNER JOIN account_account a "
-                   "ON a.id = account_id "
-                   "LEFT JOIN res_currency c "
-                   "ON c.id = a.currency_id "
-                   "WHERE period_id in %(period_ids)s"
-                   "AND account_id in %(account_ids)s")
-            if exclude_reconcile:
-                sql += ("AND ((reconcile_id IS NULL)"
-                       "OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_start)s)))")
-            if partner_filter:
-                sql += "AND partner_id in %(partner_ids)s"
-                search_param.update({'partner_ids': tuple(partner_filter)})
-            sql += "GROUP BY account_id, partner_id, a.currency_id, c.name"
-            self.cursor.execute(sql, search_param)
-            res = self.cursor.dictfetchall()
-            if res:
-                for row in res:
-                    final_res[row['account_id']][row['partner_id']] = \
-                    dict((key, row[key]) for key in ('debit', 'credit', 'init_balance', 'init_balance_currency', 'currency_name'))
+
+        search_param = {'date_start': start_period.date_start,
+                        'period_ids': tuple(period_ids),
+                        'account_ids': tuple(account_ids),}
+        sql = ("SELECT account_id, partner_id,"
+               "       sum(debit) as debit, sum(credit) as credit,"
+               "       sum(debit-credit) as init_balance,"
+               "       CASE WHEN a.currency_id ISNULL THEN 0.0 ELSE sum(amount_currency) END as init_balance_currency, "
+               "       c.name as currency_name "
+               "FROM account_move_line "
+               "INNER JOIN account_account a "
+               "ON a.id = account_id "
+               "LEFT JOIN res_currency c "
+               "ON c.id = a.currency_id "
+               "WHERE period_id in %(period_ids)s"
+               "AND account_id in %(account_ids)s")
+        if exclude_reconcile:
+            sql += ("AND ((reconcile_id IS NULL)"
+                   "OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_start)s)))")
+        if partner_filter:
+            sql += "AND partner_id in %(partner_ids)s"
+            search_param.update({'partner_ids': tuple(partner_filter)})
+        sql += "GROUP BY account_id, partner_id, a.currency_id, c.name"
+        self.cursor.execute(sql, search_param)
+        res = self.cursor.dictfetchall()
+        if res:
+            for row in res:
+                final_res[row['account_id']][row['partner_id']] = \
+                dict((key, row[key]) for key in ('debit', 'credit', 'init_balance', 'init_balance_currency', 'currency_name'))
         if not final_res:
             for acc_id in account_ids:
                 final_res[acc_id] = {}

@@ -18,11 +18,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import time
 import pooler
 
 from collections import defaultdict
-from operator import add
 from report import report_sxw
 from osv import osv
 from tools.translate import _
@@ -73,14 +71,9 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         by mako template"""
         new_ids = data['form']['chart_account_id']
 
-        # We memoize ledger lines linked to account. Key is account id
-        # values are array of lines
-        ledger_lines_memoizer = {}
-
         # Account initial balance memoizer
         init_balance_memoizer = {}
         # account partner memoizer
-        account_partner_rel_memoizer = {}
         # Reading form
         init_bal = self._get_form_param('initial_balance', data)
         main_filter = self._get_form_param('filter', data, default='filter_no')
