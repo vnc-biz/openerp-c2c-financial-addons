@@ -55,14 +55,13 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         account_obj = self.pool.get('account.account')
         period_obj = self.pool.get('account.period')
 
-        modes = {'include_opening': [],
-                 'exclude_opening' : []}
+        modes = {'include_opening': [], 'exclude_opening' : []}
         if init_balance:
             init_balance = self._compute_initial_balances(account_ids, start, fiscalyear, main_filter)
             # if init_balance has been read from the initial period, we'll compute values excluding the opening period
             # if it has been computed from previous periods, we'll include the opening period
             for account_id in account_ids:
-                if init_balance[account_id].get('state') == 'read':
+                if init_balance[account_id].get('state') == 'computed':
                     modes['exclude_opening'].append(account_id)
                 else:
                     modes['include_opening'].append(account_id)
@@ -75,6 +74,8 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             ctx.update({'state': target_move})
             if main_filter in ('filter_no', 'filter_period'):
                 period_ids = period_obj.build_ctx_periods(self.cr, self.uid, start.id, stop.id)
+                if mode == 'exclude_opening':
+                    period_ids = self.exclude_opening_periods(period_ids)
                 ctx.update({
                     'periods': period_ids
                 })
@@ -161,21 +162,22 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             return False
         return True
 
-    def _get_diff(self, balance, last_balance):
+    def _get_diff(self, balance, previous_balance):
         """
         @param balance: current balance
-        @param last_balance: last balance
+        @param previous_balance: last balance
         @return: dict of form {'diff': difference, 'percent_diff': diff in percentage}
         """
-        diff = balance - last_balance
-        percent_diff = 0.0
+        diff = balance - previous_balance
 
         obj_precision = self.pool.get('decimal.precision')
         precision = obj_precision.precision_get(self.cr, self.uid, 'Account')
-        if last_balance == 0:
+        # round previous balance with account precision to avoid big numbers if previous
+        # balance is 0.0000001 or a any very small number
+        if round(previous_balance, precision) == 0:
             percent_diff = False
         else:
-            percent_diff = round(diff / last_balance * 100, precision)
+            percent_diff = round(diff / previous_balance * 100, precision)
 
         return {'diff': diff, 'percent_diff': percent_diff}
 
