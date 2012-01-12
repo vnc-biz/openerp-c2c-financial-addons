@@ -133,7 +133,7 @@
 
                     comparisons = current_account.comparisons
                     %>
-                    <div class="act_as_row lines ${"account_level_%s" % (current_account.level,)}">
+                    <div class="act_as_row lines ${"account_level_%s" % (current_account.level,)}  ${"%s_account_type" % (current_account.type,)}">
                         ## code
                         <div class="act_as_cell first_column">${current_account.code}</div>
                         ## account name
