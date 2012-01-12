@@ -212,33 +212,29 @@ class CommonReportHeaderWebkit(common_report_header):
         """Return the list of all journal that can be use to create opening entries
         We actually filter on this instead of opening period as older version of OpenERP
         did not have this notion"""
-        return self.pool.get('account.period').search(self.cursor,
-                                                       self.uid,
-                                                       [('special', '=', True)])
+        return self.pool.get('account.period').search(self.cursor, self.uid, [('special', '=', True)])
 
     def exclude_opening_periods(self, period_ids):
         period_obj = self.pool.get('account.period')
         return period_obj.search(self.cr, self.uid, [['special', '=', False], ['id', 'in', period_ids]])
 
-    def get_included_opening_period(self, period, check_move=True):
+    def get_included_opening_period(self, period):
         """Return the opening included in normal period we use the assumption
         that there is only one opening period per fiscal year"""
-        mv_line_obj = self.pool.get('account.move.line')
         period_obj =  self.pool.get('account.period')
-        res = period_obj.search(self.cursor,
-                                self.uid,
-                                [('special', '=', True),
-                                 ('date_start', '>=', period.date_start),
-                                 ('date_stop', '<=', period.date_stop)],
-                                limit=1)
-        if check_move and res:
-            validation_res = mv_line_obj.search(self.cursor,
-                                                self.uid,
-                                                [('period_id', '=', res[0])],
-                                                limit=1)
-            if not validation_res:
-                return False
-        return res
+        return period_obj.search(self.cursor, self.uid,
+                                 [('special', '=', True),
+                                  ('date_start', '>=', period.date_start),
+                                  ('date_stop', '<=', period.date_stop)],
+                                  limit=1)
+
+    def periods_contains_move_lines(self, period_ids):
+        if not period_ids:
+            return False
+        mv_line_obj = self.pool.get('account.move.line')
+        if isinstance(period_ids, (int, long)):
+            period_ids = [period_ids]
+        return mv_line_obj.search(self.cursor, self.uid, [('period_id', 'in', period_ids)], limit=1) and True or False
 
     def _get_period_range_from_periods(self, start_period, stop_period, mode=None):
         """
@@ -265,7 +261,7 @@ class CommonReportHeaderWebkit(common_report_header):
         if stop_at_previous_opening:
             opening_search = [('special', '=', True),
                              ('date_stop', '<', start_period.date_start)]
-            if fiscalyear :
+            if fiscalyear:
                 opening_search.append(('fiscalyear_id', '=', fiscalyear.id))
 
             opening_periods = period_obj.search(self.cursor, self.uid, opening_search,
@@ -364,16 +360,18 @@ class CommonReportHeaderWebkit(common_report_header):
 
             bs_period_ids = self._get_period_range_from_start_period(start_period, include_opening=True,
                                                                      stop_at_previous_opening=True)
-            included_opening_period = self.get_included_opening_period(start_period)
+
+            opening_period_selected = self.get_included_opening_period(start_period)
+            opening_move_lines = self.periods_contains_move_lines(opening_period_selected)
             for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
                 res[acc.id] = self._compute_init_balance(mode='read', default_values=True)
                 if acc.user_type.close_method == 'none':
                     # we compute the initial balance for close_method == none only when we print a GL
                     # during the year, when the opening period is not included in the period selection!
-                    if pnl_periods_ids:
+                    if pnl_periods_ids and not opening_period_selected:
                         res[acc.id] = self._compute_init_balance(acc, pnl_periods_ids)
                 else:
-                    if not included_opening_period:
+                    if not opening_move_lines:
                         res[acc.id] = self._compute_init_balance(acc, bs_period_ids)
         else:
             for acc_id in account_ids:
@@ -384,7 +382,7 @@ class CommonReportHeaderWebkit(common_report_header):
     def _get_move_ids_from_periods(self, account_id, period_start, period_stop, target_move):
         move_line_obj = self.pool.get('account.move.line')
         period_obj = self.pool.get('account.period')
-        periods = period_obj.build_ctx_periods(self.cr, self.uid, period_start.id, period_stop.id)
+        periods = period_obj.build_ctx_periods(self.cursor, self.uid, period_start.id, period_stop.id)
         if not periods:
             return []
         search = [('period_id', 'in', periods), ('account_id', '=', account_id)]

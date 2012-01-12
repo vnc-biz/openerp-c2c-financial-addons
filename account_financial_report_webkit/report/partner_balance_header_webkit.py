@@ -78,8 +78,10 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
         # if opening period is included in start period we do not need to compute init balance
         # we just read it from opening entries
         if mode == 'exclude_opening':
-            read_period_ids = self.get_included_opening_period(start_period)
-            res = self._compute_partners_initial_balances(account_ids, start_period, partner_filter_ids, force_period_ids=read_period_ids, exclude_reconcile=exclude_reconcile)
+            opening_period_selected = self.get_included_opening_period(start_period)
+            if self.periods_contains_move_lines(opening_period_selected):
+                opening_period_selected = False
+            res = self._compute_partners_initial_balances(account_ids, start_period, partner_filter_ids, force_period_ids=opening_period_selected, exclude_reconcile=exclude_reconcile)
         else:
             res = self._compute_partners_initial_balances(account_ids, start_period, partner_filter_ids, exclude_reconcile=exclude_reconcile)
         return res
