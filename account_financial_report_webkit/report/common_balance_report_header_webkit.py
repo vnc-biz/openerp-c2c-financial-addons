@@ -53,6 +53,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             context = {}
 
         account_obj = self.pool.get('account.account')
+        period_obj = self.pool.get('account.period')
 
         modes = {'include_opening': [],
                  'exclude_opening' : []}
@@ -72,15 +73,10 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         for mode, acc_ids in modes.iteritems():
             ctx = context.copy()
             ctx.update({'state': target_move})
-            if main_filter == 'filter_no':
-                period_ids = self._get_period_range_from_periods(start, stop, mode)
+            if main_filter in ('filter_no', 'filter_period'):
+                period_ids = period_obj.build_ctx_periods(self.cr, self.uid, start.id, stop.id)
                 ctx.update({
                     'periods': period_ids
-                })
-            elif main_filter == 'filter_period':
-                ctx.update({
-                    'period_from': start.id,
-                    'period_to': stop.id
                 })
             elif main_filter == 'filter_date':
                 ctx.update({

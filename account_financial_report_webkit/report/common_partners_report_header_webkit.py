@@ -51,7 +51,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
 
     def _get_query_params_from_periods(self, period_start, period_stop, mode='exclude_opening'):
         # we do not want opening period so we exclude opening
-        periods = self._get_period_range_from_periods(period_start, period_stop, mode)
+        periods = self.pool.get('account.period').build_ctx_periods(self.cr, self.uid, period_start.id, period_stop.id)
         if not periods:
             return []
 

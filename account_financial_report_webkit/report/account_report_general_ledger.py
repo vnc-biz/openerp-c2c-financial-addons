@@ -160,7 +160,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             # search on account.period in order to sort them by date_start
             sorted_period_ids = period_obj.search(self.cr, self.uid,
                                                   [('id', 'in', period_ids)],
-                                                  order='date_start',
+                                                  order='special desc, date_start',
                                                   context=context)
             sorted_ledger_lines = sorted(ledger_lines, key=lambda x: sorted_period_ids.index(x['lperiod_id']))
             
@@ -181,17 +181,11 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
                                       target_move, start, stop):
         res = {}
         for acc_id in accounts_ids:
-            # We get the move line ids of the account depending of the
-            # way the initial balance was created we include or not opening entries
-            search_mode = 'include_opening'
-            if acc_id in init_balance_memoizer:
-                if init_balance_memoizer[acc_id].get('state') == 'read':
-                    search_mode = 'exclude_opening'
-            move_line_ids = self.get_move_lines_ids(acc_id, main_filter, start, stop, target_move,
-                                                    mode=search_mode)
+            move_line_ids = self.get_move_lines_ids(acc_id, main_filter, start, stop, target_move)
             if not move_line_ids:
                 res[acc_id] = []
                 continue
+
             lines = self._get_ledger_lines(move_line_ids, acc_id)
             res[acc_id] = lines
         return res

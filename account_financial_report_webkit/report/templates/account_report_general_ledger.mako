@@ -110,8 +110,8 @@
 
                 <div class="act_as_tbody">
                       <%
-                      cumul_debit = account.init_balance.get('debit')
-                      cumul_credit = account.init_balance.get('credit')
+                      cumul_debit = account.init_balance.get('debit') or 0.0
+                      cumul_credit = account.init_balance.get('credit') or 0.0
                       cumul_balance = account.init_balance.get('init_balance') or 0.0
                       cumul_balance_curr = account.init_balance.get('init_balance_currency') or 0.0
                       %>
