@@ -14,8 +14,7 @@
     <body>
         <%!
         def amount(text):
-            amount_text = "%.2f" % (float(text),)
-            return amount_text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
+            return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
 
         <%setLang(user.context_lang)%>
@@ -161,7 +160,7 @@
                                     %if comp_account['percent_diff'] is False:
                                      ${ '-' }
                                     %else:
-                                       ${comp_account['percent_diff'] | amount} &#37;
+                                       ${int(round(comp_account['percent_diff'])) | amount} &#37;
                                     %endif
                                     </div>
                                 %endif

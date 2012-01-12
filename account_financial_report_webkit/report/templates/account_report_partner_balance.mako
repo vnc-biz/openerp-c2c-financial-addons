@@ -184,7 +184,7 @@
                                     %if comp_account['percent_diff'] is False:
                                      ${ '-' }
                                     %else:
-                                       ${comp_account['percent_diff'] | amount} &#37;
+                                       ${int(round(comp_account['percent_diff'])) | amount} &#37;
                                     %endif
                                     </div>
                                 %endif
@@ -225,7 +225,7 @@
                                         %if percent_diff is False:
                                          ${ '-' }
                                         %else:
-                                           ${percent_diff | amount} &#37;
+                                           ${int(round(percent_diff)) | amount} &#37;
                                         %endif
                                         </div>
                                     %endif
