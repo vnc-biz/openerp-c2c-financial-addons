@@ -130,7 +130,7 @@
                           ## ref
                           ## <div class="act_as_cell"></div>
                           ## label
-                          <div class="act_as_cell">${_('Balance brought forward')}</div>
+                          <div class="act_as_cell">${_('Initial Balance')}</div>
                           ## counterpart
                           <div class="act_as_cell"></div>
                           ## reconcile
