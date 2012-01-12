@@ -55,6 +55,9 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         if not periods:
             return []
 
+        if mode == 'exclude_opening':
+            periods = self.exclude_opening_periods(periods)
+
         search_params = {'period_ids': tuple(periods),
                          'date_stop': period_stop.date_stop}
 
@@ -138,13 +141,14 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             return []
 
      ####################Initial Partner Balance helper ########################
-    def _compute_partners_initial_balances(self, account_ids, start_period, fiscalyear, main_filter, partner_filter=None, exclude_reconcile=False, force_period_ids=False):
+    def _compute_partners_initial_balances(self, account_ids, start_period, partner_filter=None, exclude_reconcile=False, force_period_ids=False):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
         if isinstance(account_ids, (int, long)):
             account_ids = [account_ids]
         final_res = defaultdict(dict)
+        # take ALL previous periods
         period_ids = force_period_ids \
                      if force_period_ids \
                      else self._get_period_range_from_start_period(start_period, fiscalyear=False, include_opening=False)

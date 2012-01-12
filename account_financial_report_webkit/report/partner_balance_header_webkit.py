@@ -79,9 +79,9 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
         # we just read it from opening entries
         if mode == 'exclude_opening':
             read_period_ids = self.get_included_opening_period(start_period)
-            res = self._compute_partners_initial_balances(account_ids, start_period, fiscalyear, main_filter, partner_filter_ids, force_period_ids=read_period_ids, exclude_reconcile=exclude_reconcile)
+            res = self._compute_partners_initial_balances(account_ids, start_period, partner_filter_ids, force_period_ids=read_period_ids, exclude_reconcile=exclude_reconcile)
         else:
-            res = self._compute_partners_initial_balances(account_ids, start_period, fiscalyear, main_filter, partner_filter_ids, exclude_reconcile=exclude_reconcile)
+            res = self._compute_partners_initial_balances(account_ids, start_period, partner_filter_ids, exclude_reconcile=exclude_reconcile)
         return res
 
     def _get_partners_totals_account(self, filter_from, account_id, start, stop, target_move, partner_filter_ids=None, mode='include_opening'):

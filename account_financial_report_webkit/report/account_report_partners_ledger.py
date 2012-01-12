@@ -109,8 +109,6 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         if init_bal and main_filter in ('filter_no', 'filter_period'):
             init_balance_memoizer = self._compute_partners_initial_balances(accounts,
                                                                             start_period,
-                                                                            fiscalyear,
-                                                                            main_filter,
                                                                             partner_filter=partner_ids,
                                                                             exclude_reconcile=exclude_reconcile)
         # computation of ledeger lines

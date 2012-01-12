@@ -216,6 +216,9 @@ class CommonReportHeaderWebkit(common_report_header):
                                                        self.uid,
                                                        [('special', '=', True)])
 
+    def exclude_opening_periods(self, period_ids):
+        period_obj = self.pool.get('account.period')
+        return period_obj.search(self.cr, self.uid, [['special', '=', False], ['id', 'in', period_ids]])
 
     def get_included_opening_period(self, period, check_move=True):
         """Return the opening included in normal period we use the assumption
