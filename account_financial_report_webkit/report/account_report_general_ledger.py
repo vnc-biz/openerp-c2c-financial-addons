@@ -19,13 +19,10 @@
 #
 ##############################################################################
 
-import time
-
 from report import report_sxw
-from osv import osv
 from tools.translate import _
 import pooler
-from operator import add, itemgetter
+from operator import itemgetter
 from itertools import groupby
 from datetime import datetime
 
@@ -137,9 +134,13 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         """ Group by period in filter mode 'period' or on one line in filter mode 'date'
             ledger_lines parameter is a list of dict built by _get_ledger_lines"""
         def group_lines(lines):
-            sum_balance = reduce(add, [line['balance'] for line in lines])
+            sums = reduce(lambda line, memo: dict((key, value + memo[key]) for key, value
+            in line.iteritems() if key in ('balance', 'debit', 'credit')), lines)
+
             res_lines = {
-                'balance': sum_balance,
+                'balance': sums['balance'],
+                'debit': sums['debit'],
+                'credit': sums['credit'],
                 'lname': _('Centralized Entries'),
                 'account_id': lines[0]['account_id'],
             }
