@@ -381,6 +381,10 @@ act_as_colgroup {
 
 .view_account_type {
     font-weight: bold;
+
+.account_level_consol {
+    font-weight: normal;
+	font-style: italic;
 }
 
 .overflow_ellipsis {

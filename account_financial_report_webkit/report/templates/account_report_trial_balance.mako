@@ -132,18 +132,33 @@
             </div>
 
             <div class="act_as_tbody">
+                <%
+                last_child_consol_ids = []
+                last_level = False
+                %>
                 %for current_account in objects:
                     <%
                     if not current_account.to_display:
                         continue
 
                     comparisons = current_account.comparisons
+
+                    if current_account.id in last_child_consol_ids:
+                        # current account is a consolidation child of the last account: use the level of last account
+                        level = last_level
+                        level_class = "account_level_consol"
+                    else:
+                        # current account is a not a consolidation child: use its own level
+                        level = current_account.level or 0
+                        level_class = "account_level_%s" % (level,)
+                        last_child_consol_ids = [child_consol_id.id for child_consol_id in current_account.child_consol_ids]
+                        last_level = current_account.level
                     %>
-                    <div class="act_as_row lines ${"account_level_%s" % (current_account.level,)}  ${"%s_account_type" % (current_account.type,)}">
+                    <div class="act_as_row lines ${level_class} ${"%s_account_type" % (current_account.type,)}">
                         ## code
                         <div class="act_as_cell first_column">${current_account.code}</div>
                         ## account name
-                        <div class="act_as_cell" style="padding-left: ${(current_account.level if current_account.level else 0) * 5}px;">${current_account.name}</div>
+                        <div class="act_as_cell" style="padding-left: ${level * 5}px;">${current_account.name}</div>
                         %if comparison_mode == 'no_comparison':
                             %if initial_balance_mode:
                                 ## opening balance
