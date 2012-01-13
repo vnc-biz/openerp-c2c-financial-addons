@@ -63,7 +63,8 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
             # merge initial balances in partner details
             if partners_init_balances_by_ids.get(account_id):
                 for partner_id, initial_balances in partners_init_balances_by_ids[account_id].iteritems():
-                    details[partner_id].update(initial_balances)
+                    if initial_balances.get('init_balance'):
+                        details[partner_id].update({'init_balance': initial_balances['init_balance']})
 
             # compute balance for the partner
             for partner_id, partner_details in details.iteritems():
