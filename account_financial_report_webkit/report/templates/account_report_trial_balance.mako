@@ -19,6 +19,12 @@
 
         <%setLang(user.context_lang)%>
 
+        <%
+        initial_balance_names = {'none': [_('No'), _('Initial Balance')],
+                                 'initial_balance': [_('Yes'), _('Initial Balance')],
+                                 'opening_balance': [_('Yes'), _('Opening Balance')],}
+        %>
+
         <div class="act_as_table data_table">
             <div class="act_as_row labels">
                 <div class="act_as_cell">${_('Chart of Account')}</div>
@@ -32,7 +38,7 @@
                 </div>
                 <div class="act_as_cell">${_('Displayed Accounts')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
-                <div class="act_as_cell">${_('Initial Balance')}</div>
+                <div class="act_as_cell">${initial_balance_names[initial_balance_mode][1]}</div>
             </div>
             <div class="act_as_row">
                 <div class="act_as_cell">${ chart_account.name }</div>
@@ -59,7 +65,7 @@
                     %endif
                 </div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
-                <div class="act_as_cell">${ _('Yes') if initial_balance else _('No') }</div>
+                <div class="act_as_cell">${ initial_balance_names[initial_balance_mode][0] }</div>
             </div>
         </div>
 
@@ -76,7 +82,7 @@
                             ${_('Fiscal Year : ')}&nbsp;${params['fiscalyear'].name}
                         %endif
                     </div>
-                    <div class="act_as_cell">${_('Initial Balance:')} ${ _('Yes') if params['initial_balance'] else _('No') }</div>
+                    <div class="act_as_cell">${initial_balance_names[params['initial_balance_mode']][1]} ${ initial_balance_names[params['initial_balance_mode']][0] }</div>
                 </div>
             </div>
         %endfor
@@ -92,7 +98,7 @@
                     %if comparison_mode == 'no_comparison':
                         %if initial_balance:
                             ## initial balance
-                            <div class="act_as_cell amount" style="width: 30px;">${_('Initial Balance')}</div>
+                            <div class="act_as_cell amount" style="width: 30px;">${initial_balance_names[initial_balance_mode][1]}</div>
                         %endif
                         ## debit
                         <div class="act_as_cell amount" style="width: 30px;">${_('Debit')}</div>
@@ -141,21 +147,21 @@
                         %if comparison_mode == 'no_comparison':
                             %if initial_balance:
                                 ## opening balance
-                                <div class="act_as_cell amount">${current_account.init_balance | amount}</div>
+                                <div class="act_as_cell amount">${formatLang(current_account.init_balance) | amount}</div>
                             %endif
                             ## debit
-                            <div class="act_as_cell amount">${current_account.debit | amount}</div>
+                            <div class="act_as_cell amount">${formatLang(current_account.debit) | amount}</div>
                             ## credit
-                            <div class="act_as_cell amount">${current_account.credit and current_account.credit * -1 or 0.0 | amount}</div>
+                            <div class="act_as_cell amount">${formatLang(current_account.credit and current_account.credit * -1 or 0.0) | amount}</div>
                         %endif
                         ## balance
-                        <div class="act_as_cell amount">${current_account.balance | amount}</div>
+                        <div class="act_as_cell amount">${formatLang(current_account.balance) | amount}</div>
 
                         %if comparison_mode in ('single', 'multiple'):
                             %for comp_account in comparisons:
-                                <div class="act_as_cell amount">${comp_account['balance'] | amount}</div>
+                                <div class="act_as_cell amount">${formatLang(comp_account['balance']) | amount}</div>
                                 %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
-                                    <div class="act_as_cell amount">${comp_account['diff'] | amount}</div>
+                                    <div class="act_as_cell amount">${formatLang(comp_account['diff']) | amount}</div>
                                     <div class="act_as_cell amount"> 
                                     %if comp_account['percent_diff'] is False:
                                      ${ '-' }

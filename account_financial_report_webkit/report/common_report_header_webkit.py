@@ -315,13 +315,13 @@ class CommonReportHeaderWebkit(common_report_header):
 
     ####################Initial Balance helper #################################
 
-    def _compute_init_balance(self, account=None, period_ids=None, mode='computed', default_values=False):
+    def _compute_init_balance(self, account_id=None, period_ids=None, mode='computed', default_values=False):
         if not isinstance(period_ids, list):
             period_ids = [period_ids]
         res = {}
 
         if not default_values:
-            if not account or not period_ids:
+            if not account_id or not period_ids:
                 raise Exception('Missing account or period_ids')
             try:
                 self.cursor.execute("SELECT sum(debit) AS debit, "
@@ -330,7 +330,7 @@ class CommonReportHeaderWebkit(common_report_header):
                                     " sum(amount_currency) AS curr_balance"
                                     " FROM account_move_line"
                                     " WHERE period_id in %s"
-                                    " AND account_id = %s", (tuple(period_ids), account.id))
+                                    " AND account_id = %s", (tuple(period_ids), account_id))
                 res = self.cursor.dictfetchone()
 
             except Exception, exc:
@@ -342,6 +342,15 @@ class CommonReportHeaderWebkit(common_report_header):
                 'init_balance': res.get('balance') or 0.0,
                 'init_balance_currency': res.get('curr_balance') or 0.0,
                 'state': mode}
+
+    def _read_opening_balance(self, account_ids, start_period):
+        """ Read opening balances from the opening balance
+        """
+        opening_period_selected = self.get_included_opening_period(start_period)
+        res = {}
+        for account_id in account_ids:
+            res[account_id] = self._compute_init_balance(account_id, opening_period_selected, mode='read')
+        return res
 
     def _compute_initial_balances(self, account_ids, start_period, fiscalyear, main_filter):
         """We compute initial balance.
@@ -369,10 +378,10 @@ class CommonReportHeaderWebkit(common_report_header):
                     # we compute the initial balance for close_method == none only when we print a GL
                     # during the year, when the opening period is not included in the period selection!
                     if pnl_periods_ids and not opening_period_selected:
-                        res[acc.id] = self._compute_init_balance(acc, pnl_periods_ids)
+                        res[acc.id] = self._compute_init_balance(acc.id, pnl_periods_ids)
                 else:
                     if not opening_move_lines:
-                        res[acc.id] = self._compute_init_balance(acc, bs_period_ids)
+                        res[acc.id] = self._compute_init_balance(acc.id, bs_period_ids)
         else:
             for acc_id in account_ids:
                 res[acc_id] = self._compute_init_balance(mode='disable', default_values=True)
