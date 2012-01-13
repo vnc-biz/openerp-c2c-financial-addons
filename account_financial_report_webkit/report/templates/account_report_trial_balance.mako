@@ -20,7 +20,7 @@
         <%setLang(user.context_lang)%>
 
         <%
-        initial_balance_names = {'none': [_('No'), _('Initial Balance')],
+        initial_balance_names = {False: [_('No'), _('Initial Balance')],
                                  'initial_balance': [_('Yes'), _('Initial Balance')],
                                  'opening_balance': [_('Yes'), _('Opening Balance')],}
         %>
@@ -96,7 +96,7 @@
                     ## account name
                     <div class="act_as_cell" style="width: 80px;">${_('Account')}</div>
                     %if comparison_mode == 'no_comparison':
-                        %if initial_balance:
+                        %if initial_balance_mode:
                             ## initial balance
                             <div class="act_as_cell amount" style="width: 30px;">${initial_balance_names[initial_balance_mode][1]}</div>
                         %endif
@@ -145,7 +145,7 @@
                         ## account name
                         <div class="act_as_cell" style="padding-left: ${(current_account.level if current_account.level else 0) * 5}px;">${current_account.name}</div>
                         %if comparison_mode == 'no_comparison':
-                            %if initial_balance:
+                            %if initial_balance_mode:
                                 ## opening balance
                                 <div class="act_as_cell amount">${formatLang(current_account.init_balance) | amount}</div>
                             %endif

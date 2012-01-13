@@ -31,6 +31,12 @@
 
         <%setLang(user.context_lang)%>
 
+        <%
+        initial_balance_names = {False: [_('No'), _('Initial Balance')],
+                                 'initial_balance': [_('Yes'), _('Initial Balance')],
+                                 'opening_balance': [_('Yes'), _('Opening Balance')],}
+        %>
+
         <div class="act_as_table data_table">
             <div class="act_as_row labels">
                 <div class="act_as_cell">${_('Chart of Account')}</div>
@@ -45,7 +51,7 @@
                 <div class="act_as_cell">${_('Displayed Accounts')}</div>
                 <div class="act_as_cell">${_('Partners')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
-                <div class="act_as_cell">${_('Initial Balance')}</div>
+                <div class="act_as_cell">${initial_balance_names[initial_balance_mode][1]}</div>
             </div>
             <div class="act_as_row">
                 <div class="act_as_cell">${ chart_account.name }</div>
@@ -73,7 +79,7 @@
                 </div>
                 <div class="act_as_cell">${display_partner_account(data)}</div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
-                <div class="act_as_cell">${ _('Yes') if initial_balance else _('No') }</div>
+                <div class="act_as_cell">${initial_balance_names[initial_balance_mode][0]}</div>
             </div>
         </div>
 
@@ -90,7 +96,7 @@
                             ${_('Fiscal Year : ')}&nbsp;${params['fiscalyear'].name}
                         %endif
                     </div>
-                    <div class="act_as_cell">${_('Initial Balance:')} ${ _('Yes') if params['initial_balance'] else _('No') }</div>
+                    <div class="act_as_cell">${initial_balance_names[params['initial_balance_mode']][1]} ${ initial_balance_names[params['initial_balance_mode']][0] }</div>
                 </div>
             </div>
         %endfor
@@ -117,9 +123,9 @@
                         ## account name
                         <div class="act_as_cell" style="width: 80px;">${_('Account / Partner Name')}</div>
                         %if comparison_mode == 'no_comparison':
-                            %if initial_balance:
+                            %if initial_balance_mode:
                                 ## initial balance
-                                <div class="act_as_cell amount" style="width: 30px;">${_('Initial Balance')}</div>
+                                <div class="act_as_cell amount" style="width: 30px;">${initial_balance_names[initial_balance_mode][1]}</div>
                             %endif
                             ## debit
                             <div class="act_as_cell amount" style="width: 30px;">${_('Debit')}</div>
@@ -160,7 +166,7 @@
                         ## account name
                         <div class="act_as_cell">${current_account.name}</div>
                         %if comparison_mode == 'no_comparison':
-                            %if initial_balance:
+                            %if initial_balance_mode:
                                 ## opening balance
                                 <div class="act_as_cell amount">${formatLang(current_account.init_balance) | amount}</div>
                             %endif
@@ -200,7 +206,7 @@
                             <div class="act_as_cell first_column">${partner_ref if partner_ref else ''}</div>
                             <div class="act_as_cell">${partner_name if partner_name else _('Unallocated') }</div>
                             %if comparison_mode == 'no_comparison':
-                                %if initial_balance:
+                                %if initial_balance_mode:
                                     <div class="act_as_cell amount">${formatLang(partner.get('init_balance', 0.0)) | amount}</div>
                                 %endif
                                 <div class="act_as_cell amount">${formatLang(partner.get('debit', 0.0) if partner else 0.0) | amount}</div>
