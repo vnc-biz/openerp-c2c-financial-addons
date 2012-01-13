@@ -55,7 +55,8 @@ class AccountBalanceCommonWizard(osv.osv_memory):
     COMPARE_SELECTION = [('filter_no', 'No Comparison'),
                          ('filter_year', 'Fiscal Year'),
                          ('filter_date', 'Date'),
-                         ('filter_period', 'Periods'),]
+                         ('filter_period', 'Periods'),
+                         ('filter_opening', 'Opening Only')]
 
     def _get_account_ids(self, cr, uid, context=None):
         res = False
@@ -67,6 +68,10 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         'account_ids': fields.many2many('account.account', 'wiz_account_rel',
                                         'account_id', 'wiz_id', 'Filter on accounts',
                                          help="Only selected accounts will be printed. Leave empty to print all accounts."),
+        'filter': fields.selection([('filter_no', 'No Filters'),
+                                    ('filter_date', 'Date'),
+                                    ('filter_period', 'Periods'),
+                                    ('filter_opening', 'Opening Only')], "Filter by", required=True, help='Filter by date : no opening balance will be displayed. (opening balance can only be calculated based on period to be correct).'),
     }
     _defaults = {
         'account_ids': _get_account_ids,
@@ -154,7 +159,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                                                     'on_change': "onchange_comp_filter(%(index)s, filter, comp%(index)s_filter, fiscalyear_id, date_from, date_to)" % {'index': index}}))
                 page.append(etree.Element('field', {'name': "comp%s_fiscalyear_id" % (index,),
                                                     'colspan': '4',
-                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_year')], 'readonly':[('comp%(index)s_filter','!=','filter_year')]}" % {'index': index}}))
+                                                    'attrs': "{'required': [('comp%(index)s_filter','in',('filter_year','filter_opening'))], 'readonly':[('comp%(index)s_filter','not in',('filter_year','filter_opening'))]}" % {'index': index}}))
                 page.append(etree.Element('separator', {'string': _('Dates'), 'colspan':'4'}))
                 page.append(etree.Element('field', {'name': "comp%s_date_from" % (index,), 'colspan':'4',
                                                     'attrs': "{'required': [('comp%(index)s_filter','=','filter_date')], 'readonly':[('comp%(index)s_filter','!=','filter_date')]}" % {'index': index}}))
@@ -163,10 +168,12 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                 page.append(etree.Element('separator', {'string': _('Periods'), 'colspan':'4'}))
                 page.append(etree.Element('field', {'name': "comp%s_period_from" % (index,),
                                                     'colspan': '4',
-                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_period')], 'readonly':[('comp%(index)s_filter','!=','filter_period')]}" % {'index': index}}))
+                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_period')], 'readonly':[('comp%(index)s_filter','!=','filter_period')]}" % {'index': index},
+                                                    'domain': "[('special', '=', False)]"}))
                 page.append(etree.Element('field', {'name': "comp%s_period_to" % (index,),
                                                     'colspan': '4',
-                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_period')], 'readonly':[('comp%(index)s_filter','!=','filter_period')]}" % {'index': index}}))
+                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_period')], 'readonly':[('comp%(index)s_filter','!=','filter_period')]}" % {'index': index},
+                                                    'domain': "[('special', '=', False)]"}))
 
                 placeholder.addprevious(page)
             placeholder.getparent().remove(placeholder)
@@ -193,7 +200,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
 
         if comp_filter == 'filter_no':
             res['value'] = {fy_id_field: False, period_from_field: False, period_to_field: False, date_from_field: False ,date_to_field: False}
-        if comp_filter == 'filter_year':
+        if comp_filter in ('filter_year', 'filter_opening'):
             res['value'] = {fy_id_field: last_fiscalyear_id, period_from_field: False, period_to_field: False, date_from_field: False ,date_to_field: False}
         if comp_filter == 'filter_date':
             dates = {}

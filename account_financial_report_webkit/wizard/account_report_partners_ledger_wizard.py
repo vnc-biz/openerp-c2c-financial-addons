@@ -45,7 +45,9 @@ By amending the clearance date, you will be, for instance, able to answer the qu
         'partner_ids': fields.many2many('res.partner', 'wiz_part_rel',
                                         'partner_id', 'wiz_id', 'Filter on partner',
                                          help="Only selected partners will be printed. Leave empty to print all partners."),
-        'filter': fields.selection([('filter_no', 'No Filters'), ('filter_date', 'Date'), ('filter_period', 'Periods')], "Filter by", required=True, help='Filter by date : no opening balance will be displayed. (opening balance can only be calculated based on period to be correct).'),
+        'filter': fields.selection([('filter_no', 'No Filters'),
+                                    ('filter_date', 'Date'),
+                                    ('filter_period', 'Periods')], "Filter by", required=True, help='Filter by date : no opening balance will be displayed. (opening balance can only be calculated based on period to be correct).'),
 
     }
     _defaults = {

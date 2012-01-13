@@ -82,7 +82,7 @@
                             ${_('Fiscal Year : ')}&nbsp;${params['fiscalyear'].name}
                         %endif
                     </div>
-                    <div class="act_as_cell">${initial_balance_names[params['initial_balance_mode']][1]} ${ initial_balance_names[params['initial_balance_mode']][0] }</div>
+                    <div class="act_as_cell">${initial_balance_names[params['initial_balance_mode']][1]}: ${ initial_balance_names[params['initial_balance_mode']][0] }</div>
                 </div>
             </div>
         %endfor

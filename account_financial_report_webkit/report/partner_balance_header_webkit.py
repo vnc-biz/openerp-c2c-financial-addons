@@ -36,7 +36,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
                                       stop, initial_balance_mode, partner_filter_ids=False):
         res = {}
         filter_from = False
-        if main_filter in ('filter_period', 'filter_no'):
+        if main_filter in ('filter_period', 'filter_no', 'filter_opening'):
             filter_from = 'period'
         elif main_filter == 'filter_date':
             filter_from = 'date'
@@ -48,13 +48,17 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
                                                                                      initial_balance_mode,
                                                                                      partner_filter_ids=partner_filter_ids,
                                                                                      exclude_reconcile=False))  # we'll never exclude reconciled entries in the legal reports
+            opening_mode = 'exclude_opening'
+            if main_filter == 'filter_opening':
+                opening_mode = 'include_opening'
             # get credit and debit for partner
             details = self._get_partners_totals_account(filter_from,
                                                         account_id,
                                                         start,
                                                         stop,
                                                         target_move,
-                                                        partner_filter_ids=partner_filter_ids)
+                                                        partner_filter_ids=partner_filter_ids,
+                                                        mode=opening_mode)
 
             # merge initial balances in partner details
             if partners_init_balances_by_ids.get(account_id):
@@ -83,7 +87,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
             res = {}
         return res
 
-    def _get_partners_totals_account(self, filter_from, account_id, start, stop, target_move, partner_filter_ids=None):
+    def _get_partners_totals_account(self, filter_from, account_id, start, stop, target_move, partner_filter_ids=None, mode='exclude_opening'):
         final_res = defaultdict(dict)
 
         sql_select = """
@@ -93,7 +97,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
                  FROM account_move_line"""
         sql_joins = ''
         sql_where = "WHERE account_move_line.account_id = %(account_id)s AND account_move_line.state = 'valid' "
-        sql_conditions, search_params = getattr(self, '_get_query_params_from_'+filter_from+'s')(start, stop, mode='exclude_opening')
+        sql_conditions, search_params = getattr(self, '_get_query_params_from_'+filter_from+'s')(start, stop, mode=mode)
         sql_where += sql_conditions
 
         if partner_filter_ids:
@@ -145,17 +149,11 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
         comp_params = {}
         accounts_details_by_ids = defaultdict(dict)
         if comparison_filter != 'filter_no':
+            start_period, stop_period, start, stop = \
+                self._get_start_stop_for_filter(comparison_filter, fiscalyear, start_date, stop_date, start_period, stop_period)
             details_filter = comparison_filter
             if comparison_filter == 'filter_year':
-                start = self.get_first_fiscalyear_period(fiscalyear)
-                stop = self.get_last_fiscalyear_period(fiscalyear)
                 details_filter = 'filter_no'
-            elif comparison_filter == 'filter_date':
-                start = start_date
-                stop = stop_date
-            else:
-                start = start_period
-                stop = stop_period
 
             initial_balance_mode = init_balance and self._get_initial_balance_mode(start) or False
 

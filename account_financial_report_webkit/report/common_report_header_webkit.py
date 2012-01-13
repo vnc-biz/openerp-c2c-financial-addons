@@ -420,7 +420,6 @@ class CommonReportHeaderWebkit(common_report_header):
 
     def get_move_lines_ids(self, account_id, main_filter, start, stop, target_move, mode='include_opening'):
         """Get account move lines base on form data"""
-        res = {}
         if mode not in ('include_opening', 'exclude_opening'):
             raise osv.except_osv(_('Invalid query mode'), _('Must be in include_opening, exclude_opening'))
 
