@@ -24,8 +24,11 @@
                         ${_('Periods')}
                     %endif
                 </div>
+                <div class="act_as_cell">${_('Report Date')}</div>
                 <div class="act_as_cell">${_('Displayed Accounts')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
+                <div class="act_as_cell">${_('Exclude Fully Reconciled Entries')}</div>
+
             </div>
             <div class="act_as_row">
                 <div class="act_as_cell">${ chart_account.name }</div>
@@ -44,6 +47,7 @@
                         ${stop_period.name if stop_period else u'' }
                     %endif
                 </div>
+                <div class="act_as_cell">${ formatLang(date_until, date=True) }</div>
                 <div class="act_as_cell">
                     %if partner_ids:
                         ${_('Custom Filter')}
@@ -52,6 +56,7 @@
                     %endif
                 </div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
+                <div class="act_as_cell">${ exclude_reconcile and _('Yes') or _('No') }</div>
             </div>
         </div>
     

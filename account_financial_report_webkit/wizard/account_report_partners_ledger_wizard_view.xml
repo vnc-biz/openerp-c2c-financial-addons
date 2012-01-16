@@ -20,17 +20,17 @@
                         <field name="result_selection" colspan="4"/>
                     </xpath>
                     <xpath expr="/form/notebook[1]" position="after">
-                        <separator string="Audit clearance analysis" colspan="4"/>
-                        <field name="until_date"/>
-                        <separator string="Options" colspan="4"/>
-                        <field name="amount_currency"/>
-                        <field name="exclude_reconciled"/>
+                        <field name="until_date" invisible="not context.get('display_clearance_date', False)"/>
+                        <field name="exclude_reconciled" invisible="not context.get('display_exclude_reconciled', False)"/>
                         <field name="initial_balance" invisible="True"/>
                     </xpath>
                     <page name="filters" position="after">
                         <page string="Partners Filters" name="partners">
                             <separator string="Print only" colspan="4"/>
                             <field name="partner_ids" colspan="4" nolabel="1"/>
+                        </page>
+                        <page string="Layout Options" name="layout_options">
+                            <field name="amount_currency"/>
                         </page>
                     </page>
                     <page name="filters" position="attributes">
@@ -82,6 +82,21 @@
         <menuitem icon="STOCK_PRINT" name="Partner Ledger (Webkit)"
             parent="account.next_id_22" action="action_account_partners_ledger_menu_webkit"
             groups="account.group_account_manager,account.group_account_user" id="account.menu_account_partner_ledger"/>
+
+        <record id="action_account_partners_open_transactions_menu_webkit" model="ir.actions.act_window">
+            <field name="name">Open Transactions</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.report.partners.ledger.webkit</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="account_partner_ledger_view_webkit"/>
+            <field name="context">{'display_exclude_reconciled': True, 'display_clearance_date': True}</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem icon="STOCK_PRINT" name="Open Transactions (Webkit)"
+            parent="account.next_id_22" action="action_account_partners_open_transactions_menu_webkit"
+            groups="account.group_account_manager,account.group_account_user" id="menu_account_partner_open_transactions"/>
 
     </data>
 </openerp>

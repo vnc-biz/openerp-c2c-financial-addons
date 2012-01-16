@@ -24,6 +24,7 @@ from collections import defaultdict
 from operator import add
 
 from common_report_header_webkit import CommonReportHeaderWebkit
+from osv import osv
 from tools.translate import _
 
 
@@ -73,7 +74,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         ctx = context.copy()
         ctx.update({'state': target_move,
                     'all_fiscalyear': True})
-        
+
         if use_period_ids:
             ctx.update({'periods': period_ids,})
         elif main_filter == 'filter_date':
@@ -184,8 +185,8 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             start_period = self.get_first_fiscalyear_period(fiscalyear)
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
         elif main_filter == 'filter_opening':
-            period_id = self.get_included_opening_period(self.get_first_fiscalyear_period(fiscalyear))[0]
-            start_period = stop_period = self.pool.get('account.period').browse(self.cursor, self.uid, period_id)
+            opening_period = self._get_st_fiscalyear_period(fiscalyear, special=True)
+            start_period = stop_period = opening_period
         if main_filter == 'filter_date':
             start = start_date
             stop = stop_date
@@ -194,14 +195,6 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             stop = stop_period
 
         return start_period, stop_period, start, stop
-
-    def _get_initial_balance_mode(self, start_period):
-        opening_period_selected = self.get_included_opening_period(start_period)
-        opening_move_lines = self.periods_contains_move_lines(opening_period_selected)
-        if opening_move_lines:
-            return 'opening_balance'
-        else:
-            return 'initial_balance'
 
     def compute_balance_data(self, data, filter_report_type=None):
         new_ids = data['form']['account_ids'] or data['form']['chart_account_id']

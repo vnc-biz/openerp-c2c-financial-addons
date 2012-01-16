@@ -53,7 +53,7 @@ By amending the clearance date, you will be, for instance, able to answer the qu
     _defaults = {
         'amount_currency': False,
         'initial_balance': True,
-        'exclude_reconciled': True,
+        'exclude_reconciled': lambda self, cr, uid, context: context.get('display_exclude_reconciled', False),
         'result_selection': 'customer_supplier',
     }
 

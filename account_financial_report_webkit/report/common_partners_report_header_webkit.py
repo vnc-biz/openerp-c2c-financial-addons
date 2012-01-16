@@ -33,21 +33,20 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
 
     ####################Account move line retrieval helper ##########################
     def get_partners_move_lines_ids(self, account_id, main_filter, start, stop, target_move,
-                                    exclude_reconcile=True, partner_filter=False):
+                                    exclude_reconcile=False, partner_filter=False):
         filter_from = False
         if main_filter in ('filter_period', 'filter_no'):
             filter_from = 'period'
         elif main_filter == 'filter_date':
             filter_from = 'date'
         if filter_from:
-            return self._get_partners_move_ids(filter_from,
-                                               account_id,
-                                               start,
-                                               stop,
-                                               target_move,
-                                               exclude_reconcile=exclude_reconcile,
-                                               partner_filter=partner_filter)
-
+            return self._get_partners_move_line_ids(filter_from,
+                                                    account_id,
+                                                    start,
+                                                    stop,
+                                                    target_move,
+                                                    exclude_reconcile=exclude_reconcile,
+                                                    partner_filter=partner_filter)
 
     def _get_query_params_from_periods(self, period_start, period_stop, mode='exclude_opening'):
         # we do not want opening period so we exclude opening
@@ -80,8 +79,8 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
 
         return sql_conditions, search_params
 
-    def _get_partners_move_ids(self, filter_from, account_id, start, stop, target_move,
-                   exclude_reconcile=True,partner_filter=False):
+    def _get_partners_move_line_ids(self, filter_from, account_id, start, stop, target_move, opening_mode='include_opening',
+                   exclude_reconcile=False,partner_filter=False):
 
         final_res = defaultdict(list)
 
@@ -90,7 +89,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         sql_where = " WHERE account_move_line.account_id = %(account_ids)s " \
                     " AND account_move_line.state = 'valid' "
         
-        sql_conditions, search_params = getattr(self, '_get_query_params_from_'+filter_from+'s')(start, stop)
+        sql_conditions, search_params = getattr(self, '_get_query_params_from_'+filter_from+'s')(start, stop, mode=opening_mode)
 
         sql_where += sql_conditions
 
@@ -112,6 +111,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         })
 
         sql = ' '.join((sql_select, sql_joins, sql_where))
+
         self.cursor.execute(sql, search_params)
         res = self.cursor.dictfetchall()
         if res:
@@ -141,6 +141,33 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
             return []
 
      ####################Initial Partner Balance helper ########################
+
+    def _partners_initial_balance_line_ids(self, account_ids, start_period, partner_filter, exclude_reconcile=False, force_period_ids=False):
+        # take ALL previous periods
+        period_ids = force_period_ids \
+                     if force_period_ids \
+                     else self._get_period_range_from_start_period(start_period, fiscalyear=False, include_opening=False)
+
+        if not period_ids:
+            period_ids = [-1]
+        search_param = {'date_start': start_period.date_start,
+                        'period_ids': tuple(period_ids),
+                        'account_ids': tuple(account_ids),}
+        sql = ("SELECT ml.id "
+               "FROM account_move_line ml "
+               "INNER JOIN account_account a "
+               "ON a.id = ml.account_id "
+               "WHERE ml.period_id in %(period_ids)s"
+               "AND ml.account_id in %(account_ids)s")
+        if exclude_reconcile:
+            sql += ("AND ((ml.reconcile_id IS NULL)"
+                   "OR (ml.reconcile_id IS NOT NULL AND ml.last_rec_date < date(%(date_start)s)))")
+        if partner_filter:
+            sql += "AND ml.partner_id in %(partner_ids)s"
+            search_param.update({'partner_ids': tuple(partner_filter)})
+        self.cursor.execute(sql, search_param)
+        return self.cursor.fetchall()
+
     def _compute_partners_initial_balances(self, account_ids, start_period, partner_filter=None, exclude_reconcile=False, force_period_ids=False):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
@@ -148,36 +175,26 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         if isinstance(account_ids, (int, long)):
             account_ids = [account_ids]
         final_res = defaultdict(dict)
-        # take ALL previous periods
-        period_ids = force_period_ids \
-                     if force_period_ids \
-                     else self._get_period_range_from_start_period(start_period, fiscalyear=False, include_opening=False)
-        
-        if not period_ids:
-            period_ids = [-1]
 
-        search_param = {'date_start': start_period.date_start,
-                        'period_ids': tuple(period_ids),
-                        'account_ids': tuple(account_ids),}
-        sql = ("SELECT account_id, partner_id,"
-               "       sum(debit) as debit, sum(credit) as credit,"
-               "       sum(debit-credit) as init_balance,"
-               "       CASE WHEN a.currency_id ISNULL THEN 0.0 ELSE sum(amount_currency) END as init_balance_currency, "
+
+        move_line_ids = self._partners_initial_balance_line_ids(account_ids, start_period, partner_filter,
+                                                                exclude_reconcile=exclude_reconcile,
+                                                                force_period_ids=force_period_ids)
+        if not move_line_ids:
+            move_line_ids = [-1]
+        sql = ("SELECT ml.account_id, ml.partner_id,"
+               "       sum(ml.debit) as debit, sum(ml.credit) as credit,"
+               "       sum(ml.debit-ml.credit) as init_balance,"
+               "       CASE WHEN a.currency_id ISNULL THEN 0.0 ELSE sum(ml.amount_currency) END as init_balance_currency, "
                "       c.name as currency_name "
-               "FROM account_move_line "
+               "FROM account_move_line ml "
                "INNER JOIN account_account a "
-               "ON a.id = account_id "
+               "ON a.id = ml.account_id "
                "LEFT JOIN res_currency c "
                "ON c.id = a.currency_id "
-               "WHERE period_id in %(period_ids)s"
-               "AND account_id in %(account_ids)s")
-        if exclude_reconcile:
-            sql += ("AND ((reconcile_id IS NULL)"
-                   "OR (reconcile_id IS NOT NULL AND last_rec_date < date(%(date_start)s)))")
-        if partner_filter:
-            sql += "AND partner_id in %(partner_ids)s"
-            search_param.update({'partner_ids': tuple(partner_filter)})
-        sql += "GROUP BY account_id, partner_id, a.currency_id, c.name"
+               "WHERE ml.id in %(move_line_ids)s "
+               "GROUP BY ml.account_id, ml.partner_id, a.currency_id, c.name")
+        search_param = {'move_line_ids': tuple(move_line_ids)}
         self.cursor.execute(sql, search_param)
         res = self.cursor.dictfetchall()
         if res:

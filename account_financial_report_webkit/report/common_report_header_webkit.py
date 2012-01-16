@@ -301,16 +301,16 @@ class CommonReportHeaderWebkit(common_report_header):
     def get_last_fiscalyear_period(self, fiscalyear):
         return self._get_st_fiscalyear_period(fiscalyear, order='DESC')
 
-    def _get_st_fiscalyear_period(self, fiscalyear, order='ASC'):
+    def _get_st_fiscalyear_period(self, fiscalyear, special=False, order='ASC'):
         period_obj = self.pool.get('account.period')
         p_id = period_obj.search(self.cursor,
                                  self.uid,
-                                 [('special','=', False),
+                                 [('special','=', special),
                                   ('fiscalyear_id', '=', fiscalyear.id)],
                                  limit=1,
                                  order='date_start %s' % (order,))
         if not p_id:
-            raise osv.except_osv(_('No normal period found'),'')
+            raise osv.except_osv(_('No period found'),'')
         return period_obj.browse(self.cursor, self.uid, p_id[0])
 
     ####################Initial Balance helper #################################
@@ -506,3 +506,11 @@ WHERE move_id in %s"""
             self.cursor.rollback()
             raise exc
         return res and dict(res) or {}
+
+    def _get_initial_balance_mode(self, start_period):
+        opening_period_selected = self.get_included_opening_period(start_period)
+        opening_move_lines = self.periods_contains_move_lines(opening_period_selected)
+        if opening_move_lines:
+            return 'opening_balance'
+        else:
+            return 'initial_balance'
