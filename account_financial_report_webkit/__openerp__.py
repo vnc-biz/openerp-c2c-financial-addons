@@ -90,6 +90,7 @@ Note : On the reports, the accounts are sorted by their code as in the "Chart of
                    'wizard/account_report_partners_ledger_wizard_view.xml',
                    'wizard/account_report_trial_balance_wizard_view.xml',
                    'wizard/account_report_partner_balance_wizard_view.xml',
+                   'wizard/account_report_open_invoices_wizard_view.xml',
 #                   'wizard/account_report_profit_loss_wizard_view.xml',
                    ],
     # tests order matter

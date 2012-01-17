@@ -27,7 +27,6 @@
                 <div class="act_as_cell">${_('Report Date')}</div>
                 <div class="act_as_cell">${_('Displayed Accounts')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
-                <div class="act_as_cell">${_('Exclude Fully Reconciled Entries')}</div>
 
             </div>
             <div class="act_as_row">
@@ -56,12 +55,11 @@
                     %endif
                 </div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
-                <div class="act_as_cell">${ exclude_reconcile and _('Yes') or _('No') }</div>
             </div>
         </div>
     
         %for account in objects:
-            %if account.ledger_lines or account.init_balance:
+            %if account.ledger_lines:
                 <%
                 if not account.partners_order:
                     continue
@@ -125,65 +123,16 @@
                     </div>
                     <div class="act_as_tbody">
                         <%
-                        total_debit = account.init_balance.get(p_id, {}).get('debit') or 0.0
-                        total_credit = account.init_balance.get(p_id, {}).get('credit') or 0.0
+                        total_debit = 0.0
+                        total_credit = 0.0
                         %>
-                          %if initial_balance(data) and (total_debit or total_credit):
-                            <%
-                              part_cumul_balance = account.init_balance.get(p_id, {}).get('init_balance') or 0.0
-                              part_cumul_balance_curr = account.init_balance.get(p_id, {}).get('init_balance_currency') or 0.0
-                              balance_forward_currency = account.init_balance.get(p_id, {}).get('currency_name') or ''
-
-                              cumul_balance += part_cumul_balance
-                              cumul_balance_curr += part_cumul_balance_curr
-                            %>
-                            <div class="act_as_row initial_balance">
-                              ## date
-                              <div class="act_as_cell first_column"></div>
-                              ## period
-                              <div class="act_as_cell"></div>
-                              ## move
-                              <div class="act_as_cell"></div>
-                              ## journal
-                              <div class="act_as_cell"></div>
-                              ## partner
-                              <div class="act_as_cell"></div>
-                              ## ref
-                              <div class="act_as_cell"></div>
-                              ## label
-                              <div class="act_as_cell" >${_('Initial Balance')}</div>
-                              ## reconcile
-                              <div class="act_as_cell"></div>
-                              ## maturity date
-                              <div class="act_as_cell"></div>
-                              ## debit
-                              <div class="act_as_cell amount">${formatLang(total_debit) | amount }</div>
-                              ## credit
-                              <div class="act_as_cell amount">${formatLang(total_credit) | amount }</div>
-                              ## balance cumulated
-                              <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(part_cumul_balance) | amount }</div>
-                             %if amount_currency(data):
-                                  ## curency code
-                                  <div class="act_as_cell sep_left">${balance_forward_currency}</div>
-                                  ## currency balance
-                                  <div class="act_as_cell amount">${formatLang(part_cumul_balance_curr) | amount }</div>
-                                  %if account.currency_id:
-                                      ## currency balance cumulated
-                                      <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(part_cumul_balance_curr) | amount }</div>
-                                  %else:
-                                    <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(0.0) | amount }</div>
-                                  %endif
-                             %endif
-
-                          </div>
-                          %endif
 
                         %for line in account.ledger_lines.get(p_id, []):
                           <%
                           total_debit += line.get('debit') or 0.0
                           total_credit += line.get('credit') or 0.0
                           %>
-                            <div class="act_as_row lines">
+                            <div class="act_as_row lines ${line.get('is_from_previous_periods') and 'open_invoice_previous_line' or ''} ${line.get('is_clearance_line') and 'clearance_line' or ''}">
                               ## date
                               <div class="act_as_cell first_column">${formatLang(line.get('ldate') or '', date=True)}</div>
                               ## period

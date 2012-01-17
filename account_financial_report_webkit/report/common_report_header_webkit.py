@@ -437,7 +437,7 @@ class CommonReportHeaderWebkit(common_report_header):
         if not isinstance(move_line_ids, list):
             move_line_ids = [move_line_ids]
         monster ="""
-SELECT l.id AS lid,
+SELECT l.id AS id,
             l.date AS ldate,
             j.code AS jcode ,
             l.currency_id,

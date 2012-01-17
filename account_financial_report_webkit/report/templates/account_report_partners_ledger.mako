@@ -123,7 +123,7 @@
                         total_debit = account.init_balance.get(p_id, {}).get('debit') or 0.0
                         total_credit = account.init_balance.get(p_id, {}).get('credit') or 0.0
                         %>
-                          %if initial_balance(data) and (total_debit or total_credit):
+                          %if initial_balance_mode and (total_debit or total_credit):
                             <%
                               part_cumul_balance = account.init_balance.get(p_id, {}).get('init_balance') or 0.0
                               part_cumul_balance_curr = account.init_balance.get(p_id, {}).get('init_balance_currency') or 0.0

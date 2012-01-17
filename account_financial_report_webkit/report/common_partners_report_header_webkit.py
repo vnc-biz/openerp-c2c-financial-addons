@@ -80,7 +80,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         return sql_conditions, search_params
 
     def _get_partners_move_line_ids(self, filter_from, account_id, start, stop, target_move, opening_mode='include_opening',
-                   exclude_reconcile=False,partner_filter=False):
+                   exclude_reconcile=False, partner_filter=False):
 
         final_res = defaultdict(list)
 
@@ -111,7 +111,6 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         })
 
         sql = ' '.join((sql_select, sql_joins, sql_where))
-
         self.cursor.execute(sql, search_params)
         res = self.cursor.dictfetchall()
         if res:
@@ -142,6 +141,29 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
 
      ####################Initial Partner Balance helper ########################
 
+    def _tree_move_line_ids(self, move_lines_data, key=None):
+        """
+        move_lines_data must be a list of dict which contains at least keys :
+         - account_id
+         - partner_id
+         - other keys with values of the line
+         - if param key is defined, only this key will be inserted in the tree
+         returns a tree like
+         res[account_id.1][partner_id.1][move_line.1,
+                                         move_line.2]
+                          [partner_id.2][move_line.3]
+         res[account_id.2][partner_id.1][move_line.4]
+        """
+        res = defaultdict(dict)
+        for row in move_lines_data[:]:
+            account_id = row.pop('account_id')
+            partner_id = row.pop('partner_id')
+            if key:
+                res[account_id].setdefault(partner_id, []).append(row[key])
+            else:
+                res[account_id][partner_id] = row
+        return res
+
     def _partners_initial_balance_line_ids(self, account_ids, start_period, partner_filter, exclude_reconcile=False, force_period_ids=False):
         # take ALL previous periods
         period_ids = force_period_ids \
@@ -153,20 +175,20 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         search_param = {'date_start': start_period.date_start,
                         'period_ids': tuple(period_ids),
                         'account_ids': tuple(account_ids),}
-        sql = ("SELECT ml.id "
+        sql = ("SELECT ml.id, ml.account_id, ml.partner_id "
                "FROM account_move_line ml "
                "INNER JOIN account_account a "
                "ON a.id = ml.account_id "
-               "WHERE ml.period_id in %(period_ids)s"
-               "AND ml.account_id in %(account_ids)s")
+               "WHERE ml.period_id in %(period_ids)s "
+               "AND ml.account_id in %(account_ids)s ")
         if exclude_reconcile:
             sql += ("AND ((ml.reconcile_id IS NULL)"
-                   "OR (ml.reconcile_id IS NOT NULL AND ml.last_rec_date < date(%(date_start)s)))")
+                   "OR (ml.reconcile_id IS NOT NULL AND ml.last_rec_date > date(%(date_start)s))) ")
         if partner_filter:
-            sql += "AND ml.partner_id in %(partner_ids)s"
+            sql += "AND ml.partner_id in %(partner_ids)s "
             search_param.update({'partner_ids': tuple(partner_filter)})
         self.cursor.execute(sql, search_param)
-        return self.cursor.fetchall()
+        return self.cursor.dictfetchall()
 
     def _compute_partners_initial_balances(self, account_ids, start_period, partner_filter=None, exclude_reconcile=False, force_period_ids=False):
         """We compute initial balance.
@@ -174,14 +196,11 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
         This function will sum pear and apple in currency amount if account as no secondary currency"""
         if isinstance(account_ids, (int, long)):
             account_ids = [account_ids]
-        final_res = defaultdict(dict)
-
-
         move_line_ids = self._partners_initial_balance_line_ids(account_ids, start_period, partner_filter,
                                                                 exclude_reconcile=exclude_reconcile,
                                                                 force_period_ids=force_period_ids)
         if not move_line_ids:
-            move_line_ids = [-1]
+            move_line_ids = [{'id': -1}]
         sql = ("SELECT ml.account_id, ml.partner_id,"
                "       sum(ml.debit) as debit, sum(ml.credit) as credit,"
                "       sum(ml.debit-ml.credit) as init_balance,"
@@ -194,18 +213,10 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                "ON c.id = a.currency_id "
                "WHERE ml.id in %(move_line_ids)s "
                "GROUP BY ml.account_id, ml.partner_id, a.currency_id, c.name")
-        search_param = {'move_line_ids': tuple(move_line_ids)}
+        search_param = {'move_line_ids': tuple([move_line['id'] for move_line in move_line_ids])}
         self.cursor.execute(sql, search_param)
         res = self.cursor.dictfetchall()
-        if res:
-            for row in res:
-                final_res[row['account_id']][row['partner_id']] = \
-                dict((key, row[key]) for key in ('debit', 'credit', 'init_balance', 'init_balance_currency', 'currency_name'))
-        if not final_res:
-            for acc_id in account_ids:
-                final_res[acc_id] = {}
-
-        return final_res
+        return self._tree_move_line_ids(res)
 
     ####################Partner specific helper ################################
     def _order_partners(self, *args):

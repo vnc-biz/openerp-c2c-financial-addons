@@ -19,11 +19,6 @@
                     <xpath expr="//field[@name='target_move']" position="after">
                         <field name="result_selection" colspan="4"/>
                     </xpath>
-                    <xpath expr="/form/notebook[1]" position="after">
-                        <field name="until_date" invisible="not context.get('display_clearance_date', False)"/>
-                        <field name="exclude_reconciled" invisible="not context.get('display_exclude_reconciled', False)"/>
-                        <field name="initial_balance" invisible="True"/>
-                    </xpath>
                     <page name="filters" position="after">
                         <page string="Partners Filters" name="partners">
                             <separator string="Print only" colspan="4"/>
@@ -39,21 +34,6 @@
                     <page name="journal_ids" position="attributes">
                         <attribute name="invisible">True</attribute>
                     </page>
-                    <field name="fiscalyear_id" position="attributes">
-                        <attribute name="on_change">onchange_fiscalyear(fiscalyear_id, period_to, date_to, until_date)</attribute>
-                    </field>
-                    <field name="date_to" position="attributes">
-                        <attribute name="on_change">onchange_date_to(fiscalyear_id, period_to, date_to, until_date)</attribute>
-                    </field>
-                    <field name="period_to" position="attributes">
-                        <attribute name="on_change">onchange_period_to(fiscalyear_id, period_to, date_to, until_date)</attribute>
-                    </field>
-                    <field name="period_from" position="attributes">
-                        <attribute name="domain">[('fiscalyear_id', '=', fiscalyear_id), ('special', '=', False)]</attribute>
-                    </field>
-                    <field name="period_to" position="attributes">
-                        <attribute name="domain">[('fiscalyear_id', '=', fiscalyear_id), ('special', '=', False)]</attribute>
-                    </field>
                 </data>
             </field>
         </record>
@@ -82,21 +62,6 @@
         <menuitem icon="STOCK_PRINT" name="Partner Ledger (Webkit)"
             parent="account.next_id_22" action="action_account_partners_ledger_menu_webkit"
             groups="account.group_account_manager,account.group_account_user" id="account.menu_account_partner_ledger"/>
-
-        <record id="action_account_partners_open_transactions_menu_webkit" model="ir.actions.act_window">
-            <field name="name">Open Transactions</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">account.report.partners.ledger.webkit</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="account_partner_ledger_view_webkit"/>
-            <field name="context">{'display_exclude_reconciled': True, 'display_clearance_date': True}</field>
-            <field name="target">new</field>
-        </record>
-
-        <menuitem icon="STOCK_PRINT" name="Open Transactions (Webkit)"
-            parent="account.next_id_22" action="action_account_partners_open_transactions_menu_webkit"
-            groups="account.group_account_manager,account.group_account_user" id="menu_account_partner_open_transactions"/>
 
     </data>
 </openerp>

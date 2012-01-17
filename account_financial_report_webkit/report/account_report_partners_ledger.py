@@ -71,11 +71,8 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         by mako template"""
         new_ids = data['form']['chart_account_id']
 
-        # Account initial balance memoizer
-        init_balance_memoizer = {}
         # account partner memoizer
         # Reading form
-        init_balance = self._get_form_param('initial_balance', data)
         main_filter = self._get_form_param('filter', data, default='filter_no')
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
@@ -85,8 +82,6 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         fiscalyear = self.get_fiscalyear_br(data)
         partner_ids = self._get_form_param('partner_ids', data)
         result_selection = self._get_form_param('result_selection', data)
-        exclude_reconcile = self._get_form_param('exclude_reconciled', data)
-        date_until = self._get_form_param('until_date', data)
         chart_account = self._get_chart_account_id_br(data)
 
         if main_filter == 'filter_no' and fiscalyear:
@@ -119,9 +114,11 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
         # we identify them as :
         #  - 'initial_balance' means compute the sums of move lines from previous periods
         #  - 'opening_balance' means display the move lines of the opening period
+        init_balance = main_filter in ('filter_no', 'filter_period')
         initial_balance_mode = init_balance and self._get_initial_balance_mode(start) or False
 
-        if initial_balance_mode == 'initial_balance' and main_filter in ('filter_no', 'filter_period'):
+        init_balance_memoizer = {}
+        if initial_balance_mode == 'initial_balance':
             init_balance_memoizer = self._compute_partners_initial_balances(accounts,
                                                                             start_period,
                                                                             partner_filter=partner_ids,
@@ -141,7 +138,7 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             ## and ledger line as we may have partner with init bal
             ## that are not in ledger line and vice versa
             ledg_lines_pids = ledger_lines_memoizer.get(account.id, {}).keys()
-            if init_balance:
+            if initial_balance_mode:
                 non_null_init_balances = dict([(ib, amounts) for ib, amounts in account.init_balance.iteritems()
                                                              if amounts['init_balance'] or amounts['init_balance_currency']])
                 init_bal_lines_pids = non_null_init_balances.keys()
@@ -159,10 +156,9 @@ class PartnersLedgerWebkit(report_sxw.rml_parse, CommonPartnersReportHeaderWebki
             'stop_date': stop_date,
             'start_period': start_period,
             'stop_period': stop_period,
-            'date_until': date_until,
             'partner_ids': partner_ids,
-            'exclude_reconcile': exclude_reconcile,
             'chart_account': chart_account,
+            'initial_balance_mode': initial_balance_mode,
         })
 
         return super(PartnersLedgerWebkit, self).set_context(objects, data, new_ids,
