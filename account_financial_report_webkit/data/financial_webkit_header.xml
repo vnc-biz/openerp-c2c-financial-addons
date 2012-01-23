@@ -166,6 +166,14 @@ act_as_colgroup {
     white-space: nowrap;
 }
 
+.open_invoice_previous_line {
+    font-style: italic;
+}
+
+.clearance_line {
+    font-style: italic;
+}
+
 ]]>
             </field>
             <field name="name">Financial Landscape Header</field>
@@ -333,23 +341,26 @@ act_as_colgroup {
 
 .account_level_1 {
     text-transform: uppercase;
-    font-weight: bold;
+    /*font-weight: bold;*/
     font-size: 15px;
     background-color:#F0F0F0;
 }
 
+/*
 .account_level_1 .act_as_cell {
     height: 30px;
     vertical-align: bottom;
 }
+*/
 
 .account_level_2 {
-    text-transform: uppercase;
-    font-weight: bold;
+    /*text-transform: uppercase;
+    font-weight: bold;*/
     font-size: 12px;
     background-color:#F0F0F0;
 }
 
+/*
 .account_level_2 .act_as_cell {
     height: 20px;
     vertical-align: bottom;
@@ -366,12 +377,21 @@ act_as_colgroup {
     font-weight: bold;
     font-size: 11px;
 }
+*/
 
 .account_level_5 {
 
 }
 
+.regular_account_type {
+    font-weight: normal;
+}
+
+.view_account_type {
+    font-weight: bold;
+
 .account_level_consol {
+    font-weight: normal;
 	font-style: italic;
 }
 

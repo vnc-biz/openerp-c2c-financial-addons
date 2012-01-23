@@ -43,7 +43,6 @@ class AccountPartnerBalanceWizard(osv.osv_memory):
         'result_selection': 'customer_supplier',
     }
 
-
     def pre_print_report(self, cr, uid, ids, data, context=None):
         data = super(AccountPartnerBalanceWizard, self).pre_print_report(cr, uid, ids, data, context)
         if context is None:

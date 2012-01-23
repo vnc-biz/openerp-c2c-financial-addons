@@ -2,6 +2,30 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <style type="text/css">
+            .account_level_1 {
+                text-transform: uppercase;
+                font-size: 15px;
+                background-color:#F0F0F0;
+            }
+
+            .account_level_2 {
+                font-size: 12px;
+                background-color:#F0F0F0;
+            }
+
+            .regular_account_type {
+                font-weight: normal;
+            }
+
+            .view_account_type {
+                font-weight: bold;
+            }
+
+            .account_level_consol {
+                font-weight: normal;
+            	font-style: italic;
+            }
+
             ${css}
 
             .list_table .act_as_row {
@@ -14,11 +38,14 @@
     <body>
         <%!
         def amount(text):
-            amount_text = "%.2f" % (float(text),)
-            return amount_text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
+            return text.replace('-', '&#8209;')  # replace by a non-breaking hyphen (it will not word-wrap between hyphen and numbers)
         %>
 
         <%setLang(user.context_lang)%>
+
+        <%
+        initial_balance_text = {'initial_balance': _('Computed'), 'opening_balance': _('Opening Entries'), False: _('No')}
+        %>
 
         <div class="act_as_table data_table">
             <div class="act_as_row labels">
@@ -26,12 +53,12 @@
                 <div class="act_as_cell">${_('Fiscal Year')}</div>
                 <div class="act_as_cell">
                     %if filter_form(data) == 'filter_date':
-                        ${_('Dates')}
+                        ${_('Dates Filter')}
                     %else:
-                        ${_('Periods')}
+                        ${_('Periods Filter')}
                     %endif
                 </div>
-                <div class="act_as_cell">${_('Displayed Accounts')}</div>
+                <div class="act_as_cell">${_('Accounts Filter')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
                 <div class="act_as_cell">${_('Initial Balance')}</div>
             </div>
@@ -60,7 +87,7 @@
                     %endif
                 </div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
-                <div class="act_as_cell">${ _('Yes') if initial_balance else _('No') }</div>
+                <div class="act_as_cell">${ initial_balance_text[initial_balance_mode] }</div>
             </div>
         </div>
 
@@ -70,14 +97,14 @@
                     <div class="act_as_cell">${_('Comparison %s') % (index + 1,)} (${"C%s" % (index + 1,)})</div>
                     <div class="act_as_cell">
                         %if params['comparison_filter'] == 'filter_date':
-                            ${_('Dates : ')}&nbsp;${formatLang(params['start'], date=True) }&nbsp;-&nbsp;${formatLang(params['stop'], date=True) }
+                            ${_('Dates Filter:')}&nbsp;${formatLang(params['start'], date=True) }&nbsp;-&nbsp;${formatLang(params['stop'], date=True) }
                         %elif params['comparison_filter'] == 'filter_period':
-                            ${_('Periods : ')}&nbsp;${params['start'].name}&nbsp;-&nbsp;${params['stop'].name}
+                            ${_('Periods Filter:')}&nbsp;${params['start'].name}&nbsp;-&nbsp;${params['stop'].name}
                         %else:
-                            ${_('Fiscal Year : ')}&nbsp;${params['fiscalyear'].name}
+                            ${_('Fiscal Year :')}&nbsp;${params['fiscalyear'].name}
                         %endif
                     </div>
-                    <div class="act_as_cell">${_('Initial Balance:')} ${ _('Yes') if params['initial_balance'] else _('No') }</div>
+                    <div class="act_as_cell">${_('Initial Balance:')} ${ initial_balance_text[params['initial_balance_mode']] }</div>
                 </div>
             </div>
         %endfor
@@ -91,7 +118,7 @@
                     ## account name
                     <div class="act_as_cell" style="width: 80px;">${_('Account')}</div>
                     %if comparison_mode == 'no_comparison':
-                        %if initial_balance:
+                        %if initial_balance_mode:
                             ## initial balance
                             <div class="act_as_cell amount" style="width: 30px;">${_('Initial Balance')}</div>
                         %endif
@@ -149,34 +176,34 @@
                         last_child_consol_ids = [child_consol_id.id for child_consol_id in current_account.child_consol_ids]
                         last_level = current_account.level
                     %>
-                    <div class="act_as_row lines ${level_class}">
+                    <div class="act_as_row lines ${level_class} ${"%s_account_type" % (current_account.type,)}">
                         ## code
                         <div class="act_as_cell first_column">${current_account.code}</div>
                         ## account name
                         <div class="act_as_cell" style="padding-left: ${level * 5}px;">${current_account.name}</div>
                         %if comparison_mode == 'no_comparison':
-                            %if initial_balance:
+                            %if initial_balance_mode:
                                 ## opening balance
-                                <div class="act_as_cell amount">${current_account.init_balance | amount}</div>
+                                <div class="act_as_cell amount">${formatLang(current_account.init_balance) | amount}</div>
                             %endif
                             ## debit
-                            <div class="act_as_cell amount">${current_account.debit | amount}</div>
+                            <div class="act_as_cell amount">${formatLang(current_account.debit) | amount}</div>
                             ## credit
-                            <div class="act_as_cell amount">${current_account.credit and current_account.credit * -1 or 0.0 | amount}</div>
+                            <div class="act_as_cell amount">${formatLang(current_account.credit and current_account.credit * -1 or 0.0) | amount}</div>
                         %endif
                         ## balance
-                        <div class="act_as_cell amount">${current_account.balance | amount}</div>
+                        <div class="act_as_cell amount">${formatLang(current_account.balance) | amount}</div>
 
                         %if comparison_mode in ('single', 'multiple'):
                             %for comp_account in comparisons:
-                                <div class="act_as_cell amount">${comp_account['balance'] | amount}</div>
+                                <div class="act_as_cell amount">${formatLang(comp_account['balance']) | amount}</div>
                                 %if comparison_mode == 'single':  ## no diff in multiple comparisons because it shows too data
-                                    <div class="act_as_cell amount">${comp_account['diff'] | amount}</div>
+                                    <div class="act_as_cell amount">${formatLang(comp_account['diff']) | amount}</div>
                                     <div class="act_as_cell amount"> 
                                     %if comp_account['percent_diff'] is False:
                                      ${ '-' }
                                     %else:
-                                       ${comp_account['percent_diff'] | amount} &#37;
+                                       ${int(round(comp_account['percent_diff'])) | amount} &#37;
                                     %endif
                                     </div>
                                 %endif

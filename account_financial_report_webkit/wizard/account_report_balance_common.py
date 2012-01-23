@@ -28,6 +28,7 @@
 #
 ##############################################################################
 
+import time
 
 from osv import fields, osv
 from lxml import etree
@@ -55,7 +56,8 @@ class AccountBalanceCommonWizard(osv.osv_memory):
     COMPARE_SELECTION = [('filter_no', 'No Comparison'),
                          ('filter_year', 'Fiscal Year'),
                          ('filter_date', 'Date'),
-                         ('filter_period', 'Periods'),]
+                         ('filter_period', 'Periods'),
+                         ('filter_opening', 'Opening Only')]
 
     def _get_account_ids(self, cr, uid, context=None):
         res = False
@@ -67,6 +69,10 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         'account_ids': fields.many2many('account.account', 'wiz_account_rel',
                                         'account_id', 'wiz_id', 'Filter on accounts',
                                          help="Only selected accounts will be printed. Leave empty to print all accounts."),
+        'filter': fields.selection([('filter_no', 'No Filters'),
+                                    ('filter_date', 'Date'),
+                                    ('filter_period', 'Periods'),
+                                    ('filter_opening', 'Opening Only')], "Filter by", required=True, help='Filter by date : no opening balance will be displayed. (opening balance can only be calculated based on period to be correct).'),
     }
     _defaults = {
         'account_ids': _get_account_ids,
@@ -154,7 +160,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                                                     'on_change': "onchange_comp_filter(%(index)s, filter, comp%(index)s_filter, fiscalyear_id, date_from, date_to)" % {'index': index}}))
                 page.append(etree.Element('field', {'name': "comp%s_fiscalyear_id" % (index,),
                                                     'colspan': '4',
-                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_year')], 'readonly':[('comp%(index)s_filter','!=','filter_year')]}" % {'index': index}}))
+                                                    'attrs': "{'required': [('comp%(index)s_filter','in',('filter_year','filter_opening'))], 'readonly':[('comp%(index)s_filter','not in',('filter_year','filter_opening'))]}" % {'index': index}}))
                 page.append(etree.Element('separator', {'string': _('Dates'), 'colspan':'4'}))
                 page.append(etree.Element('field', {'name': "comp%s_date_from" % (index,), 'colspan':'4',
                                                     'attrs': "{'required': [('comp%(index)s_filter','=','filter_date')], 'readonly':[('comp%(index)s_filter','!=','filter_date')]}" % {'index': index}}))
@@ -163,14 +169,55 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                 page.append(etree.Element('separator', {'string': _('Periods'), 'colspan':'4'}))
                 page.append(etree.Element('field', {'name': "comp%s_period_from" % (index,),
                                                     'colspan': '4',
-                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_period')], 'readonly':[('comp%(index)s_filter','!=','filter_period')]}" % {'index': index}}))
+                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_period')], 'readonly':[('comp%(index)s_filter','!=','filter_period')]}" % {'index': index},
+                                                    'domain': "[('special', '=', False)]"}))
                 page.append(etree.Element('field', {'name': "comp%s_period_to" % (index,),
                                                     'colspan': '4',
-                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_period')], 'readonly':[('comp%(index)s_filter','!=','filter_period')]}" % {'index': index}}))
+                                                    'attrs': "{'required': [('comp%(index)s_filter','=','filter_period')], 'readonly':[('comp%(index)s_filter','!=','filter_period')]}" % {'index': index},
+                                                    'domain': "[('special', '=', False)]"}))
 
                 placeholder.addprevious(page)
             placeholder.getparent().remove(placeholder)
         res['arch'] = etree.tostring(eview)
+        return res
+
+    def onchange_filter(self, cr, uid, ids, filter='filter_no', fiscalyear_id=False, context=None):
+        res = {}
+        if filter == 'filter_no':
+            res['value'] = {'period_from': False, 'period_to': False, 'date_from': False ,'date_to': False}
+        if filter == 'filter_date':
+            if fiscalyear_id:
+                fyear = self.pool.get('account.fiscalyear').browse(cr, uid, fiscalyear_id, context=context)
+                date_from = fyear.date_start
+                date_to = fyear.date_stop > time.strftime('%Y-%m-%d') and time.strftime('%Y-%m-%d') or fyear.date_stop
+            else:
+                date_from, date_to = time.strftime('%Y-01-01'), time.strftime('%Y-%m-%d')
+            res['value'] = {'period_from': False, 'period_to': False, 'date_from': date_from, 'date_to': date_to}
+        if filter == 'filter_period' and fiscalyear_id:
+            start_period = end_period = False
+            cr.execute('''
+                SELECT * FROM (SELECT p.id
+                               FROM account_period p
+                               LEFT JOIN account_fiscalyear f ON (p.fiscalyear_id = f.id)
+                               WHERE f.id = %s
+                               AND COALESCE(p.special, FALSE) = FALSE
+                               ORDER BY p.date_start ASC
+                               LIMIT 1) AS period_start
+                UNION
+                SELECT * FROM (SELECT p.id
+                               FROM account_period p
+                               LEFT JOIN account_fiscalyear f ON (p.fiscalyear_id = f.id)
+                               WHERE f.id = %s
+                               AND p.date_start < NOW()
+                               AND COALESCE(p.special, FALSE) = FALSE
+                               ORDER BY p.date_stop DESC
+                               LIMIT 1) AS period_stop''', (fiscalyear_id, fiscalyear_id))
+            periods =  [i[0] for i in cr.fetchall()]
+            if periods:
+                start_period = end_period = periods[0]
+                if len(periods) > 1:
+                    end_period = periods[1]
+            res['value'] = {'period_from': start_period, 'period_to': end_period, 'date_from': False, 'date_to': False}
         return res
 
     def onchange_comp_filter(self, cr, uid, ids, index, main_filter='filter_no', comp_filter='filter_no', fiscalyear_id=False, start_date=False, stop_date=False, context=None):
@@ -193,7 +240,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
 
         if comp_filter == 'filter_no':
             res['value'] = {fy_id_field: False, period_from_field: False, period_to_field: False, date_from_field: False ,date_to_field: False}
-        if comp_filter == 'filter_year':
+        if comp_filter in ('filter_year', 'filter_opening'):
             res['value'] = {fy_id_field: last_fiscalyear_id, period_from_field: False, period_to_field: False, date_from_field: False ,date_to_field: False}
         if comp_filter == 'filter_date':
             dates = {}
@@ -212,7 +259,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                                FROM account_period p
                                LEFT JOIN account_fiscalyear f ON (p.fiscalyear_id = f.id)
                                WHERE f.id = %(fiscalyear)s
-                               AND p.special = false
+                               AND COALESCE(p.special, FALSE) = FALSE
                                ORDER BY p.date_start ASC
                                LIMIT 1) AS period_start
                 UNION
@@ -221,13 +268,14 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                                LEFT JOIN account_fiscalyear f ON (p.fiscalyear_id = f.id)
                                WHERE f.id = %(fiscalyear)s
                                AND p.date_start < NOW()
-                               AND p.special = false
+                               AND COALESCE(p.special, FALSE) = FALSE
                                ORDER BY p.date_stop DESC
                                LIMIT 1) AS period_stop''', {'fiscalyear': last_fiscalyear_id})
             periods =  [i[0] for i in cr.fetchall()]
             if periods and len(periods) > 1:
-                start_period = periods[0]
-                end_period = periods[1]
+                start_period = end_period = periods[0]
+                if len(periods) > 1:
+                    end_period = periods[1]
             res['value'] = {fy_id_field: False, period_from_field: start_period, period_to_field: end_period, date_from_field: False, date_to_field: False}
         return res
 

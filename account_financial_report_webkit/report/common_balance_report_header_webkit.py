@@ -24,6 +24,7 @@ from collections import defaultdict
 from operator import add
 
 from common_report_header_webkit import CommonReportHeaderWebkit
+from osv import osv
 from tools.translate import _
 
 
@@ -38,7 +39,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
     def find_key_by_value_in_list(dic, value):
         return [key for key, val in dic.iteritems() if value in val][0]
 
-    def _get_account_details(self, account_ids, target_move, init_balance, fiscalyear, main_filter, start, stop, context=None):
+    def _get_account_details(self, account_ids, target_move, fiscalyear, main_filter, start, stop, initial_balance_mode, context=None):
         """
         Get details of accounts to display on the report
         @param account_ids: ids of accounts to get details
@@ -47,48 +48,47 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         @param main_filter: selection filter period / date or none
         @param start: start date or start period browse instance
         @param stop: stop date or stop period browse instance
+        @param initial_balance_mode: False: no calculation, 'opening_balance': from the opening period, 'initial_balance': computed from previous year / periods
         @return: dict of list containing accounts details, keys are the account ids
         """
         if context is None:
             context = {}
 
         account_obj = self.pool.get('account.account')
+        period_obj = self.pool.get('account.period')
+        use_period_ids = main_filter in ('filter_no', 'filter_period', 'filter_opening')
 
-        modes = {'include_opening': [],
-                 'exclude_opening' : []}
-        if init_balance:
-            init_balance = self._compute_initial_balances(account_ids, start, fiscalyear, main_filter)
-            # if init_balance has been read from the initial period, we'll compute values excluding the opening period
-            # if it has been computed from previous periods, we'll include the opening period
-            for account_id in account_ids:
-                if init_balance[account_id].get('state') == 'read':
-                    modes['exclude_opening'].append(account_id)
-                else:
-                    modes['include_opening'].append(account_id)
-        else:
-            modes['include_opening'] = account_ids
+        if use_period_ids:
+            if main_filter == 'filter_opening':
+                period_ids = [start.id]
+            else:
+                period_ids = period_obj.build_ctx_periods(self.cursor, self.uid, start.id, stop.id)
+                # never include the opening in the debit / credit amounts
+                period_ids = self.exclude_opening_periods(period_ids)
 
-        accounts = []
-        for mode, acc_ids in modes.iteritems():
-            ctx = context.copy()
-            ctx.update({'state': target_move})
-            if main_filter in ('filter_no', 'filter_period'):
-                period_ids = self._get_period_range_from_periods(start, stop, mode)
-                ctx.update({
-                    'periods': period_ids
-                })
-            elif main_filter == 'filter_date':
-                ctx.update({
-                    'date_from': start,
-                    'date_to': stop
-                })
-            accounts += account_obj.read(self.cr, self.uid, acc_ids, ['type','code','name','debit','credit', 'balance', 'parent_id','level','child_id'], ctx)
+        init_balance = False
+        if initial_balance_mode == 'opening_balance':
+            init_balance = self._read_opening_balance(account_ids, start)
+        elif initial_balance_mode:
+            init_balance = self._compute_initial_balances(account_ids, start, fiscalyear)
+
+        ctx = context.copy()
+        ctx.update({'state': target_move,
+                    'all_fiscalyear': True})
+
+        if use_period_ids:
+            ctx.update({'periods': period_ids,})
+        elif main_filter == 'filter_date':
+            ctx.update({'date_from': start,
+                        'date_to': stop})
+
+        accounts = account_obj.read(self.cursor, self.uid, account_ids, ['type','code','name','debit','credit', 'balance', 'parent_id','level','child_id'], ctx)
 
         accounts_by_id = {}
         for account in accounts:
             if init_balance:
                 # sum for top level views accounts
-                child_ids = account_obj._get_children_and_consol(self.cr, self.uid, account['id'], ctx)
+                child_ids = account_obj._get_children_and_consol(self.cursor, self.uid, account['id'], ctx)
                 if child_ids:
                     child_init_balances = [init_bal['init_balance'] for acnt_id, init_bal in init_balance.iteritems() if acnt_id in child_ids ]
                     top_init_balance = reduce(add, child_init_balances)
@@ -96,20 +96,8 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
                 else:
                     account.update(init_balance[account['id']])
                 account['balance'] = account['init_balance'] + account['debit'] - account['credit']
-            account['opening_mode'] = self.find_key_by_value_in_list(modes, account['id'])
             accounts_by_id[account['id']] = account
         return accounts_by_id
-
-    def _get_opening_balance_from_period(self, account_ids, opening_balance_id, context=None):
-        context = context or {}
-        account_obj = self.pool.get('account.account')
-        open_balance_ctx = context.copy()
-        open_balance_ctx.update({
-            'period_from': opening_balance_id,
-            'period_to': opening_balance_id
-        })
-        open_balances = account_obj.read(self.cr, self.uid, account_ids, ['balance'], open_balance_ctx)
-        return dict([(ob['id'], {'init_balance': ob['balance']}) for ob in open_balances])
 
     def _get_comparison_details(self, data, account_ids, target_move, comparison_filter, index):
         """
@@ -129,52 +117,43 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
 
         accounts_by_ids = {}
         comp_params = {}
+        details_filter = comparison_filter
         if comparison_filter != 'filter_no':
-            details_filter = comparison_filter
+            start_period, stop_period, start, stop = \
+                self._get_start_stop_for_filter(comparison_filter, fiscalyear, start_date, stop_date, start_period, stop_period)
             if comparison_filter == 'filter_year':
-                start = self.get_first_fiscalyear_period(fiscalyear)
-                stop = self.get_last_fiscalyear_period(fiscalyear)
                 details_filter = 'filter_no'
-            elif comparison_filter == 'filter_date':
-                start = start_date
-                stop = stop_date
-            else:
-                start = start_period
-                stop = stop_period
 
-            accounts_by_ids = self._get_account_details(account_ids, target_move, init_balance,
-                                                        fiscalyear, details_filter,
-                                                        start, stop)
+            initial_balance_mode = init_balance and self._get_initial_balance_mode(start) or False
+            accounts_by_ids = self._get_account_details(account_ids, target_move, fiscalyear, details_filter,
+                                                        start, stop, initial_balance_mode)
             comp_params = {
                 'comparison_filter': comparison_filter,
                 'fiscalyear': fiscalyear,
                 'start': start,
                 'stop': stop,
                 'initial_balance': init_balance,
+                'initial_balance_mode': initial_balance_mode,
             }
 
         return accounts_by_ids, comp_params
 
-    def is_initial_balance_enabled(self, main_filter):
-        if main_filter not in ('filter_no', 'filter_year'):
-            return False
-        return True
-
-    def _get_diff(self, balance, last_balance):
+    def _get_diff(self, balance, previous_balance):
         """
         @param balance: current balance
-        @param last_balance: last balance
+        @param previous_balance: last balance
         @return: dict of form {'diff': difference, 'percent_diff': diff in percentage}
         """
-        diff = balance - last_balance
-        percent_diff = 0.0
+        diff = balance - previous_balance
 
         obj_precision = self.pool.get('decimal.precision')
-        precision = obj_precision.precision_get(self.cr, self.uid, 'Account')
-        if last_balance == 0:
+        precision = obj_precision.precision_get(self.cursor, self.uid, 'Account')
+        # round previous balance with account precision to avoid big numbers if previous
+        # balance is 0.0000001 or a any very small number
+        if round(previous_balance, precision) == 0:
             percent_diff = False
         else:
-            percent_diff = round(diff / last_balance * 100, precision)
+            percent_diff = round(diff / previous_balance * 100, precision)
 
         return {'diff': diff, 'percent_diff': percent_diff}
 
@@ -198,9 +177,12 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         return comp_filters, nb_comparisons, comparison_mode
 
     def _get_start_stop_for_filter(self, main_filter, fiscalyear, start_date, stop_date, start_period, stop_period):
-        if main_filter == 'filter_no':
+        if main_filter in ('filter_no', 'filter_year'):
             start_period = self.get_first_fiscalyear_period(fiscalyear)
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
+        elif main_filter == 'filter_opening':
+            opening_period = self._get_st_fiscalyear_period(fiscalyear, special=True)
+            start_period = stop_period = opening_period
         if main_filter == 'filter_date':
             start = start_date
             stop = stop_date
@@ -221,7 +203,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
 
         start_period = self.get_start_period_br(data)
         stop_period = self.get_end_period_br(data)
-        init_bal = self.is_initial_balance_enabled(main_filter)
+
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
         stop_date = self._get_form_param('date_to', data)
@@ -230,12 +212,14 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         start_period, stop_period, start, stop = \
             self._get_start_stop_for_filter(main_filter, fiscalyear, start_date, stop_date, start_period, stop_period)
 
+        init_balance = self.is_initial_balance_enabled(main_filter)
+        initial_balance_mode = init_balance and self._get_initial_balance_mode(start) or False
+
         # Retrieving accounts
         account_ids = self.get_all_accounts(new_ids, only_type=filter_report_type)
 
         # get details for each accounts, total of debit / credit / balance
-        accounts_by_ids = self._get_account_details(account_ids, target_move, init_bal,
-                                                    fiscalyear, main_filter, start, stop)
+        accounts_by_ids = self._get_account_details(account_ids, target_move, fiscalyear, main_filter, start, stop, initial_balance_mode)
 
         comparison_params = []
         comp_accounts_by_ids = []
@@ -245,27 +229,36 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
                 comparison_params.append(comp_params)
                 comp_accounts_by_ids.append(comparison_result)
 
+        to_display = dict.fromkeys(account_ids, True)
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
             if not account.parent_id:  # hide top level account
                 continue
+            if account.type == 'consolidation':
+                to_display.update(dict([(a.id, False) for a in account.child_consol_ids]))
+            elif account.type == 'view':
+                to_display.update(dict([(a.id, True) for a in account.child_id]))
             account.debit = accounts_by_ids[account.id]['debit']
             account.credit = accounts_by_ids[account.id]['credit']
             account.balance = accounts_by_ids[account.id]['balance']
             account.init_balance = accounts_by_ids[account.id].get('init_balance', 0.0)
 
-            to_display = False  # if any amount is != 0 in comparisons, we have to display the whole account
+            display_account = False  # if any amount is != 0 in comparisons, we have to display the whole account
             comp_accounts = []
             for comp_account_by_id in comp_accounts_by_ids:
                 values = comp_account_by_id.get(account.id)
                 values.update(self._get_diff(account.balance, values['balance']))
-                to_display = any((values.get('credit', 0.0), values.get('debit', 0.0), values.get('balance', 0.0), values.get('init_balance', 0.0)))
+                display_account = any((values.get('credit', 0.0), values.get('debit', 0.0), values.get('balance', 0.0), values.get('init_balance', 0.0)))
                 comp_accounts.append(values)
             account.comparisons = comp_accounts
             # we have to display the account if a comparison as an amount or if we have an amount in the main column
             # we set it as a property to let the data in the report if someone want to use it in a custom report
-            account.to_display = to_display or any((account.debit, account.credit, account.balance, account.init_balance))
+            display_account = display_account or any((account.debit, account.credit, account.balance, account.init_balance))
+            to_display.update({account.id: display_account and to_display[account.id]})
             objects.append(account)
+
+        for account in objects:
+            account.to_display = to_display[account.id]
 
         context_report_values = {
             'fiscalyear': fiscalyear,
@@ -276,7 +269,8 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
             'chart_account': chart_account,
             'comparison_mode': comparison_mode,
             'nb_comparison': nb_comparisons,
-            'initial_balance': init_bal,
+            'initial_balance': init_balance,
+            'initial_balance_mode': initial_balance_mode,
             'comp_params': comparison_params,
         }
         return objects, new_ids, context_report_values
