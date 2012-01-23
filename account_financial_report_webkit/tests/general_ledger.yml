@@ -33,7 +33,7 @@
 -
     !python {model: account.account}: |
         ctx={}
-        data_dict = {'chart_account_id':ref('account.chart0'), 'initial_balance': 1, 'amount_currency': 1}
+        data_dict = {'chart_account_id':ref('account.chart0'), 'amount_currency': 1}
         ctx.update({'model': 'account.account','active_ids':[ref('account.chart0')],'active_id':ref('account.chart0')})
         from tools import test_reports
         test_reports.try_report_action(cr, uid, 'action_account_general_ledger_menu_webkit',wiz_data=data_dict, context=ctx, our_module='account_financial_report_webkit')

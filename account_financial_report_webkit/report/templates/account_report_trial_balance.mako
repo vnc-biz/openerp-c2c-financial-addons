@@ -2,6 +2,30 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <style type="text/css">
+            .account_level_1 {
+                text-transform: uppercase;
+                font-size: 15px;
+                background-color:#F0F0F0;
+            }
+
+            .account_level_2 {
+                font-size: 12px;
+                background-color:#F0F0F0;
+            }
+
+            .regular_account_type {
+                font-weight: normal;
+            }
+
+            .view_account_type {
+                font-weight: bold;
+            }
+
+            .account_level_consol {
+                font-weight: normal;
+            	font-style: italic;
+            }
+
             ${css}
 
             .list_table .act_as_row {
@@ -20,9 +44,7 @@
         <%setLang(user.context_lang)%>
 
         <%
-        initial_balance_names = {False: [_('No'), _('Initial Balance')],
-                                 'initial_balance': [_('Yes'), _('Initial Balance')],
-                                 'opening_balance': [_('Yes'), _('Opening Balance')],}
+        initial_balance_text = {'initial_balance': _('Computed'), 'opening_balance': _('Opening Entries'), False: _('No')}
         %>
 
         <div class="act_as_table data_table">
@@ -31,14 +53,14 @@
                 <div class="act_as_cell">${_('Fiscal Year')}</div>
                 <div class="act_as_cell">
                     %if filter_form(data) == 'filter_date':
-                        ${_('Dates')}
+                        ${_('Dates Filter')}
                     %else:
-                        ${_('Periods')}
+                        ${_('Periods Filter')}
                     %endif
                 </div>
-                <div class="act_as_cell">${_('Displayed Accounts')}</div>
+                <div class="act_as_cell">${_('Accounts Filter')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
-                <div class="act_as_cell">${initial_balance_names[initial_balance_mode][1]}</div>
+                <div class="act_as_cell">${_('Initial Balance')}</div>
             </div>
             <div class="act_as_row">
                 <div class="act_as_cell">${ chart_account.name }</div>
@@ -65,7 +87,7 @@
                     %endif
                 </div>
                 <div class="act_as_cell">${ display_target_move(data) }</div>
-                <div class="act_as_cell">${ initial_balance_names[initial_balance_mode][0] }</div>
+                <div class="act_as_cell">${ initial_balance_text[initial_balance_mode] }</div>
             </div>
         </div>
 
@@ -75,14 +97,14 @@
                     <div class="act_as_cell">${_('Comparison %s') % (index + 1,)} (${"C%s" % (index + 1,)})</div>
                     <div class="act_as_cell">
                         %if params['comparison_filter'] == 'filter_date':
-                            ${_('Dates : ')}&nbsp;${formatLang(params['start'], date=True) }&nbsp;-&nbsp;${formatLang(params['stop'], date=True) }
+                            ${_('Dates Filter:')}&nbsp;${formatLang(params['start'], date=True) }&nbsp;-&nbsp;${formatLang(params['stop'], date=True) }
                         %elif params['comparison_filter'] == 'filter_period':
-                            ${_('Periods : ')}&nbsp;${params['start'].name}&nbsp;-&nbsp;${params['stop'].name}
+                            ${_('Periods Filter:')}&nbsp;${params['start'].name}&nbsp;-&nbsp;${params['stop'].name}
                         %else:
-                            ${_('Fiscal Year : ')}&nbsp;${params['fiscalyear'].name}
+                            ${_('Fiscal Year :')}&nbsp;${params['fiscalyear'].name}
                         %endif
                     </div>
-                    <div class="act_as_cell">${initial_balance_names[params['initial_balance_mode']][1]}: ${ initial_balance_names[params['initial_balance_mode']][0] }</div>
+                    <div class="act_as_cell">${_('Initial Balance:')} ${ initial_balance_text[params['initial_balance_mode']] }</div>
                 </div>
             </div>
         %endfor
@@ -98,7 +120,7 @@
                     %if comparison_mode == 'no_comparison':
                         %if initial_balance_mode:
                             ## initial balance
-                            <div class="act_as_cell amount" style="width: 30px;">${initial_balance_names[initial_balance_mode][1]}</div>
+                            <div class="act_as_cell amount" style="width: 30px;">${_('Initial Balance')}</div>
                         %endif
                         ## debit
                         <div class="act_as_cell amount" style="width: 30px;">${_('Debit')}</div>

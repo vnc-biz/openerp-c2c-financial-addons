@@ -3,7 +3,7 @@
     <data>
 
         <record id="account_partner_ledger_view_webkit" model="ir.ui.view">
-            <field name="name">Partner Ledger Webkit</field>
+            <field name="name">Partner Ledger</field>
             <field name="model">account.report.partners.ledger.webkit</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="account.account_common_report_view"/>
@@ -39,7 +39,7 @@
         </record>
 
         <record id="action_account_partners_ledger_menu_webkit" model="ir.actions.act_window">
-            <field name="name">Partner Ledger Webkit</field>
+            <field name="name">Partner Ledger</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.report.partners.ledger.webkit</field>
             <field name="view_type">form</field>
@@ -51,17 +51,13 @@
         <record model="ir.values" id="action_account_partners_ledger_values_webkit">
             <field name="model_id" ref="account.model_account_account"/>
             <field name="object" eval="1"/>
-            <field name="name">Partner Ledger Webkit</field>
+            <field name="name">Partner Ledger</field>
             <field name="key2">client_print_multi</field>
             <field name="value"
                 eval="'ir.actions.act_window,' +str(ref('action_account_partners_ledger_menu_webkit'))"/>
             <field name="key">action</field>
             <field name="model">account.account</field>
         </record>
-
-        <menuitem icon="STOCK_PRINT" name="Partner Ledger (Webkit)"
-            parent="account.next_id_22" action="action_account_partners_ledger_menu_webkit"
-            groups="account.group_account_manager,account.group_account_user" id="account.menu_account_partner_ledger"/>
 
     </data>
 </openerp>

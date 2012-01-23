@@ -28,6 +28,7 @@
 #
 ##############################################################################
 
+import time
 
 from osv import fields, osv
 from lxml import etree
@@ -180,6 +181,45 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         res['arch'] = etree.tostring(eview)
         return res
 
+    def onchange_filter(self, cr, uid, ids, filter='filter_no', fiscalyear_id=False, context=None):
+        res = {}
+        if filter == 'filter_no':
+            res['value'] = {'period_from': False, 'period_to': False, 'date_from': False ,'date_to': False}
+        if filter == 'filter_date':
+            if fiscalyear_id:
+                fyear = self.pool.get('account.fiscalyear').browse(cr, uid, fiscalyear_id, context=context)
+                date_from = fyear.date_start
+                date_to = fyear.date_stop > time.strftime('%Y-%m-%d') and time.strftime('%Y-%m-%d') or fyear.date_stop
+            else:
+                date_from, date_to = time.strftime('%Y-01-01'), time.strftime('%Y-%m-%d')
+            res['value'] = {'period_from': False, 'period_to': False, 'date_from': date_from, 'date_to': date_to}
+        if filter == 'filter_period' and fiscalyear_id:
+            start_period = end_period = False
+            cr.execute('''
+                SELECT * FROM (SELECT p.id
+                               FROM account_period p
+                               LEFT JOIN account_fiscalyear f ON (p.fiscalyear_id = f.id)
+                               WHERE f.id = %s
+                               AND COALESCE(p.special, FALSE) = FALSE
+                               ORDER BY p.date_start ASC
+                               LIMIT 1) AS period_start
+                UNION
+                SELECT * FROM (SELECT p.id
+                               FROM account_period p
+                               LEFT JOIN account_fiscalyear f ON (p.fiscalyear_id = f.id)
+                               WHERE f.id = %s
+                               AND p.date_start < NOW()
+                               AND COALESCE(p.special, FALSE) = FALSE
+                               ORDER BY p.date_stop DESC
+                               LIMIT 1) AS period_stop''', (fiscalyear_id, fiscalyear_id))
+            periods =  [i[0] for i in cr.fetchall()]
+            if periods:
+                start_period = end_period = periods[0]
+                if len(periods) > 1:
+                    end_period = periods[1]
+            res['value'] = {'period_from': start_period, 'period_to': end_period, 'date_from': False, 'date_to': False}
+        return res
+
     def onchange_comp_filter(self, cr, uid, ids, index, main_filter='filter_no', comp_filter='filter_no', fiscalyear_id=False, start_date=False, stop_date=False, context=None):
         res = {}
         fy_obj = self.pool.get('account.fiscalyear')
@@ -219,7 +259,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                                FROM account_period p
                                LEFT JOIN account_fiscalyear f ON (p.fiscalyear_id = f.id)
                                WHERE f.id = %(fiscalyear)s
-                               AND p.special = false
+                               AND COALESCE(p.special, FALSE) = FALSE
                                ORDER BY p.date_start ASC
                                LIMIT 1) AS period_start
                 UNION
@@ -228,13 +268,14 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                                LEFT JOIN account_fiscalyear f ON (p.fiscalyear_id = f.id)
                                WHERE f.id = %(fiscalyear)s
                                AND p.date_start < NOW()
-                               AND p.special = false
+                               AND COALESCE(p.special, FALSE) = FALSE
                                ORDER BY p.date_stop DESC
                                LIMIT 1) AS period_stop''', {'fiscalyear': last_fiscalyear_id})
             periods =  [i[0] for i in cr.fetchall()]
             if periods and len(periods) > 1:
-                start_period = periods[0]
-                end_period = periods[1]
+                start_period = end_period = periods[0]
+                if len(periods) > 1:
+                    end_period = periods[1]
             res['value'] = {fy_id_field: False, period_from_field: start_period, period_to_field: end_period, date_from_field: False, date_to_field: False}
         return res
 

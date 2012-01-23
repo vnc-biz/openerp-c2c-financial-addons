@@ -23,59 +23,66 @@
 {
     'name': 'Webkit based extended report financial report',
     'description': """
-This module will provide with basic legal financial reports. All report uses the webkit technology and the library 'wkhtmltopdf' for the pdf rendering. (this library path must be added to you company settings)
+This module replace the following standard openerp financial reports :
+ - General ledger
+ - Trial Balance (simple or comparative view)
+ - Partner ledger
+ - Partner balance
+ - Open invoices report
 
-The reports provided are:
 
-* The General leder: details of all entries posted in your books sorted by account.
-    - Filter by account in the wizard (no need to go to the Chart of account to do this anymore) or by view account (the report will display all regular children account) ie: you can select all P&L accounts.
-    - The report will now print only account with movements OR with a balance not null. No more endless report with accounts with no data. (field: display account is hidden)
-    - Correct opening balance calculation : even if you do not have created your opening entries yet. If you did so, system will simply uses your opening entries amounts otherwise it will be calculated backwards until the last opening entries posted. (it remains important to post opening entries if you do not want to loose performance but with few data it is not mandatory anymore)
-    - Reports now show cumulative balances
-    - You can filter, for exemple from the 02/2011 to 06/2011 with an opening balance that will includes not only previous years data but also data from begining of  fiscal year until the period start of your filter ; so you will always match with your trial balance.
-    - Thanks to a new checkbox in account form, you will have possibility to centralize any accounts you like. ie: you do not want to see all entries posted under the account 'VAT on sales' ; you will only see aggregated amounts by periods. This option can save hundreds of useless pages !
-    - User name added on foot page (+ date, time, page of course)
-    - Counterpart account displayed for each transaction (3 accounts max.) to ease searching.
-    - Better ergonomy on the wizard: important information at the top, filters in the middle, options at the bottom, more specific filtering on a different tab. No more unique wizard layout for all financial reports (ie: we have removed the journal tab useless for the GL report)
-    - And obviously an improved style
+Main improvements per report:
+
+ * The General ledger: details of all entries posted in your books sorted by account.
+  - Filter by account in the wizard (no need to go to the Chart of account to do this anymore) or by view account (the report will display all regular children account) ie: you can select all P&L accounts.
+  - The report will now print only account with movements OR with a balance not null. No more endless report with accounts with no data. (field: display account is hidden)
+  - initial balance calculation on the fly if no open entry posted
+  - Thanks to a new checkbox in account form, you will have possibility to centralize any accounts you like. ie: you do not want to see all entries posted under the account ‘VAT on sales’ ; you will only see aggregated amounts by periods.
+  - Counterpart account displayed for each transaction (3 accounts max.) to ease searching.
+  - Better ergonomy on the wizard: important information at the top, filters in the middle, options at the bottom or separate tab, more specific filtering on a other tabs. No more unique wizard layout for all financial reports (ie: we have removed the journal tab for the GL report)
+  - improved report style
 
  * The partner ledger: details of entries relative to payable & receivable accounts posted in your books sorted by account and partner.
-    - Filter by partner now possible
-    - Possibility to print unreconcilied transactions only at any date in the past (thanks to the brand-new field: last_rec_date which calculated the last move line reconciled date). No more pain to get open invoices at the last closing date.
-    - Now you can see accounts then Partner with subtotals for each account allowing you to check you data with trial balance and partner balance for instance & accounts are ordered the same way than in the Chart of account
-    - period have been added (date only is uncompleted)
-    - Reconciliation mark added
-    - same as GL report: The report will now print only account with movements OR with a balance not null. No more endless report with accounts with no data. (field: display account is hidden)
-    - same as GL report: opening balance is fully calculated ; no need to generate opening entry anymore
-    - same as GL report: Reports now show cumulative balances
-    - same as GL report: You can filter, for example from the 02/2011 to 06/2011 with an opening balance that will includes not only previous years data but also data from beginning of  fiscal year until the period start of your filter ; so you will always match with your trial balance.
-    - same as GL report: User name added on foot page (+ date, time, page of course)
-    - same as GL report: Better ergonomy on the wizard
-    - And an improved style
+  - Filter by partner now possible
+  - Now you can see accounts then Partner with subtotals for each account allowing you to check you data with trial balance and partner balance for instance & accounts are ordered the same way than in the Chart of account
+  - period have been added (date only is uncompleted since date can be outside period)
+  - Reconciliation code added
+  - subtotal by account
+  - alpha sorting (same in partner balance)
 
+ * Open invoice report : other version of the partner ledger showing unreconciled / partially reconcies entries
+(added on the 20/01/2012)
+  - Possibility to print unreconciled transactions only at any date in the past (thanks to the brand-new field: last_rec_date which calculated the last move line reconciled date). No more pain to get open invoices at the last closing date.
+  - no initial balance calculated because the report shows open invoices from previous years.
 
- * The Trial balance: still to be added
+ * The Trial balance: list of account with balances
+  - you can either see the column : Initial balance , debit, credit , end balance or compare balances over 4 periods of your choice
+  - You can select the filter opening to get the opening trial balance only
+  - If you create a extra virtual charts (using consolidated account) of account for your P&L and your balance sheet , you can print your statutory accounts (with comparision over years for ex.)
+  - If you compare 2 periods, you will get differences in value and % also
 
- * The Partner balance: still to be added
+ * The Partner balance: list of account with balances
+  - subtotal by account & partner
+  - alpha sorting (same in partner balance)
 
- * A printscreen of the entries selected: still to be added
+Limitations:
+In order to run properly this module make sure you have installed the librairie ‘wkhtmltopdf’ for the pdf rendering (this library path must be added to you company settings).
 
- * A printscreen of invoices selected: still to be added
+Initial balances in these reports are based either on opening entry posted in the opening period or calculated on the fly. So make sure, your past accounting opening entries are in a opening period.
+Initials balances are not calculated when using date filter (since a date can be outside its logical period and IB could be different by date Vs IB by period)
 
+Totals for amount in currencies are affective if the partner belong to an account with a secondary currency.
 
-Note : html headers and footers are deactivated for these reports because of an issue of wkhtmltopdf : http://code.google.com/p/wkhtmltopdf/issues/detail?id=656
-       Instead, the header and footer are created as text with arguments passed to wkhtmltopdf. The texts are defined inside the report classes.
-
-
-Note : On the reports, the accounts are sorted by their code as in the "Chart of Accounts". If you notice that they are not sorted, you are probably affected by the bug : https://bugs.launchpad.net/openobject-addons/+bug/783670
-       The sort uses the "level" field on the accounts and if this level is miscalculated, we fallback to an unsorted report. So check if your addons branch is up-to-date with the correction.
+html headers and footers are deactivated for these reports because of an issue of wkhtmltopdf : http://code.google.com/p/wkhtmltopdf/issues/detail?id=656
+Instead, the header and footer are created as text with arguments passed to wkhtmltopdf. The texts are defined inside the report classes.
 
 """,
     'version': '1.0',
     'author': 'Camptocamp',
     'category': 'Finance',
     'website': 'http://www.camptocamp.com',
-
+    'images': [
+        'images/ledger.png',],
     'depends': ['account',
                 'report_webkit'],
     'init_xml': [],
@@ -91,13 +98,15 @@ Note : On the reports, the accounts are sorted by their code as in the "Chart of
                    'wizard/account_report_trial_balance_wizard_view.xml',
                    'wizard/account_report_partner_balance_wizard_view.xml',
                    'wizard/account_report_open_invoices_wizard_view.xml',
+                   'report_menus.xml',
 #                   'wizard/account_report_profit_loss_wizard_view.xml',
                    ],
     # tests order matter
     'test': ['tests/general_ledger.yml',
              'tests/partner_ledger.yml',
              'tests/trial_balance.yml',
-             'tests/partner_balance.yml',],
+             'tests/partner_balance.yml',
+             'tests/open_invoices.yml',],
     #'tests/account_move_line.yml'
     'active': False,
     'installable': True,

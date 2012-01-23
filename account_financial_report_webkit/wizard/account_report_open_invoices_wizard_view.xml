@@ -3,7 +3,7 @@
     <data>
 
         <record id="account_open_invoices_view_webkit" model="ir.ui.view">
-            <field name="name">Open Invoices Webkit</field>
+            <field name="name">Open Invoices Report</field>
             <field name="model">account.report.open.invoices.webkit</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="account.account_common_report_view"/>
@@ -59,7 +59,7 @@
         </record>
 
         <record id="action_account_open_invoices_menu_webkit" model="ir.actions.act_window">
-            <field name="name">Open Invoices</field>
+            <field name="name">Open Invoices Report</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.report.open.invoices.webkit</field>
             <field name="view_type">form</field>
@@ -67,10 +67,6 @@
             <field name="view_id" ref="account_open_invoices_view_webkit"/>
             <field name="target">new</field>
         </record>
-
-        <menuitem icon="STOCK_PRINT" name="Open Invoices (Webkit)"
-            parent="account.next_id_22" action="action_account_open_invoices_menu_webkit"
-            groups="account.group_account_manager,account.group_account_user" id="menu_account_open_invoices"/>
 
     </data>
 </openerp>

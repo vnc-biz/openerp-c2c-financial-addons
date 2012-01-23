@@ -2,6 +2,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <style type="text/css">
+            .overflow_ellipsis {
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+            }
+
+            .open_invoice_previous_line {
+                font-style: italic;
+            }
+
+            .clearance_line {
+                font-style: italic;
+            }
             ${css}
         </style>
     </head>
@@ -19,13 +32,13 @@
                 <div class="act_as_cell">${_('Fiscal Year')}</div>
                 <div class="act_as_cell">
                     %if filter_form(data) == 'filter_date':
-                        ${_('Dates')}
+                        ${_('Dates Filter')}
                     %else:
-                        ${_('Periods')}
+                        ${_('Periods Filter')}
                     %endif
                 </div>
-                <div class="act_as_cell">${_('Report Date')}</div>
-                <div class="act_as_cell">${_('Displayed Accounts')}</div>
+                <div class="act_as_cell">${_('Clearance Date')}</div>
+                <div class="act_as_cell">${_('Accounts Filter')}</div>
                 <div class="act_as_cell">${_('Target Moves')}</div>
 
             </div>
@@ -88,36 +101,32 @@
                     <div class="act_as_thead">
                         <div class="act_as_row labels">
                             ## date
-                            <div class="act_as_cell first_column" style="width: 50px;">${_('Date')}</div>
+                            <div class="act_as_cell first_column" style="width: 60px;">${_('Date')}</div>
                             ## period
-                            <div class="act_as_cell" style="width: 45px;">${_('Period')}</div>
+                            <div class="act_as_cell" style="width: 70px;">${_('Period')}</div>
                             ## move
-                            <div class="act_as_cell" style="width: 60px;">${_('Entry')}</div>
+                            <div class="act_as_cell" style="width: 70px;">${_('Entry')}</div>
                             ## journal
-                            <div class="act_as_cell" style="width: 50px;">${_('Journal')}</div>
+                            <div class="act_as_cell" style="width: 70px;">${_('Journal')}</div>
                             ## partner
-                            <div class="act_as_cell" style="width: 50px;">${_('Partner')}</div>
-                            ## ref
-                            <div class="act_as_cell" style="width: 100px;">${_('Ref')}</div>
+                            <div class="act_as_cell" style="width: 60px;">${_('Partner')}</div>
                             ## label
-                            <div class="act_as_cell" style="width: 180px;">${_('Label')}</div>
+                            <div class="act_as_cell" style="width: 255px;">${_('Label')}</div>
                             ## reconcile
-                            <div class="act_as_cell" style="width: 70px;">${_('Rec.')}</div>
+                            <div class="act_as_cell" style="width: 80px;">${_('Rec.')}</div>
                             ## maturity
                             <div class="act_as_cell" style="width: 60px;">${_('Due Date')}</div>
                             ## debit
-                            <div class="act_as_cell amount" style="width: 75px;">${_('Debit')}</div>
+                            <div class="act_as_cell amount" style="width: 80px;">${_('Debit')}</div>
                             ## credit
-                            <div class="act_as_cell amount" style="width: 75px;">${_('Credit')}</div>
+                            <div class="act_as_cell amount" style="width: 80px;">${_('Credit')}</div>
                             ## balance cumulated
-                            <div class="act_as_cell amount" style="width: 75px;">${_('Cumul. Bal.')}</div>
+                            <div class="act_as_cell amount" style="width: 80px;">${_('Cumul. Bal.')}</div>
                             %if amount_currency(data):
-                                ## curency code
-                                <div class="act_as_cell amount sep_left" style="width: 30px; text-align: right;">${_('Curr.')}</div>
                                 ## currency balance
-                                <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Balance')}</div>
-                                ## currency balance cumulated
-                                <div class="act_as_cell amount" style="width: 75px;">${_('Curr. Cumul. Bal')}</div>
+                                <div class="act_as_cell amount sep_left" style="width: 80px;">${_('Curr. Balance')}</div>
+                               ## curency code
+                               <div class="act_as_cell amount" style="width: 30px; text-align: right;">${_('Curr.')}</div>
                             %endif
                         </div>
                     </div>
@@ -143,8 +152,6 @@
                               <div class="act_as_cell">${line.get('jcode') or ''}</div>
                               ## partner
                               <div class="act_as_cell overflow_ellipsis">${line.get('partner_name') or ''}</div>
-                              ## ref
-                              <div class="act_as_cell">${line.get('lref') or ''}</div>
                               ## label
                               <div class="act_as_cell">${line.get('lname') or ''}</div>
                               ## reconcile
@@ -159,17 +166,10 @@
                               <% cumul_balance += line.get('balance') or 0.0 %>
                               <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(cumul_balance) | amount }</div>
                               %if amount_currency(data):
-                                  ## curency code
-                                  <div class="act_as_cell sep_left" style="text-align: right; ">${line.get('currency_code') or ''}</div>
                                   ## currency balance
-                                  <div class="act_as_cell amount">${formatLang(line.get('amount_currency') or 0.0) | amount }</div>
-                                  %if account.currency_id:
-                                      <% cumul_balance_curr += line.get('amount_currency') or 0.0 %>
-                                      ## currency balance cumulated
-                                      <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(cumul_balance_curr) | amount }</div>
-                                  %else:
-                                      <div class="act_as_cell amount" style="padding-right: 1px;">${ u'0.0' }</div>
-                                  %endif
+                                  <div class="act_as_cell sep_left amount">${formatLang(line.get('amount_currency') or 0.0) | amount }</div>
+                                  ## curency code
+                                  <div class="act_as_cell" style="text-align: right; ">${line.get('currency_code') or ''}</div>
                               %endif
                           </div>
                         %endfor
@@ -184,8 +184,6 @@
                           <div class="act_as_cell"></div>
                           ## partner
                           <div class="act_as_cell"></div>
-                          ## ref
-                          <div class="act_as_cell"></div>
                           ## label
                           <div class="act_as_cell">${_('Cumulated Balance on Partner')}</div>
                           ## reconcile
@@ -199,16 +197,14 @@
                           ## balance cumulated
                           <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(cumul_balance) | amount }</div>
                           %if amount_currency(data):
-                              ## curency code
-                              <div class="act_as_cell sep_left" style="text-align: right; ">${ account.currency_id.name if account.currency_id else u'' }</div>
-                              ## currency balance
-                              <div class="act_as_cell amount"></div>
                               %if account.currency_id:
-                                  ## currency balance cumulated
-                                  <div class="act_as_cell amount" style="padding-right: 1px;">${formatLang(cumul_balance_curr) | amount }</div>
+                                  ## currency balance
+                                  <div class="act_as_cell sep_left amount" style="padding-right: 1px;">${formatLang(cumul_balance_curr) | amount }</div>
                               %else:
-                                  <div class="act_as_cell amount" style="padding-right: 1px;">${ u'0.0' }</div>
+                                  <div class="act_as_cell sep_left amount" style="padding-right: 1px;">${ u'-' }</div>
                               %endif
+                              ## curency code
+                              <div class="act_as_cell" style="text-align: right; ">${ account.currency_id.name if account.currency_id else u'' }</div>
                           %endif
                       </div>
                     </div>
@@ -221,27 +217,25 @@
                 %>
                 %endfor
                 <div class="act_as_table list_table" style="margin-top:5px;">
-                    <div class="act_as_row labels" style="font-weight: bold;">
-                            <div class="act_as_cell first_column" style="width: 356px;">${account.code} - ${account.name}</div>
+                    <div class="act_as_row labels" style="font-weight: bold; font-size: 12px;">
+                            <div class="act_as_cell first_column" style="width: 330px;">${account.code} - ${account.name}</div>
                             ## label
-                            <div class="act_as_cell" style="width: 309px;">${_("Cumulated Balance on Account")}</div>
+                            <div class="act_as_cell" style="width: 395px;">${_("Cumulated Balance on Account")}</div>
                             ## debit
-                            <div class="act_as_cell amount" style="width: 75px;">${ formatLang(account_total_debit) | amount }</div>
+                            <div class="act_as_cell amount" style="width: 80px;">${ formatLang(account_total_debit) | amount }</div>
                             ## credit
-                            <div class="act_as_cell amount" style="width: 75px;">${ formatLang(account_total_credit) | amount }</div>
+                            <div class="act_as_cell amount" style="width: 80px;">${ formatLang(account_total_credit) | amount }</div>
                             ## balance cumulated
-                            <div class="act_as_cell amount" style="width: 75px; padding-right: 1px;">${ formatLang(account_balance_cumul) | amount }</div>
+                            <div class="act_as_cell amount" style="width: 80px; ">${ formatLang(account_balance_cumul) | amount }</div>
                             %if amount_currency(data):
-                                ## curency code
-                                <div class="act_as_cell amount sep_left" style="width: 30px; text-align: right;">${ account.currency_id.name if account.currency_id else u'' }</div>
-                                ## currency balance
-                                <div class="act_as_cell amount" style="width: 75px;"></div>
                                 ## currency balance cumulated
                                 %if account.currency_id:
-                                    <div class="act_as_cell amount" style="width: 75px;">${ formatLang(account_balance_cumul_curr) | amount }</div>
+                                    <div class="act_as_cell amount sep_left" style="width: 80px;">${ formatLang(account_balance_cumul_curr) | amount }</div>
                                 %else:
-                                    <div class="act_as_cell amount" style="width: 75px; padding-right: 1px;">${ u'0.0' }</div>
+                                    <div class="act_as_cell amount sep_left" style="width: 80px; padding-right: 1px;">${ u'-' }</div>
                                 %endif
+                                ## curency code
+                                <div class="act_as_cell amount" style="width: 30px; text-align: right;">${ account.currency_id.name if account.currency_id else u'' }</div>
                             %endif
                         </div>
                     </div>

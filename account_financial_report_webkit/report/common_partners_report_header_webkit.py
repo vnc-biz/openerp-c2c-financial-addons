@@ -164,7 +164,7 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                 res[account_id][partner_id] = row
         return res
 
-    def _partners_initial_balance_line_ids(self, account_ids, start_period, partner_filter, exclude_reconcile=False, force_period_ids=False):
+    def _partners_initial_balance_line_ids(self, account_ids, start_period, partner_filter, exclude_reconcile=False, force_period_ids=False, date_stop=None):
         # take ALL previous periods
         period_ids = force_period_ids \
                      if force_period_ids \
@@ -182,11 +182,15 @@ class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
                "WHERE ml.period_id in %(period_ids)s "
                "AND ml.account_id in %(account_ids)s ")
         if exclude_reconcile:
+            if not date_stop:
+                raise Exception("Missing \"date_stop\" to compute the open invoices.")
+            search_param.update({'date_stop': date_stop})
             sql += ("AND ((ml.reconcile_id IS NULL)"
-                   "OR (ml.reconcile_id IS NOT NULL AND ml.last_rec_date > date(%(date_start)s))) ")
+                   "OR (ml.reconcile_id IS NOT NULL AND ml.last_rec_date > date(%(date_stop)s))) ")
         if partner_filter:
             sql += "AND ml.partner_id in %(partner_ids)s "
             search_param.update({'partner_ids': tuple(partner_filter)})
+
         self.cursor.execute(sql, search_param)
         return self.cursor.dictfetchall()
 

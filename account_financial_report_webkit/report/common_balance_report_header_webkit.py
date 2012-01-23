@@ -66,10 +66,11 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
                 # never include the opening in the debit / credit amounts
                 period_ids = self.exclude_opening_periods(period_ids)
 
+        init_balance = False
         if initial_balance_mode == 'opening_balance':
             init_balance = self._read_opening_balance(account_ids, start)
-        else:
-            init_balance = self._compute_initial_balances(account_ids, start, fiscalyear, main_filter)
+        elif initial_balance_mode:
+            init_balance = self._compute_initial_balances(account_ids, start, fiscalyear)
 
         ctx = context.copy()
         ctx.update({'state': target_move,
@@ -137,11 +138,6 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
 
         return accounts_by_ids, comp_params
 
-    def is_initial_balance_enabled(self, main_filter):
-        if main_filter not in ('filter_no', 'filter_year', 'filter_period'):
-            return False
-        return True
-
     def _get_diff(self, balance, previous_balance):
         """
         @param balance: current balance
@@ -207,7 +203,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
 
         start_period = self.get_start_period_br(data)
         stop_period = self.get_end_period_br(data)
-        init_balance = self.is_initial_balance_enabled(main_filter)
+
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
         stop_date = self._get_form_param('date_to', data)
@@ -216,6 +212,7 @@ class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):
         start_period, stop_period, start, stop = \
             self._get_start_stop_for_filter(main_filter, fiscalyear, start_date, stop_date, start_period, stop_period)
 
+        init_balance = self.is_initial_balance_enabled(main_filter)
         initial_balance_mode = init_balance and self._get_initial_balance_mode(start) or False
 
         # Retrieving accounts

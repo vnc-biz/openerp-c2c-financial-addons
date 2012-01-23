@@ -71,15 +71,10 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         by mako template"""
         new_ids = data['form']['account_ids'] or data['form']['chart_account_id']
 
-        # We memoize ledger lines linked to account. Key is account id
-        # values are array of lines
-        ledger_lines_memoizer = {}
-
         # Account initial balance memoizer
         init_balance_memoizer = {}
 
         # Reading form
-        init_bal = self._get_form_param('initial_balance', data)
         main_filter = self._get_form_param('filter', data, default='filter_no')
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
@@ -94,28 +89,32 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             start_period = self.get_first_fiscalyear_period(fiscalyear)
             stop_period = self.get_last_fiscalyear_period(fiscalyear)
 
-        # Retrieving accounts
-        accounts = self.get_all_accounts(new_ids, exclude_type=['view'])
-        if init_bal and main_filter in ('filter_no', 'filter_period'):
-            init_balance_memoizer = self._compute_initial_balances(accounts, start_period,
-                                                                  fiscalyear, main_filter)
-
-        # computation of ledeger lines
+        # computation of ledger lines
         if main_filter == 'filter_date':
             start = start_date
             stop = stop_date
         else:
             start = start_period
             stop = stop_period
+
+        initial_balance = self.is_initial_balance_enabled(main_filter)
+        initial_balance_mode = initial_balance and self._get_initial_balance_mode(start) or False
+
+        # Retrieving accounts
+        accounts = self.get_all_accounts(new_ids, exclude_type=['view'])
+        if initial_balance_mode == 'initial_balance':
+            init_balance_memoizer = self._compute_initial_balances(accounts, start, fiscalyear)
+
         ledger_lines_memoizer = self._compute_account_ledger_lines(accounts, init_balance_memoizer,
                                                                    main_filter, target_move, start, stop)
         objects = []
         for account in self.pool.get('account.account').browse(self.cursor, self.uid, accounts):
-            if do_centralize and account.centralized:
+            if do_centralize and account.centralized and ledger_lines_memoizer.get(account.id):
                 account.ledger_lines = self._centralize_lines(main_filter, ledger_lines_memoizer.get(account.id, []))
             else:
                 account.ledger_lines = ledger_lines_memoizer.get(account.id, [])
             account.init_balance = init_balance_memoizer.get(account.id, {})
+
             objects.append(account)
 
         self.localcontext.update({
@@ -125,6 +124,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
             'start_period': start_period,
             'stop_period': stop_period,
             'chart_account': chart_account,
+            'initial_balance_mode': initial_balance_mode,
         })
 
         return super(GeneralLedgerWebkit, self).set_context(objects, data, new_ids,
@@ -134,6 +134,8 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
         """ Group by period in filter mode 'period' or on one line in filter mode 'date'
             ledger_lines parameter is a list of dict built by _get_ledger_lines"""
         def group_lines(lines):
+            if not lines:
+                return {}
             sums = reduce(lambda line, memo: dict((key, value + memo[key]) for key, value
             in line.iteritems() if key in ('balance', 'debit', 'credit')), lines)
 
@@ -145,7 +147,7 @@ class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):
                 'account_id': lines[0]['account_id'],
             }
             return res_lines
-        
+
         centralized_lines = []
         if filter == 'filter_date':
             # by date we centralize all entries in only one line

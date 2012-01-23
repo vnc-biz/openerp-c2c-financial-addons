@@ -188,7 +188,6 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
 
         start_period = self.get_start_period_br(data)
         stop_period = self.get_end_period_br(data)
-        init_balance = self.is_initial_balance_enabled(main_filter)
         target_move = self._get_form_param('target_move', data, default='all')
         start_date = self._get_form_param('date_from', data)
         stop_date = self._get_form_param('date_to', data)
@@ -201,7 +200,8 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
         start_period, stop_period, start, stop = \
             self._get_start_stop_for_filter(main_filter, fiscalyear, start_date, stop_date, start_period, stop_period)
 
-        initial_balance_mode = init_balance and self._get_initial_balance_mode(start) or False
+        initial_balance = self.is_initial_balance_enabled(main_filter)
+        initial_balance_mode = initial_balance and self._get_initial_balance_mode(start) or False
 
         # Retrieving accounts
         account_ids = self.get_all_accounts(new_ids, only_type=filter_type,
@@ -222,7 +222,9 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
         comp_accounts_by_ids = []
         for index in range(max_comparison):
             if comp_filters[index] != 'filter_no':
-                comparison_result, comp_params = self._get_partners_comparison_details(data, account_ids, target_move, comp_filters[index], index)
+                comparison_result, comp_params = self._get_partners_comparison_details(data, account_ids,
+                                                                                       target_move, comp_filters[index],
+                                                                                       index, partner_filter_ids=partner_ids)
                 comparison_params.append(comp_params)
                 comp_accounts_by_ids.append(comparison_result)
         objects = []
@@ -255,6 +257,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
                                      account.partners_amounts.keys())
 
             account.partners_order = self._order_partners(all_partner_ids)
+
             objects.append(account)
 
         context_report_values = {
@@ -268,6 +271,7 @@ class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, Co
             'nb_comparison': nb_comparisons,
             'comp_params': comparison_params,
             'initial_balance_mode': initial_balance_mode,
+            'compute_diff': self._get_diff,
         }
 
         return objects, new_ids, context_report_values

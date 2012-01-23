@@ -71,7 +71,6 @@ class AccountMoveLine(osv.osv):
                               (rec.id, rec.id))
                 res_set = cursor.fetchone()
                 if res_set:
-                    import pprint; pprint.pprint(res_set[0])
                     res[line.id] = {'last_rec_date': res_set[0]}
         return res
 

@@ -7,7 +7,7 @@
         is not supported so we have to copy paste the same view for trial balance, balance sheet, profit & loss
           -->
         <record id="account_trial_balance_view_webkit" model="ir.ui.view">
-            <field name="name">Trial Balance Webkit</field>
+            <field name="name">Trial Balance</field>
             <field name="model">account.report.trial.balance.webkit</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="account.account_common_report_view"/>
@@ -54,7 +54,7 @@
         </record>
 
         <record id="action_account_trial_balance_menu_webkit" model="ir.actions.act_window">
-            <field name="name">Trial Balance Webkit</field>
+            <field name="name">Trial Balance</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.report.trial.balance.webkit</field>
             <field name="view_type">form</field>
@@ -66,17 +66,13 @@
         <record model="ir.values" id="action_account_trial_balance_values_webkit">
             <field name="model_id" ref="account.model_account_account"/>
             <field name="object" eval="1"/>
-            <field name="name">Trial Balance Webkit</field>
+            <field name="name">Trial Balance</field>
             <field name="key2">client_print_multi</field>
             <field name="value"
                 eval="'ir.actions.act_window,' +str(ref('action_account_trial_balance_menu_webkit'))"/>
             <field name="key">action</field>
             <field name="model">account.account</field>
         </record>
-
-        <menuitem icon="STOCK_PRINT" name="Trial Balance (Webkit)"
-            parent="account.final_accounting_reports" action="action_account_trial_balance_menu_webkit"
-            groups="account.group_account_manager,account.group_account_user" id="account.menu_general_Balance_report"/>
 
     </data>
 </openerp>

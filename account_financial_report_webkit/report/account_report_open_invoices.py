@@ -168,10 +168,10 @@ class PartnersOpenInvoicesWebkit(report_sxw.rml_parse, CommonPartnersReportHeade
                                                         start,
                                                         partner_filter,
                                                         exclude_reconcile=True,
-                                                        force_period_ids=False), key='id')
+                                                        force_period_ids=False,
+                                                        date_stop=date_stop), key='id')
 
         for account_id in accounts_ids:
-
             initial_move_lines_ids_per_partner = initial_move_lines_per_account.get(account_id, {})
 
             # We get the move line ids of the account depending of the

@@ -3,7 +3,7 @@
     <data>
 
         <record id="account_report_general_ledger_view_webkit" model="ir.ui.view">
-            <field name="name">General Ledger Webkit</field>
+            <field name="name">General Ledger</field>
             <field name="model">account.report.general.ledger.webkit</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="account.account_common_report_view"/>
@@ -18,7 +18,6 @@
                     </field>
                     <form position="inside">
                         <field name="display_account" invisible="True"/>
-                        <field name="initial_balance" invisible="True"/>
                     </form>
                     <page name="filters" position="after">
                         <page string="Accounts Filters" name="accounts">
@@ -66,7 +65,7 @@
         </record>
 
         <record id="action_account_general_ledger_menu_webkit" model="ir.actions.act_window">
-            <field name="name">General Ledger Webkit</field>
+            <field name="name">General Ledger</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.report.general.ledger.webkit</field>
             <field name="view_type">form</field>
@@ -78,17 +77,13 @@
         <record model="ir.values" id="action_account_general_ledger_values_webkit">
             <field name="model_id" ref="account.model_account_account"/>
             <field name="object" eval="1"/>
-            <field name="name">General Ledger Webkit</field>
+            <field name="name">General Ledger</field>
             <field name="key2">client_print_multi</field>
             <field name="value"
                 eval="'ir.actions.act_window,' +str(ref('action_account_general_ledger_menu_webkit'))"/>
             <field name="key">action</field>
             <field name="model">account.account</field>
         </record>
-
-        <menuitem icon="STOCK_PRINT" name="General Ledger (Webkit)"
-            parent="account.final_accounting_reports" action="action_account_general_ledger_menu_webkit"
-            groups="account.group_account_manager,account.group_account_user" id="account.menu_general_ledger"/>
 
     </data>
 </openerp>

@@ -352,39 +352,31 @@ class CommonReportHeaderWebkit(common_report_header):
             res[account_id] = self._compute_init_balance(account_id, opening_period_selected, mode='read')
         return res
 
-    def _compute_initial_balances(self, account_ids, start_period, fiscalyear, main_filter):
+    def _compute_initial_balances(self, account_ids, start_period, fiscalyear):
         """We compute initial balance.
         If form is filtered by date all initial balance are equal to 0
         This function will sum pear and apple in currency amount if account as no secondary currency"""
         # if opening period is included in start period we do not need to compute init balance
         # we just read it from opening entries
         res = {}
-        if main_filter in ('filter_period', 'filter_no'):
+        # PNL and Balance accounts are not computed the same way look for attached doc
+        # We include opening period in pnl account in order to see if opening entries
+        # were created by error on this account
+        pnl_periods_ids = self._get_period_range_from_start_period(start_period, fiscalyear=fiscalyear,
+                                                                   include_opening=True)
+        bs_period_ids = self._get_period_range_from_start_period(start_period, include_opening=True,
+                                                                 stop_at_previous_opening=True)
+        opening_period_selected = self.get_included_opening_period(start_period)
 
-            # PNL and Balance accounts are not computed the same way look for attached doc
-            # We include opening period in pnl account in order to see if opening entries
-            # were created by error on this account
-            pnl_periods_ids = self._get_period_range_from_start_period(start_period, fiscalyear=fiscalyear,
-                                                                       include_opening=True)
-
-            bs_period_ids = self._get_period_range_from_start_period(start_period, include_opening=True,
-                                                                     stop_at_previous_opening=True)
-
-            opening_period_selected = self.get_included_opening_period(start_period)
-            opening_move_lines = self.periods_contains_move_lines(opening_period_selected)
-            for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
-                res[acc.id] = self._compute_init_balance(mode='read', default_values=True)
-                if acc.user_type.close_method == 'none':
-                    # we compute the initial balance for close_method == none only when we print a GL
-                    # during the year, when the opening period is not included in the period selection!
-                    if pnl_periods_ids and not opening_period_selected:
-                        res[acc.id] = self._compute_init_balance(acc.id, pnl_periods_ids)
-                else:
-                    if not opening_move_lines:
-                        res[acc.id] = self._compute_init_balance(acc.id, bs_period_ids)
-        else:
-            for acc_id in account_ids:
-                res[acc_id] = self._compute_init_balance(mode='disable', default_values=True)
+        for acc in self.pool.get('account.account').browse(self.cursor, self.uid, account_ids):
+            res[acc.id] = self._compute_init_balance(default_values=True)
+            if acc.user_type.close_method == 'none':
+                # we compute the initial balance for close_method == none only when we print a GL
+                # during the year, when the opening period is not included in the period selection!
+                if pnl_periods_ids and not opening_period_selected:
+                    res[acc.id] = self._compute_init_balance(acc.id, pnl_periods_ids)
+            else:
+                res[acc.id] = self._compute_init_balance(acc.id, bs_period_ids)
         return res
 
     ####################Account move retrieval helper ##########################
@@ -506,6 +498,11 @@ WHERE move_id in %s"""
             self.cursor.rollback()
             raise exc
         return res and dict(res) or {}
+
+    def is_initial_balance_enabled(self, main_filter):
+        if main_filter not in ('filter_no', 'filter_year', 'filter_period'):
+            return False
+        return True
 
     def _get_initial_balance_mode(self, start_period):
         opening_period_selected = self.get_included_opening_period(start_period)
