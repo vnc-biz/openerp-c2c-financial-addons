@@ -496,7 +496,7 @@ WHERE move_id in %s"""
             res= self.cursor.fetchall()
         except Exception, exc:
             self.cursor.rollback()
-            raise exc
+            raise
         return res and dict(res) or {}
 
     def is_initial_balance_enabled(self, main_filter):

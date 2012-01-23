@@ -64,8 +64,6 @@ By amending the clearance date, you will be, for instance, able to answer the qu
 
     def onchange_fiscalyear(self, cursor, uid, ids, fiscalyear=False, period_id=False, date_to=False, until_date=False, context=None):
         res = {'value': {}}
-        if not fiscalyear:
-            res['value']['initial_balance'] = False
         res['value']['until_date'] = self.default_until_date(cursor, uid, ids,
                                                              fiscalyear_id=fiscalyear,
                                                              period_id=period_id,

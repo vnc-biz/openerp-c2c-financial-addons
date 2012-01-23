@@ -42,7 +42,6 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
     }
     _defaults = {
         'amount_currency': False,
-        'exclude_reconciled': lambda self, cr, uid, context: context.get('open_transactions_report', False),
         'result_selection': 'customer_supplier',
     }
 
@@ -109,7 +108,6 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
         context = context or {}
         # we update form with display account value
         data = self.pre_print_report(cursor, uid, ids, data, context=context)
-        # GTK client problem onchange does not consider in save record
         return {'type': 'ir.actions.report.xml',
                 'report_name': 'account.account_report_partners_ledger_webkit',
                 'datas': data}

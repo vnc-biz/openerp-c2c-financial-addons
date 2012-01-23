@@ -947,7 +947,7 @@ msgstr "Pas de filtre valide"
 
 #. module: account_financial_report_webkit
 #: model:ir.ui.menu,name:account_financial_report_webkit.menu_account_open_invoices
-msgid "Open Invoices (Webkit)"
+msgid "Open Invoices"
 msgstr "Etat des factures ouvertes"
 
 #. module: account_financial_report_webkit
