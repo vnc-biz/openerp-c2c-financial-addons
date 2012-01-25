@@ -70,6 +70,7 @@ In order to run properly this module make sure you have installed the librairie 
 
 Initial balances in these reports are based either on opening entry posted in the opening period or calculated on the fly. So make sure, your past accounting opening entries are in a opening period.
 Initials balances are not calculated when using date filter (since a date can be outside its logical period and IB could be different by date Vs IB by period)
+The opening period is assumed to be the 01.01 of the year with an opening flag and the first period of the year must starts also the 01.01
 
 Totals for amount in currencies are affective if the partner belong to an account with a secondary currency.
 
