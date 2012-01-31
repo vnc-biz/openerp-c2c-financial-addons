@@ -189,7 +189,7 @@
                             ## debit
                             <div class="act_as_cell amount">${formatLang(current_account.debit) | amount}</div>
                             ## credit
-                            <div class="act_as_cell amount">${formatLang(current_account.credit and current_account.credit * -1 or 0.0) | amount}</div>
+                            <div class="act_as_cell amount">${formatLang(current_account.credit) | amount}</div>
                         %endif
                         ## balance
                         <div class="act_as_cell amount">${formatLang(current_account.balance) | amount}</div>

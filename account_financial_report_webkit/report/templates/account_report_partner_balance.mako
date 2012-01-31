@@ -195,7 +195,7 @@
                                     <div class="act_as_cell amount">${formatLang(partner.get('init_balance', 0.0)) | amount}</div>
                                 %endif
                                 <div class="act_as_cell amount">${formatLang(partner.get('debit', 0.0)) | amount}</div>
-                                <div class="act_as_cell amount">${formatLang((partner.get('credit') and partner['credit'] * -1 or 0.0) if partner else 0.0) | amount}</div>
+                                <div class="act_as_cell amount">${formatLang(partner.get('credit', 0.0)) | amount}</div>
                             %endif
                             <div class="act_as_cell amount">${formatLang(partner['balance'] if partner else 0.0) | amount}</div>
 
