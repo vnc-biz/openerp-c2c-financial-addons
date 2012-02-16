@@ -147,12 +147,12 @@ class AccountBalanceCommonWizard(osv.osv_memory):
             placeholder = placeholder[0]
             for index in range(self.COMPARISON_LEVEL):
                 # add fields
-                res['fields']["comp%s_filter" % (index,)] = {'string': "Compare By", 'type': 'selection', 'selection': self.COMPARE_SELECTION, 'required': True}
-                res['fields']["comp%s_fiscalyear_id" % (index,)] = {'string': "Fiscal Year", 'type': 'many2one', 'relation': 'account.fiscalyear'}
-                res['fields']["comp%s_period_from" % (index,)] = {'string': "Start Period", 'type': 'many2one', 'relation': 'account.period'}
-                res['fields']["comp%s_period_to" % (index,)] = {'string': "End Period", 'type': 'many2one', 'relation': 'account.period'}
-                res['fields']["comp%s_date_from" % (index,)] = {'string': "Start Date", 'type': 'date'}
-                res['fields']["comp%s_date_to" % (index,)] = {'string': "End Date", 'type': 'date'}
+                res['fields']["comp%s_filter" % (index,)] = {'string': _("Compare By"), 'type': 'selection', 'selection': self.COMPARE_SELECTION, 'required': True}
+                res['fields']["comp%s_fiscalyear_id" % (index,)] = {'string': _("Fiscal Year"), 'type': 'many2one', 'relation': 'account.fiscalyear'}
+                res['fields']["comp%s_period_from" % (index,)] = {'string': _("Start Period"), 'type': 'many2one', 'relation': 'account.period'}
+                res['fields']["comp%s_period_to" % (index,)] = {'string': _("End Period"), 'type': 'many2one', 'relation': 'account.period'}
+                res['fields']["comp%s_date_from" % (index,)] = {'string': _("Start Date"), 'type': 'date'}
+                res['fields']["comp%s_date_to" % (index,)] = {'string': _("End Date"), 'type': 'date'}
 
                 page = etree.Element('page', {'name': "comp%s" % (index,), 'string': _("Comparison %s") % (index+1,)})
                 page.append(etree.Element('field', {'name': "comp%s_filter" % (index,),
