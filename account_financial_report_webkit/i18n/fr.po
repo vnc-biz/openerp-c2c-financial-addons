@@ -981,7 +981,7 @@ msgstr "Avec devise"
 #: field:account.report.partner.balance.webkit,result_selection:0
 #: field:account.report.partners.ledger.webkit,result_selection:0
 msgid "Partner's"
-msgstr "Partner's"
+msgstr "Type de partenaire"
 
 #. module: account_financial_report_webkit
 #: view:account.report.general.ledger.webkit:0
