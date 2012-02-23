@@ -33,8 +33,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
     _columns = {
         'amount_currency': fields.boolean("With Currency",
                                           help="It adds the currency column"),
-        'partner_ids': fields.many2many('res.partner', 'wiz_part_rel',
-                                        'partner_id', 'wiz_id', 'Filter on partner',
+        'partner_ids': fields.many2many('res.partner', string='Filter on partner',
                                          help="Only selected partners will be printed. Leave empty to print all partners."),
         'filter': fields.selection([('filter_no', 'No Filters'),
                                     ('filter_date', 'Date'),

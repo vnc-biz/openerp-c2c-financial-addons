@@ -66,8 +66,7 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         return res
 
     _columns = {
-        'account_ids': fields.many2many('account.account', 'wiz_account_rel',
-                                        'account_id', 'wiz_id', 'Filter on accounts',
+        'account_ids': fields.many2many('account.account', string='Filter on accounts',
                                          help="Only selected accounts will be printed. Leave empty to print all accounts."),
         'filter': fields.selection([('filter_no', 'No Filters'),
                                     ('filter_date', 'Date'),

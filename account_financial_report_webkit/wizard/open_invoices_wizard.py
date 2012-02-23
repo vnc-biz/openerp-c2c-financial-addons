@@ -41,8 +41,15 @@ By amending the clearance date, you will be, for instance, able to answer the qu
     }
 
     def _check_until_date(self, cr, uid, ids, context=None):
+        def get_key_id(obj, field):
+            return obj.get(field) and obj[field][0] or False
+
         obj = self.read(cr, uid, ids[0], ['fiscalyear_id', 'period_to', 'date_to', 'until_date'], context=context)
-        min_date = self.default_until_date(cr, uid, ids, obj['fiscalyear_id'], obj['period_to'], obj['date_to'], context=context)
+        min_date = self.default_until_date(cr, uid, ids,
+                                           get_key_id(obj, 'fiscalyear_id'),
+                                           get_key_id(obj, 'period_to'),
+                                           obj['date_to'],
+                                           context=context)
         if min_date and obj['until_date'] < min_date:
             return False
         return True

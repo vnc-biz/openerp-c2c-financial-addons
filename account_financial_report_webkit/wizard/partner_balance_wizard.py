@@ -34,8 +34,7 @@ class AccountPartnerBalanceWizard(osv.osv_memory):
                                               ('supplier','Payable Accounts'),
                                               ('customer_supplier','Receivable and Payable Accounts')],
                                               "Partner's", required=True),
-        'partner_ids': fields.many2many('res.partner', 'wiz_part_rel',
-                                        'partner_id', 'wiz_id', 'Filter on partner',
+        'partner_ids': fields.many2many('res.partner', string='Filter on partner',
                                          help="Only selected partners will be printed. Leave empty to print all partners."),
     }
 
