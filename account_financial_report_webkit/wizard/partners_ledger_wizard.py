@@ -97,6 +97,8 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
         data = super(AccountReportPartnersLedgerWizard, self).pre_print_report(cr, uid, ids, data, context)
         if context is None:
             context = {}
+        # will be used to attach the report on the main account
+        data['ids'] = [data['form']['chart_account_id']]
         vals = self.read(cr, uid, ids,
                          ['amount_currency', 'partner_ids',],
                          context=context)[0]

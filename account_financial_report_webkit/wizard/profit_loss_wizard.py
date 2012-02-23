@@ -28,8 +28,6 @@
 #
 ##############################################################################
 
-import re
-
 from lxml import etree
 from tools.translate import _
 from osv import fields, osv
