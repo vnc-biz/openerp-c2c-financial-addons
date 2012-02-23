@@ -26,7 +26,7 @@ from operator import itemgetter
 from itertools import groupby
 from datetime import datetime
 
-from common_report_header_webkit import CommonReportHeaderWebkit
+from common_reports import CommonReportHeaderWebkit
 from webkit_parser_header_fix import HeaderFooterTextWebKitParser
 
 class GeneralLedgerWebkit(report_sxw.rml_parse, CommonReportHeaderWebkit):

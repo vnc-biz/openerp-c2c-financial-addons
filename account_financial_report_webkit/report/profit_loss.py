@@ -19,15 +19,12 @@
 #
 ##############################################################################
 
+import pooler
 
 from report import report_sxw
 from tools.translate import _
-import pooler
-from operator import add, itemgetter
-from itertools import groupby
 from datetime import datetime
-
-from common_balance_report_header_webkit import CommonBalanceReportHeaderWebkit
+from common_balance_reports import CommonBalanceReportHeaderWebkit
 from webkit_parser_header_fix import HeaderFooterTextWebKitParser
 
 

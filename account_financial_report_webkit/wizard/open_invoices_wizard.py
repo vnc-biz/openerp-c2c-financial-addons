@@ -24,8 +24,8 @@ from osv import fields, osv
 class AccountReportOpenInvoicesWizard(osv.osv_memory):
     """Will launch partner ledger report and pass required args"""
 
-    _inherit = "account.report.partners.ledger.webkit"
-    _name = "account.report.open.invoices.webkit"
+    _inherit = "partners.ledger.webkit"
+    _name = "open.invoices.webkit"
     _description = "Open Invoices Report"
 
     _columns = {

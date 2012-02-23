@@ -29,7 +29,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
 
 
     _inherit = "account.common.account.report"
-    _name = "account.report.general.ledger.webkit"
+    _name = "general.ledger.webkit"
     _description = "General Ledger Report"
 
     def _get_account_ids(self, cr, uid, context=None):

@@ -24,7 +24,7 @@
 
 import netsvc
 
-from account.report.common_report_header import common_report_header
+from openerp.addons.account.report.common_report_header import common_report_header
 from osv import osv
 from tools.translate import _
 

@@ -20,13 +20,9 @@
 #
 ##############################################################################
 
-from collections import defaultdict
 from operator import add
 
-from common_report_header_webkit import CommonReportHeaderWebkit
-from osv import osv
-from tools.translate import _
-
+from common_reports import CommonReportHeaderWebkit
 
 
 class CommonBalanceReportHeaderWebkit(CommonReportHeaderWebkit):

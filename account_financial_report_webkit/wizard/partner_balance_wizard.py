@@ -26,7 +26,7 @@ class AccountPartnerBalanceWizard(osv.osv_memory):
     """Will launch partner balance report and pass required args"""
 
     _inherit = "account.common.balance.report"
-    _name = "account.report.partner.balance.webkit"
+    _name = "partner.balance.webkit"
     _description = "Partner Balance Report"
 
     _columns = {

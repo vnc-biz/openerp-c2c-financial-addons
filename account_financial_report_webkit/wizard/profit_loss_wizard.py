@@ -49,7 +49,7 @@ class AccountProfitAndLossLedgerWizard(osv.osv_memory):
     """Will launch trial balance report and pass required args"""
 
     _inherit = "account.common.balance.report"
-    _name = "account.report.pl.webkit"
+    _name = "profit.loss.webkit"
     _description = "Profit and Loss Report"
 
     _columns = {

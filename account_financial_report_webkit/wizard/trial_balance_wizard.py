@@ -19,14 +19,14 @@
 #
 ##############################################################################
 
-from osv import fields, osv
+from osv import osv
 
 
 class AccountTrialBalanceWizard(osv.osv_memory):
     """Will launch trial balance report and pass required args"""
 
     _inherit = "account.common.balance.report"
-    _name = "account.report.trial.balance.webkit"
+    _name = "trial.balance.webkit"
     _description = "Trial Balance Report"
 
     def _print_report(self, cursor, uid, ids, data, context=None):

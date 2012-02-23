@@ -25,7 +25,7 @@ from tools.translate import _
 import pooler
 from datetime import datetime
 
-from partner_balance_header_webkit import CommonPartnerBalanceReportHeaderWebkit
+from common_partner_balance_reports import CommonPartnerBalanceReportHeaderWebkit
 from webkit_parser_header_fix import HeaderFooterTextWebKitParser
 
 

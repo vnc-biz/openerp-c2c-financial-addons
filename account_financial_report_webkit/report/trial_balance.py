@@ -25,7 +25,7 @@ from tools.translate import _
 import pooler
 from datetime import datetime
 
-from common_balance_report_header_webkit import CommonBalanceReportHeaderWebkit
+from common_balance_reports import CommonBalanceReportHeaderWebkit
 from webkit_parser_header_fix import HeaderFooterTextWebKitParser
 
 def sign(number):

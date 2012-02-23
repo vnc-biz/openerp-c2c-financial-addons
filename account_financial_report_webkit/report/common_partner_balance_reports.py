@@ -23,10 +23,8 @@
 from collections import defaultdict
 from operator import add
 
-from common_balance_report_header_webkit import CommonBalanceReportHeaderWebkit
-from common_partners_report_header_webkit import CommonPartnersReportHeaderWebkit
-
-from tools.translate import _
+from common_balance_reports import CommonBalanceReportHeaderWebkit
+from common_partner_reports import CommonPartnersReportHeaderWebkit
 
 
 class CommonPartnerBalanceReportHeaderWebkit(CommonBalanceReportHeaderWebkit, CommonPartnersReportHeaderWebkit):

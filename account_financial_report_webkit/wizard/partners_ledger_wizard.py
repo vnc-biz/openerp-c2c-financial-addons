@@ -27,7 +27,7 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
     """Will launch partner ledger report and pass required args"""
 
     _inherit = "account.common.partner.report"
-    _name = "account.report.partners.ledger.webkit"
+    _name = "partners.ledger.webkit"
     _description = "Partner Ledger Report"
 
     _columns = {
