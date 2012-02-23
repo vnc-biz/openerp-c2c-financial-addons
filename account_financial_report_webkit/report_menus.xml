@@ -8,7 +8,7 @@
 
         <menuitem icon="STOCK_PRINT" name="Trial Balance"
             parent="account.final_accounting_reports" action="action_account_trial_balance_menu_webkit"
-            groups="account.group_account_manager,account.group_account_user" id="account.menu_general_balance_report"/>
+            groups="account.group_account_manager,account.group_account_user" id="account.menu_general_Balance_report"/>
 
         <menuitem icon="STOCK_PRINT" name="Partner Ledger"
             parent="account.next_id_22" action="action_account_partners_ledger_menu_webkit"

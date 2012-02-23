@@ -26,7 +26,7 @@ from osv import osv
 from tools.translate import _
 from datetime import datetime
 
-from common_partners_report_header_webkit import CommonPartnersReportHeaderWebkit
+from common_partner_reports import CommonPartnersReportHeaderWebkit
 from webkit_parser_header_fix import HeaderFooterTextWebKitParser
 
 

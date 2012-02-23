@@ -22,12 +22,14 @@
 # TODO refactor helper in order to act more like mixin
 # By using properties we will have a more simple signature in fuctions
 
-import netsvc
+import logging
 
-from account.report.common_report_header import common_report_header
+from openerp.addons.account.report.common_report_header import common_report_header
 from osv import osv
 from tools.translate import _
 
+
+_logger = logging.getLogger('financial.reports.webkit')
 
 class CommonReportHeaderWebkit(common_report_header):
     """Define common helper for financial report"""
@@ -154,9 +156,7 @@ class CommonReportHeaderWebkit(common_report_header):
         # sort fails when the levels are miscalculated by account.account
         # check lp:783670
         if len(sorted_accounts) != len(account_ids):
-            logger = netsvc.Logger()
-            logger.notifyChannel('account_financial_report_webkit', netsvc.LOG_WARNING,
-                                 'Webkit financial reports: Sort of accounts failed.')
+            _logger.warn('Webkit financial reports: Sort of accounts failed.')
             sorted_accounts = account_ids
 
         return sorted_accounts

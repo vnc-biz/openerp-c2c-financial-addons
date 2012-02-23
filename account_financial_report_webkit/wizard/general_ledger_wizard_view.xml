@@ -4,7 +4,7 @@
 
         <record id="account_report_general_ledger_view_webkit" model="ir.ui.view">
             <field name="name">General Ledger</field>
-            <field name="model">account.report.general.ledger.webkit</field>
+            <field name="model">general.ledger.webkit</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="account.account_common_report_view"/>
             <field name="arch" type="xml">
@@ -54,7 +54,7 @@
 
         <record id="account_report_general_ledger_view_inherit" model="ir.ui.view">
             <field name="name">General Ledger</field>
-            <field name="model">account.report.general.ledger.webkit</field>
+            <field name="model">general.ledger.webkit</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="account.account_report_general_ledger_view"/>
             <field name="arch" type="xml">
@@ -67,7 +67,7 @@
         <record id="action_account_general_ledger_menu_webkit" model="ir.actions.act_window">
             <field name="name">General Ledger</field>
             <field name="type">ir.actions.act_window</field>
-            <field name="res_model">account.report.general.ledger.webkit</field>
+            <field name="res_model">general.ledger.webkit</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="view_id" ref="account_report_general_ledger_view_webkit"/>

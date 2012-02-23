@@ -27,14 +27,13 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
     """Will launch partner ledger report and pass required args"""
 
     _inherit = "account.common.partner.report"
-    _name = "account.report.partners.ledger.webkit"
+    _name = "partners.ledger.webkit"
     _description = "Partner Ledger Report"
 
     _columns = {
         'amount_currency': fields.boolean("With Currency",
                                           help="It adds the currency column"),
-        'partner_ids': fields.many2many('res.partner', 'wiz_part_rel',
-                                        'partner_id', 'wiz_id', 'Filter on partner',
+        'partner_ids': fields.many2many('res.partner', string='Filter on partner',
                                          help="Only selected partners will be printed. Leave empty to print all partners."),
         'filter': fields.selection([('filter_no', 'No Filters'),
                                     ('filter_date', 'Date'),
@@ -98,6 +97,8 @@ class AccountReportPartnersLedgerWizard(osv.osv_memory):
         data = super(AccountReportPartnersLedgerWizard, self).pre_print_report(cr, uid, ids, data, context)
         if context is None:
             context = {}
+        # will be used to attach the report on the main account
+        data['ids'] = [data['form']['chart_account_id']]
         vals = self.read(cr, uid, ids,
                          ['amount_currency', 'partner_ids',],
                          context=context)[0]

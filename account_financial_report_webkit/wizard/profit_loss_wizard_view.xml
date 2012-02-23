@@ -4,7 +4,7 @@
 
         <record id="account_profit_loss_view_webkit" model="ir.ui.view">
             <field name="name">Profit and Loss Webkit</field>
-            <field name="model">account.report.pl.webkit</field>
+            <field name="model">profit.loss.webkit</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="account.account_common_report_view"/>
             <field name="arch" type="xml">
@@ -44,7 +44,7 @@
         <record id="action_account_profit_loss_menu_webkit" model="ir.actions.act_window">
             <field name="name">Profit and Loss Webkit</field>
             <field name="type">ir.actions.act_window</field>
-            <field name="res_model">account.report.pl.webkit</field>
+            <field name="res_model">profit.loss.webkit</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="view_id" ref="account_profit_loss_view_webkit"/>

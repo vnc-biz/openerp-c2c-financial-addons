@@ -29,7 +29,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
 
 
     _inherit = "account.common.account.report"
-    _name = "account.report.general.ledger.webkit"
+    _name = "general.ledger.webkit"
     _description = "General Ledger Report"
 
     def _get_account_ids(self, cr, uid, context=None):
@@ -46,8 +46,7 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
                                              ('bal_mix', 'With transactions or non zero balance')],
                                             'Display accounts',
                                             required=True),
-        'account_ids': fields.many2many('account.account', 'wiz_account_rel',
-                                        'account_id', 'wiz_id', 'Filter on accounts',
+        'account_ids': fields.many2many('account.account', string='Filter on accounts',
                                          help="""Only selected accounts will be printed. Leave empty to print all accounts."""),
         'centralize': fields.boolean('Activate Centralization', help='Uncheck to display all the details of centralized accounts.')
     }
@@ -72,6 +71,8 @@ class AccountReportGeneralLedgerWizard(osv.osv_memory):
         data = super(AccountReportGeneralLedgerWizard, self).pre_print_report(cr, uid, ids, data, context)
         if context is None:
             context = {}
+        # will be used to attach the report on the main account
+        data['ids'] = [data['form']['chart_account_id']]
         vals = self.read(cr, uid, ids, 
                          ['amount_currency',
                           'display_account',

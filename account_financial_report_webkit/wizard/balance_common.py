@@ -51,6 +51,8 @@ class AccountBalanceCommonWizard(osv.osv_memory):
     _name = "account.common.balance.report"
     _description = "Common Balance Report"
 
+    # an update module should be done if changed
+    # in order to create fields in db
     COMPARISON_LEVEL = 3
     
     COMPARE_SELECTION = [('filter_no', 'No Comparison'),
@@ -59,6 +61,16 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                          ('filter_period', 'Periods'),
                          ('filter_opening', 'Opening Only')]
 
+    M2O_DYNAMIC_FIELDS = [f % index for f in ["comp%s_fiscalyear_id",
+                                              "comp%s_period_from",
+                                              "comp%s_period_to",]
+                      for index in range(COMPARISON_LEVEL)]
+    SIMPLE_DYNAMIC_FIELDS = [f % index for f in ["comp%s_filter",
+                                                 "comp%s_date_from",
+                                                 "comp%s_date_to"]
+                      for index in range(COMPARISON_LEVEL)]
+    DYNAMIC_FIELDS = M2O_DYNAMIC_FIELDS + SIMPLE_DYNAMIC_FIELDS
+
     def _get_account_ids(self, cr, uid, context=None):
         res = False
         if context.get('active_model', False) == 'account.account' and context.get('active_ids', False):
@@ -66,14 +78,23 @@ class AccountBalanceCommonWizard(osv.osv_memory):
         return res
 
     _columns = {
-        'account_ids': fields.many2many('account.account', 'wiz_account_rel',
-                                        'account_id', 'wiz_id', 'Filter on accounts',
+        'account_ids': fields.many2many('account.account', string='Filter on accounts',
                                          help="Only selected accounts will be printed. Leave empty to print all accounts."),
         'filter': fields.selection([('filter_no', 'No Filters'),
                                     ('filter_date', 'Date'),
                                     ('filter_period', 'Periods'),
                                     ('filter_opening', 'Opening Only')], "Filter by", required=True, help='Filter by date : no opening balance will be displayed. (opening balance can only be calculated based on period to be correct).'),
     }
+
+    for index in range(COMPARISON_LEVEL):
+        _columns.update(
+            {"comp%s_filter" % (index,): fields.selection(COMPARE_SELECTION, string='Compare By', required=True),
+             "comp%s_fiscalyear_id" % (index,): fields.many2one('account.fiscalyear', 'Fiscal Year'),
+             "comp%s_period_from" % (index,): fields.many2one('account.period', 'Start Period'),
+             "comp%s_period_to" % (index,): fields.many2one('account.period', 'End Period'),
+             "comp%s_date_from" % (index,): fields.date("Start Date"),
+             "comp%s_date_to" % (index,): fields.date("End Date"),})
+
     _defaults = {
         'account_ids': _get_account_ids,
     }
@@ -108,52 +129,18 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                 res[field] = 'filter_no'
         return res
 
-    def view_init(self, cr, uid, fields_list, context=None):
-        """
-         Creates view dynamically and adding fields at runtime.
-         @param self: The object pointer.
-         @param cr: A database cursor
-         @param uid: ID of the user currently logged in
-         @param context: A standard dictionary
-         @return: New arch of view with new columns.
-        """
-        res = super(AccountBalanceCommonWizard, self).view_init(cr, uid, fields_list, context=context)
-        for index in range(self.COMPARISON_LEVEL):
-            # create columns for each comparison page
-            self._columns.update({
-                "comp%s_filter" % (index,):
-                    fields.selection(self.COMPARE_SELECTION,
-                                     string="Compare By",
-                                     required=True),
-                "comp%s_fiscalyear_id" % (index,):
-                    fields.many2one('account.fiscalyear', 'Fiscal year'),
-                "comp%s_period_from" % (index,):
-                    fields.many2one('account.period', 'Start period'),
-                "comp%s_period_to" % (index,):
-                    fields.many2one('account.period', 'End period'),
-                "comp%s_date_from" % (index,):
-                    fields.date("Start Date"),
-                "comp%s_date_to" % (index,):
-                    fields.date("End Date"),
-            })
-        return res
-
     def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
         res = super(AccountBalanceCommonWizard, self).fields_view_get(cr, uid, view_id, view_type, context=context, toolbar=toolbar, submenu=submenu)
+
+        res['fields'].update(self.fields_get(cr, uid,
+                             allfields=self.DYNAMIC_FIELDS,
+                             context=context, write_access=True))
 
         eview = etree.fromstring(res['arch'])
         placeholder = eview.xpath("//page[@name='placeholder']")
         if placeholder:
             placeholder = placeholder[0]
             for index in range(self.COMPARISON_LEVEL):
-                # add fields
-                res['fields']["comp%s_filter" % (index,)] = {'string': _("Compare By"), 'type': 'selection', 'selection': self.COMPARE_SELECTION, 'required': True}
-                res['fields']["comp%s_fiscalyear_id" % (index,)] = {'string': _("Fiscal Year"), 'type': 'many2one', 'relation': 'account.fiscalyear'}
-                res['fields']["comp%s_period_from" % (index,)] = {'string': _("Start Period"), 'type': 'many2one', 'relation': 'account.period'}
-                res['fields']["comp%s_period_to" % (index,)] = {'string': _("End Period"), 'type': 'many2one', 'relation': 'account.period'}
-                res['fields']["comp%s_date_from" % (index,)] = {'string': _("Start Date"), 'type': 'date'}
-                res['fields']["comp%s_date_to" % (index,)] = {'string': _("End Date"), 'type': 'date'}
-
                 page = etree.Element('page', {'name': "comp%s" % (index,), 'string': _("Comparison %s") % (index+1,)})
                 page.append(etree.Element('field', {'name': "comp%s_filter" % (index,),
                                                     'colspan': '4',
@@ -276,28 +263,31 @@ class AccountBalanceCommonWizard(osv.osv_memory):
                 start_period = end_period = periods[0]
                 if len(periods) > 1:
                     end_period = periods[1]
-            res['value'] = {fy_id_field: False, period_from_field: start_period, period_to_field: end_period, date_from_field: False, date_to_field: False}
+            res['value'] = {fy_id_field: False,
+                            period_from_field: start_period,
+                            period_to_field: end_period,
+                            date_from_field: False,
+                            date_to_field: False}
         return res
 
     def pre_print_report(self, cr, uid, ids, data, context=None):
-        data = super(AccountBalanceCommonWizard, self).pre_print_report(cr, uid, ids, data, context)
+        data = super(AccountBalanceCommonWizard, self).pre_print_report(
+            cr, uid, ids, data, context)
         if context is None:
             context = {}
 
+        # will be used to attach the report on the main account
+        data['ids'] = [data['form']['chart_account_id']]
+
         fields_to_read = ['account_ids',]
+        fields_to_read += self.DYNAMIC_FIELDS
+        vals = self.read(cr, uid, ids, fields_to_read, context=context)[0]
 
-        # comparison fields
-        for index in range(self.COMPARISON_LEVEL):
-            fields_to_read.extend([
-                "comp%s_filter" % (index,),
-                "comp%s_fiscalyear_id" % (index,),
-                "comp%s_period_from" % (index,),
-                "comp%s_period_to" % (index,),
-                "comp%s_date_from" % (index,),
-                "comp%s_date_to" % (index,),
-            ])
+        # extract the id from the m2o tuple (id, name)
+        for field in self.M2O_DYNAMIC_FIELDS:
+            if isinstance(vals[field], tuple):
+                vals[field] = vals[field][0]
 
-        vals = self.read(cr, uid, ids, fields_to_read,context=context)[0]
         vals['max_comparison'] = self.COMPARISON_LEVEL
         data['form'].update(vals)
         return data

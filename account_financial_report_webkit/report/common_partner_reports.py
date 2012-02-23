@@ -24,8 +24,7 @@
 
 from collections import defaultdict
 
-from common_report_header_webkit import CommonReportHeaderWebkit
-from tools.translate import _
+from common_reports import CommonReportHeaderWebkit
 
 
 class CommonPartnersReportHeaderWebkit(CommonReportHeaderWebkit):
