@@ -1,0 +1,171 @@
+<openerp>
+    <data noupdate="1">
+        <!-- import export -->
+        <record id="fiscal_position_import_export" model="account.fiscal.position.template">
+            <field name="name">Import/Export</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record id="fiscal_position_import_export_1" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_normale" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_import_export_2" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_specifique" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_import_export_3" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_specifique_1" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_import_export_4" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_reduite" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_import_export_5" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_super_reduite" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_import_export_6" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_acq_normale" />
+                <field name="tax_dest_id" ref="tva_import" />
+        </record>
+        <record id="fiscal_position_import_export_7" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_acq_specifique" />
+                <field name="tax_dest_id" ref="tva_import" />
+        </record>
+        <record id="fiscal_position_import_export_8" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_acq_specifique_1" />
+                <field name="tax_dest_id" ref="tva_import" />
+        </record>
+        <record id="fiscal_position_import_export_9" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_acq_reduite" />
+                <field name="tax_dest_id" ref="tva_import" />
+        </record>
+
+        <record id="fiscal_position_import_export_10" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_import_export" />
+                <field name="tax_src_id" ref="tva_acq_super_reduite" />
+                <field name="tax_dest_id" ref="tva_import" />
+        </record>
+
+
+        <!-- intracom  tva_intra_0 -->
+        <record id="fiscal_position_acq_liv_intra" model="account.fiscal.position.template">
+            <field name="name">Acquisitions/Livraisons intacom. (vers assujettis)</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record id="fiscal_position_acq_liv_intra_1" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_normale" />
+                <field name="tax_dest_id" ref="tva_intra_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_2" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_specifique_1" />
+                <field name="tax_dest_id" ref="tva_intra_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_3" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_reduite" />
+                <field name="tax_dest_id" ref="tva_intra_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_4" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_super_reduite" />
+                <field name="tax_dest_id" ref="tva_intra_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_5" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_acq_normale" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_6" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_acq_specifique_1" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_7" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_acq_reduite" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_8" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_acq_super_reduite" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_9" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_imm_normale" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_10" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_imm_specifique" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_11" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_imm_specifique_1" />
+                <field name="tax_dest_id" ref="tva_export_0" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_12" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_acq_normale" />
+                <field name="tax_dest_id" ref="tva_acq_intra_normale" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_13" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_acq_specifique_1" />
+                <field name="tax_dest_id" ref="tva_acq_intra_specifique_1" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_14" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_acq_reduite" />
+                <field name="tax_dest_id" ref="tva_acq_intra_reduite" />
+        </record>
+        <record id="fiscal_position_acq_liv_intra_15" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_acq_liv_intra" />
+                <field name="tax_src_id" ref="tva_acq_super_reduite" />
+                <field name="tax_dest_id" ref="tva_acq_intra_super_reduite" />
+        </record>
+
+
+        <!-- intracom non ass. -->
+        <record id="fiscal_position_intra_n_asuj" model="account.fiscal.position.template">
+            <field name="name">Livraisons intracom. (vers non assujettis)</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        <record id="fiscal_position_intra_n_asuj_1" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_intra_n_asuj" />
+                <field name="tax_src_id" ref="tva_normale" />
+                <field name="tax_dest_id" ref="tva_intra_normale" />
+        </record>
+        <record id="fiscal_position_intra_n_asuj_2" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_intra_n_asuj" />
+                <field name="tax_src_id" ref="tva_specifique_1" />
+                <field name="tax_dest_id" ref="tva_intra_specifique_1" />
+        </record>
+        <record id="fiscal_position_intra_n_asuj_3" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_intra_n_asuj" />
+                <field name="tax_src_id" ref="tva_reduite" />
+                <field name="tax_dest_id" ref="tva_intra_reduite" />
+        </record>
+        <record id="fiscal_position_intra_n_asuj_4" model="account.fiscal.position.tax.template">
+                <field name="position_id" ref="fiscal_position_intra_n_asuj" />
+                <field name="tax_src_id" ref="tva_super_reduite" />
+                <field name="tax_dest_id" ref="tva_intra_super_reduite" />
+        </record>
+    </data>
+</openerp>

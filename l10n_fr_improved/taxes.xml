@@ -1,0 +1,682 @@
+<openerp>
+    <data noupdate="1">
+        <record model="account.tax.template" id="tva_normale">
+            <field name="name">TVA collectée (vente) 19,6%</field>
+            <field name="description">01</field>
+            <!-- code -->
+            <field name="amount" eval="0.196"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_col_196_ht"/>
+            <field name="tax_code_id" ref="tax_col_196"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_col_196_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            
+            <field name="ref_tax_code_id" ref="tax_col_196"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_specifique">
+            <field name="name">TVA collectée (vente) 8,5%</field>
+            <field name="description">02</field>
+            <field name="amount" eval="0.085"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_col_85_ht"/>
+            <field name="tax_code_id" ref="tax_col_85"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_col_85_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_col_85"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_specifique_1">
+            <field name="name">TVA collectée (vente) 7,0%</field>
+            <field name="description">24</field>
+            <field name="amount" eval="0.07"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_col_70_ht"/>
+            <field name="tax_code_id" ref="tax_col_70"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_col_70_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_col_70"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_reduite">
+            <field name="name">TVA collectée (vente) 5,5%</field>
+            <field name="description">03</field>
+            <field name="amount" eval="0.055"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_col_55_ht"/>
+            <field name="tax_code_id" ref="tax_col_55"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_col_55_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_col_55"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_super_reduite">
+            <field name="name">TVA collectée (vente) 2,1%</field>
+            <field name="description">04</field>
+            <field name="amount" eval="0.021"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_col_21_ht"/>
+            <field name="tax_code_id" ref="tax_col_21"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_col_21_ht"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_col_21"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+
+        <!-- ACHATS -->
+        <record model="account.tax.template" id="tva_acq_normale">
+            <field name="name">TVA déductible (achat) 19,6%</field>
+            <field name="description">05</field>
+            <field name="amount" eval="0.196"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_acq_196_ht"/>
+            <field name="tax_code_id" ref="tax_acq_196"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+            
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+            
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="ref_base_code_id" ref="tax_acq_196_ht"/>
+            <field name="ref_tax_code_id" ref="tax_acq_196"/>
+            
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_acq_specifique">
+            <field name="name">TVA déductible (achat) 8,5%</field>
+            <field name="description">06</field>
+            <field name="amount" eval="0.085"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_acq_85_ht"/>
+            <field name="tax_code_id" ref="tax_acq_85"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_acq_85_ht"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_acq_85"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_acq_specifique_1">
+            <field name="name">TVA déductible (achat) 7,0%</field>
+            <field name="description">25</field>
+            <field name="amount" eval="0.07"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_acq_70_ht"/>
+            <field name="tax_code_id" ref="tax_acq_70"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_acq_70_ht"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_acq_70"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_acq_reduite">
+            <field name="name">TVA déductible (achat) 5,5%</field>
+            <field name="description">07</field>
+            <field name="amount" eval="0.055"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_acq_55_ht"/>
+            <field name="tax_code_id" ref="tax_acq_55"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_acq_55_ht"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_acq_55"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_acq_super_reduite">
+            <field name="name">TVA déductible (achat) 2,1%</field>
+            <field name="description">08</field>
+            <field name="amount" eval="0.021"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_acq_21_ht"/>
+            <field name="tax_code_id" ref="tax_acq_21"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_acq_21_ht"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_acq_21"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record model="account.tax.template" id="tva_import">
+            <field name="name">TVA import</field>
+            <field name="description">29</field>
+            <field name="amount" eval="0.0"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_misc_imp"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44566'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_misc_imp"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+
+        <!-- IMMOBILISATIONS (achats) -->
+        <record model="account.tax.template" id="tva_imm_normale">
+            <field name="name">TVA déductible sur immobilisation 19,6%</field>
+            <field name="description">09</field>
+            <field name="amount" eval="0.196"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_imm_196_ht"/>
+            <field name="tax_code_id" ref="tax_imm_196"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44562'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44562'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_imm_196_ht"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_imm_196"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_imm_specifique">
+            <field name="name">TVA déductible sur immobilisation 8,5%</field>
+            <field name="description">10</field>
+            <field name="amount" eval="0.085"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_imm_85_ht"/>
+            <field name="tax_code_id" ref="tax_imm_85"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44562'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44562'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_imm_85_ht"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_imm_85"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_imm_specifique_1">
+            <field name="name">TVA déductible sur immobilisation 7,0%</field>
+            <field name="description">26</field>
+            <field name="amount" eval="0.07"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_imm_70_ht"/>
+            <field name="tax_code_id" ref="tax_imm_70"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+            
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44562'), ('note', '=', 'improved')]"/>
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44562'), ('note', '=', 'improved')]"/>
+
+            <field name="ref_base_code_id" ref="tax_imm_70_ht"/>
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_imm_70"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+
+        <!-- VENTES INTRACOMMUNAUTAIRE particulier -->
+        <record model="account.tax.template" id="tva_intra_normale">
+            <field name="name">TVA s/livraisons intracom. (vers non assujettis) 19,6%</field>
+            <!-- ventes -->
+            <field name="description">13</field>
+            <field name="amount" eval="-0.196"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_196_ht"/>
+            <field name="tax_code_id" ref="tax_intra_196"/>
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_code_id" ref="tax_intra_196_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_196"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record model="account.tax.template" id="tva_intra_specifique_1">
+            <field name="name">TVA s/livraisons intracom. (vers non assujettis) 7,0%</field>
+            <field name="description">27</field>
+            <field name="amount" eval="1.00"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_70_ht"/>
+            <field name="tax_code_id" ref="tax_intra_70"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_code_id" ref="tax_intra_70_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_70"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+
+        <record model="account.tax.template" id="tva_intra_reduite">
+            <field name="name">TVA s/livraisons intracom. (vers non assujettis) 5,5%</field>
+            <field name="description">15</field>
+            <field name="amount" eval="-0.055"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_55_ht"/>
+            <field name="tax_code_id" ref="tax_intra_55"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_code_id" ref="tax_intra_55_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_55"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_intra_super_reduite">
+            <field name="name">TVA s/livraisons intracom. (vers non assujettis) 2,1%</field>
+            <field name="description">16</field>
+            <field name="amount" eval="-0.021"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_21_ht"/>
+            <field name="tax_code_id" ref="tax_intra_21"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_code_id" ref="tax_intra_21_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_21"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <!-- Ventes INTRACOMMUNAUTAIRE entrprises -->
+        <record model="account.tax.template" id="tva_intra_0">
+            <field name="name">TVA s/livraisons intracom. (vers assujettis) 0.0%</field>
+            <field name="description">23</field>
+            <field name="amount" eval="0.00"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_0_ht"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_code_id" ref="tax_intra_0_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <!-- ACHATS INTRACOMMUNAUTAIRE -->
+        <!-- 19.6 -->
+        <record model="account.tax.template" id="tva_acq_intra_normale">
+            <field name="name">TVA sur acquisition intracom. à 19,6%</field>
+            <field name="description">17</field>
+            <field name="amount" eval="1"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_acq_196_ht"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="ref_base_code_id" ref="tax_intra_acq_196_ht"/>
+            
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_sign" eval="1"/>
+            
+            <field name="child_depend" eval="True"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_acq_intra_normale_enf_1">
+            <field name="name">TVA due sur acq. intracom. à 19.6%</field>
+            <field name="description">13a</field>
+            <field name="amount" eval="-0.196"/>
+            <field name="type">percent</field>
+            <field name="sequence" eval="2"/>
+
+            <field name="tax_code_id" ref="tax_intra_196_acq_due"/>
+            <field name="base_sign" eval="1"/>
+            <field name="tax_sign" eval="1"/>
+            <field name="parent_id" ref="tva_acq_intra_normale"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_196_acq_due"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record model="account.tax.template" id="tva_acq_intra_normale_enf_2">
+            <field name="name">TVA déductible sur acq. intracom. à 19.6%</field>
+            <field name="description">13b</field>
+            <field name="amount" eval="0.196"/>
+            <field name="type">percent</field>
+            <field name="sequence" eval="2"/>
+
+            <field name="tax_code_id" ref="tax_intra_acq_196"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+            <field name="parent_id" ref="tva_acq_intra_normale"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','445662'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','445662'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_acq_196"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <!-- 7.0 -->
+        <record model="account.tax.template" id="tva_acq_intra_specifique_1">
+            <field name="name">TVA déductible intracommunautaire 7,0%</field>
+            <field name="description">28</field>
+            <field name="amount" eval="1"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_acq_70_ht"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="ref_base_code_id" ref="tax_intra_acq_70_ht"/>
+            
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_sign" eval="1"/>
+            
+            <field name="child_depend" eval="True"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        
+        <record model="account.tax.template" id="tva_acq_intra_specifique_1_enf_1">
+            <field name="name">TVA due sur acq. intracom. à 7.0%</field>
+            <field name="description">28a</field>
+            <field name="amount" eval="-0.07"/>
+            <field name="type">percent</field>
+            <field name="sequence" eval="2"/>
+
+            <field name="tax_code_id" ref="tax_intra_70_acq_due"/>
+            <field name="base_sign" eval="1"/>
+            <field name="tax_sign" eval="1"/>
+            <field name="parent_id" ref="tva_acq_intra_specifique_1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_70_acq_due"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record model="account.tax.template" id="tva_acq_intra_specifique_1_enf_2">
+            <field name="name">TVA déductible sur acq. intracom. à 7.0%</field>
+            <field name="description">28b</field>
+            <field name="amount" eval="0.07"/>
+            <field name="type">percent</field>
+            <field name="sequence" eval="2"/>
+
+            <field name="tax_code_id" ref="tax_intra_acq_70"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+            <field name="parent_id" ref="tva_acq_intra_specifique_1"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','445662'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','445662'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_acq_70"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <!-- 5.5 -->
+        <record model="account.tax.template" id="tva_acq_intra_reduite">
+            <field name="name">TVA déductible intracommunautaire 5,5%</field>
+            <field name="description">19</field>
+            <field name="amount" eval="1"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_acq_55_ht"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="ref_base_code_id" ref="tax_intra_acq_55_ht"/>
+            
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_sign" eval="1"/>
+            
+            <field name="child_depend" eval="True"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record model="account.tax.template" id="tva_acq_intra_reduite_enf_1">
+            <field name="name">TVA due sur acq. intracom. à 5.5%</field>
+            <field name="description">19a</field>
+            <field name="amount" eval="-0.055"/>
+            <field name="type">percent</field>
+            <field name="sequence" eval="2"/>
+
+            <field name="tax_code_id" ref="tax_intra_55_acq_due"/>
+            <field name="base_sign" eval="1"/>
+            <field name="tax_sign" eval="1"/>
+            <field name="parent_id" ref="tva_acq_intra_reduite"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_55_acq_due"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record model="account.tax.template" id="tva_acq_intra_reduite_enf_2">
+            <field name="name">TVA déductible sur acq. intracom. à 5.5%</field>
+            <field name="description">19b</field>
+            <field name="amount" eval="0.055"/>
+            <field name="type">percent</field>
+            <field name="sequence" eval="2"/>
+
+            <field name="tax_code_id" ref="tax_intra_acq_55"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+            <field name="parent_id" ref="tva_acq_intra_reduite"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','445662'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','445662'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_acq_55"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        <!-- 2.2 -->
+        <record model="account.tax.template" id="tva_acq_intra_super_reduite">
+            <field name="name">TVA déductible intracommunautaire 2,1%</field>
+            <field name="description">20</field>
+            <field name="amount" eval="1"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_intra_acq_21_ht"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+
+            <field name="ref_base_code_id" ref="tax_intra_acq_21_ht"/>
+            
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_sign" eval="1"/>
+            
+            <field name="child_depend" eval="True"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record model="account.tax.template" id="tva_acq_intra_super_reduite_enf_1">
+            <field name="name">TVA due sur acq. intracom. à 2.1%</field>
+            <field name="description">20a</field>
+            <field name="amount" eval="-0.021"/>
+            <field name="type">percent</field>
+            <field name="sequence" eval="2"/>
+
+            <field name="tax_code_id" ref="tax_intra_21"/>
+            <field name="base_sign" eval="1"/>
+            <field name="tax_sign" eval="1"/>
+            <field name="parent_id" ref="tva_acq_intra_super_reduite"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','445662'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','445662'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_21"/>
+            <field name="ref_tax_sign" eval="-1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+        
+        <record model="account.tax.template" id="tva_acq_intra_super_reduite_enf_2">
+            <field name="name">TVA déductible sur acq. intracom. à 2.1%</field>
+            <field name="description">20b</field>
+            <field name="amount" eval="0.021"/>
+            <field name="type">percent</field>
+            <field name="sequence" eval="2"/>
+
+            <field name="tax_code_id" ref="tax_intra_21_acq_due"/>
+            <field name="base_sign" eval="-1"/>
+            <field name="tax_sign" eval="-1"/>
+            <field name="parent_id" ref="tva_acq_intra_super_reduite"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','4452'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_sign" eval="1"/>
+            <field name="ref_tax_code_id" ref="tax_intra_21_acq_due"/>
+            <field name="ref_tax_sign" eval="1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+
+        <!-- AUTRE -->
+        <record model="account.tax.template" id="tva_0">
+            <field name="name">TVA 0%</field>
+            <field name="description">21</field>
+            <field name="amount" eval="0.00"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_misc_0_ht"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_code_id" ref="tax_misc_0_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="type_tax_use">purchase</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+        <record model="account.tax.template" id="tva_export_0">
+            <field name="name">TVA 0% exportation</field>
+            <field name="description">22</field>
+            <field name="amount" eval="0.00"/>
+            <field name="type">percent</field>
+            <field name="base_code_id" ref="tax_export_0_ht"/>
+
+            <field name="account_collected_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]" />
+            <field name="account_paid_id" model="account.account.template" search="[('code','=','44571'), ('note', '=', 'improved')]" />
+
+            <field name="ref_base_code_id" ref="tax_export_0_ht"/>
+            <field name="ref_base_sign" eval="-1"/>
+            <field name="type_tax_use">sale</field>
+            <field name="chart_template_id" ref="l10n_fr_pcg_imp_chart_template"/>
+        </record>
+
+    </data>
+</openerp>
