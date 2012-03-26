@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_res_partner_filter_fiscal_cat" model="ir.ui.view">
+            <field name="name">res.partner.select.fiscal.cat</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_res_partner_filter"/>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <data>
+                    <field name="user_id" position="after">
+                        <field name="fiscal_category_id"/>
+                    </field>
+                    <filter string="Salesman" position="after">
+                        <separator orientation="vertical"/>
+                        <filter string="Fiscal Category" icon="terp-stock_symbol-selection" domain="[]" context="{'group_by':'fiscal_category_id'}" />
+                    </filter>
+                </data>
+            </field>
+        </record>
+
+        <record id="view_partner_tree_fiscal_cat" model="ir.ui.view">
+            <field name="name">res.partner.tree.fiscal.cat</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree"/>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <data>
+                    <tree string="Partners" position="inside">
+                       <field name="fiscal_category_id" invisible="True"/>
+                    </tree>
+                </data>
+            </field>
+        </record>
+
+        <record id="view_partner_form_fiscal_cat" model="ir.ui.view">
+            <field name="name">res.partner.form.fiscal.cat</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <data>
+                    <field name="category_id" position="before">
+                        <field name="fiscal_category_id"/>
+                    </field>
+                </data>
+            </field>
+        </record>
+
+    </data>
+</openerp>
