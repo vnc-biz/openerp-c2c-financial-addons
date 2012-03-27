@@ -11,7 +11,7 @@
                 <data>
                     <separator string="Configuration" position="before">
                         <separator string="Partner" colspan="4"/>
-                        <field name="partner_fiscal_category_id"/>
+                        <field name="partner_fiscal_category_ids"/>
                         <newline/>
                     </separator>
                 </data>
@@ -26,7 +26,7 @@
             <field name="arch" type="xml">
                 <data>
                     <field name="to_state" position="after">
-                        <field name="partner_fiscal_category_id"/>
+                        <field name="partner_fiscal_category_ids"/>
                     </field>
                 </data>
             </field>
@@ -41,7 +41,7 @@
                 <data>
                     <separator string="Configuration" position="before">
                         <separator string="Partner" colspan="4"/>
-                        <field name="partner_fiscal_category_id"/>
+                        <field name="partner_fiscal_category_ids"/>
                         <newline/>
                     </separator>
                 </data>
@@ -56,7 +56,7 @@
             <field name="arch" type="xml">
                 <data>
                     <field name="to_state" position="after">
-                        <field name="partner_fiscal_category_id"/>
+                        <field name="partner_fiscal_category_ids"/>
                     </field>
                 </data>
             </field>
