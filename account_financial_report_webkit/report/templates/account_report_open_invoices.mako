@@ -140,6 +140,11 @@
                           <%
                           total_debit += line.get('debit') or 0.0
                           total_credit += line.get('credit') or 0.0
+
+                          label_elements = [line.get('lname') or '']
+                          if line.get('invoice_number'):
+                            label_elements.append("(%s)" % (line['invoice_number'],))
+                          label = ' '.join(label_elements)
                           %>
                             <div class="act_as_row lines ${line.get('is_from_previous_periods') and 'open_invoice_previous_line' or ''} ${line.get('is_clearance_line') and 'clearance_line' or ''}">
                               ## date
@@ -153,7 +158,7 @@
                               ## partner
                               <div class="act_as_cell overflow_ellipsis">${line.get('partner_name') or ''}</div>
                               ## label
-                              <div class="act_as_cell">${line.get('lname') or ''}</div>
+                              <div class="act_as_cell">${label}</div>
                               ## reconcile
                               <div class="act_as_cell">${line.get('rec_name') or ''}</div>
                               ## maturity date

@@ -1,0 +1,435 @@
+<openerp>
+    <data noupdate="1">
+        <record id="vat_code_chart_root" model="account.tax.code.template">
+            <field name="name">Plan de Taxes France amélioré</field>
+        </record>
+        <!-- collectée -->
+        <record model="account.tax.code.template" id="tax_col_VENTES">
+          <field name="name">A) VENTES</field>
+          <field name="code"></field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="vat_code_chart_root"/>
+        </record> 
+        
+        <record model="account.tax.code.template" id="tax_col_ht">
+          <field name="name">Base H.T. TVA collectée</field>
+          <field name="code">01</field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_col_VENTES"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_col_196_ht">
+          <field name="name">Base H.T sur TVA collectée à 19.6%</field>
+          <field name="code">08</field>
+          <field name="parent_id" ref="tax_col_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_col_85_ht">
+          <field name="name">Base H.T sur TVA collectée à 8.5%</field>
+          <field name="code">10</field>
+          <field name="parent_id" ref="tax_col_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_col_70_ht">
+          <field name="name">Base H.T sur TVA collectée à 7.0%</field>
+          <field name="code">09B</field>
+          <field name="parent_id" ref="tax_col_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_col_55_ht">
+          <field name="name">Base H.T sur TVA collectée à 5.5%</field>
+          <field name="code">09</field>
+          <field name="parent_id" ref="tax_col_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_col_21_ht">
+          <field name="name">Base H.T sur TVA collectée à 2.1%</field>
+          <field name="code">11</field>
+          <field name="parent_id" ref="tax_col_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+
+        <record model="account.tax.code.template" id="tax_col">
+          <field name="name">TVA collectée</field>
+          <field name="code">16</field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_col_VENTES"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_col_196">
+          <field name="name">TVA collectée à 19.6%</field>
+          <field name="code">08</field>
+          <field name="parent_id" ref="tax_col"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_col_85">
+          <field name="name">TVA collectée à 8.5%</field>
+          <field name="code">10</field>
+          <field name="parent_id" ref="tax_col"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_col_70">
+          <field name="name">TVA collectée à 7.0%</field>
+          <field name="code">09B</field>
+          <field name="parent_id" ref="tax_col"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_col_55">
+          <field name="name">TVA collectée à 5.5%</field>
+          <field name="code">09</field>
+          <field name="parent_id" ref="tax_col"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_col_21">
+          <field name="name">TVA collectée à 2.1%</field>
+          <field name="code">11</field>
+          <field name="parent_id" ref="tax_col"/>
+          <field name="sign">1.00</field>
+        </record>
+
+        <!-- achat -->
+        <record model="account.tax.code.template" id="tax_col_ACHATS_ABS">
+          <field name="name">B) ACHATS AUTRES BIENS ET SERVICES</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="vat_code_chart_root"/>
+          <field name="sign">1.00</field>
+        </record>
+
+        <record model="account.tax.code.template" id="tax_acq_ht">
+          <field name="name">Base H.T. sur TVA déductible</field>
+          <field name="code"></field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_col_ACHATS_ABS"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_acq_196_ht">
+          <field name="name">Base H.T. sur TVA déductible à 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_acq_85_ht">
+          <field name="name">Base H.T. sur TVA déductible à 8.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_acq_70_ht">
+          <field name="name">Base H.T. sur TVA déductible à 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_acq_55_ht">
+          <field name="name">Base H.T. sur TVA déductible à 5.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_acq_21_ht">
+          <field name="name">Base H.T. sur TVA déductible à 2.1%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+
+        <record model="account.tax.code.template" id="tax_acq">
+          <field name="name">TVA déductible</field>
+          <field name="code">20</field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_col_ACHATS_ABS"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_acq_196">
+          <field name="name">TVA déductible à 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_acq_85">
+          <field name="name">TVA déductible à 8.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_acq_70">
+          <field name="name">TVA déductible à 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_acq_55">
+          <field name="name">TVA déductible à 5.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_acq_21">
+          <field name="name">TVA déductible à 2.1%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_acq"/>
+          <field name="sign">1.00</field>
+        </record>
+
+        <record model="account.tax.code.template" id="tax_ACHATS_IMMO">
+          <field name="name">C) ACHATS IMMOBILISATIONS</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="vat_code_chart_root"/>
+          <field name="sign">1.00</field>
+        </record>
+
+        <record model="account.tax.code.template" id="tax_imm_ht">
+          <field name="name">Base H.T. sur TVA déductible sur immobilisations</field>
+          <field name="code"></field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_ACHATS_IMMO"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_imm_196_ht">
+          <field name="name">Base H.T. sur TVA déductible sur immo. à 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_imm_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_imm_85_ht">
+          <field name="name">Base H.T. sur TVA déductible sur immo. à 8.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_imm_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_imm_70_ht">
+          <field name="name">Base H.T. sur TVA déductible sur immo. à 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_imm_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_imm">
+          <field name="name">TVA déductible sur immo.</field>
+          <field name="code">19</field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_ACHATS_IMMO"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_imm_196">
+          <field name="name">TVA déductible sur immo. 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_imm"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_imm_85">
+          <field name="name">TVA déductible sur immo. 8.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_imm"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_imm_70">
+          <field name="name">TVA déductible sur immo. 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_imm"/>
+          <field name="sign">1.00</field>
+        </record>
+        <!-- intracommunautaire -->
+        
+        <record model="account.tax.code.template" id="tax_INTRACOMM">
+          <field name="name">D) LIVRAISONS INTRACOMMUNAUTAIRES</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="vat_code_chart_root"/>
+          <field name="sign">1.00</field>
+        </record>
+        
+        <record model="account.tax.code.template" id="tax_intra_ht">
+          <field name="name">Base H.T. sur livraisons intracom. (vers non assujetti)</field>
+          <field name="code"></field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_INTRACOMM"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_intra_196_ht">
+          <field name="name">Base H.T. sur TVA due intracom. à 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_70_ht">
+          <field name="name">Base H.T. sur TVA due intracom. à 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_55_ht">
+          <field name="name">Base H.T. sur TVA due intracom. à 5.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_21_ht">
+          <field name="name">Base H.T. sur TVA due intracom. à 2.1%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+
+        <record model="account.tax.code.template" id="tax_intra">
+          <field name="name">TVA due intracom.</field>
+          <field name="code"></field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_INTRACOMM"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_intra_196">
+          <field name="name">TVA due intracom. à 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_70">
+          <field name="name">TVA due intracom. à 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_55">
+          <field name="name">TVA due intracom. à 5.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_21">
+          <field name="name">TVA due intracom. à 2.1%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra"/>
+          <field name="sign">1.00</field>
+        </record>
+                
+        <!-- ACQ intra due -->
+        <record model="account.tax.code.template" id="tax_INTRACOMM_ACQ_DUE">
+          <field name="name">E) ACQUISITIONS INTRACOMMUNAUTAIRES</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="vat_code_chart_root"/>
+          <field name="sign">1.00</field>
+        </record>
+        
+        <record model="account.tax.code.template" id="tax_intra_acq_ht">
+          <field name="name">Base H.T. sur acquisitions intracom.</field>
+          <field name="code">03</field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_INTRACOMM_ACQ_DUE"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_intra_acq_196_ht">
+          <field name="name">Base H.T. sur acquisitions intracom. à 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_acq_70_ht">
+          <field name="name">Base H.T.sur acquisitions intracom. à 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_acq_55_ht">
+          <field name="name">Base H.T. sur acquisitions intracom. à 5.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_acq_21_ht">
+          <field name="name">Base H.T. sur acquisitions intracom. à 2.1%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+                
+        <record model="account.tax.code.template" id="tax_intra_acq_due">
+          <field name="name">TVA due sur acquisitions intracom.</field>
+          <field name="code"></field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_INTRACOMM_ACQ_DUE"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_intra_196_acq_due">
+          <field name="name">TVA due sur acquisitions à 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq_due"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_70_acq_due">
+          <field name="name">TVA due sur acquisitions à 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq_due"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_55_acq_due">
+          <field name="name">TVA due sur acquisitions à 5.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq_due"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_21_acq_due">
+          <field name="name">TVA due sur acquisitions à 2.1%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq_due"/>
+          <field name="sign">1.00</field>
+        </record>
+                
+        <record model="account.tax.code.template" id="tax_intra_acq">
+          <field name="name">TVA déductible sur acquisitions intracom.</field>
+          <field name="code">17</field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="tax_INTRACOMM_ACQ_DUE"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_intra_acq_196">
+          <field name="name">TVA déductible intracom. à 19.6%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_acq_70">
+          <field name="name">TVA déductible intracom. à 7.0%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_acq_55">
+          <field name="name">TVA déductible intracom. à 5.5%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_acq_21">
+          <field name="name">TVA déductible intracom. à 2.1%</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="tax_intra_acq"/>
+          <field name="sign">1.00</field>
+        </record>    
+                
+
+        <record model="account.tax.code.template" id="tax_0_ht">
+          <field name="name">F) OPERATIONS NON IMPOSABLES</field>
+          <field name="code"></field>
+          <field name="sign">1.00</field>
+          <field name="parent_id" ref="vat_code_chart_root"/>
+        </record> 
+        <record model="account.tax.code.template" id="tax_export_0_ht">
+          <field name="name">Exportations (hors U.E.)</field>
+          <field name="code">04</field>
+          <field name="parent_id" ref="tax_0_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_intra_0_ht">
+          <field name="name">Livraisons intracom. à 0%</field>
+          <field name="code">06</field>
+          <field name="parent_id" ref="tax_0_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_misc_0_ht">
+          <field name="name">Autres oprérations non imposables</field>
+          <field name="code">05</field>
+          <field name="parent_id" ref="tax_0_ht"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="AUTRES_OP_IMP">
+          <field name="name">G) AUTRES OPRERATIONS IMPOSABLES</field>
+          <field name="code"></field>
+          <field name="parent_id" ref="vat_code_chart_root"/>
+          <field name="sign">1.00</field>
+        </record>
+        <record model="account.tax.code.template" id="tax_misc_imp">
+          <field name="name">Importations</field>
+          <field name="code">02</field>
+          <field name="parent_id" ref="AUTRES_OP_IMP"/>
+          <field name="sign">1.00</field>
+        </record>
+    </data>
+</openerp>
