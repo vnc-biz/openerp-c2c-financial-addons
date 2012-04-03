@@ -28,7 +28,11 @@ class res_partner(osv.osv):
 
     _columns = {
         'fiscal_category_id': fields.many2one(
-            'res.partner.category', 'Fiscal Category')
+            'res.partner.category',
+            string='Fiscal Category',
+            help="Used to automatically determine the Fiscal " \
+                 "Position according to the Fiscal Position Rules. \n" \
+                 "(Except if a Fiscal Position has been defined)")
     }
 
 res_partner()

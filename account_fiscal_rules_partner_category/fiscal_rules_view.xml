@@ -9,11 +9,11 @@
             <field name="type">form</field>
             <field name="arch" type="xml">
                 <data>
-                    <separator string="Configuration" position="before">
-                        <separator string="Partner" colspan="4"/>
-                        <field name="partner_fiscal_category_id"/>
-                        <newline/>
-                    </separator>
+                    <page string="States" position="after">
+                        <page string="Partner">
+                            <field name="partner_fiscal_category_ids" />
+                        </page>
+                    </page>
                 </data>
             </field>
         </record>
@@ -22,11 +22,11 @@
             <field name="name">account.fiscal.position.rule.template.tree</field>
             <field name="model">account.fiscal.position.rule.template</field>
             <field name="inherit_id" ref="account_fiscal_position_rule.view_account_fiscal_position_rule_template_tree"/>
-            <field name="type">form</field>
+            <field name="type">tree</field>
             <field name="arch" type="xml">
                 <data>
-                    <field name="to_state" position="after">
-                        <field name="partner_fiscal_category_id"/>
+                    <field name="to_state_ids" position="after">
+                        <field name="partner_fiscal_category_ids" />
                     </field>
                 </data>
             </field>
@@ -39,11 +39,11 @@
             <field name="type">form</field>
             <field name="arch" type="xml">
                 <data>
-                    <separator string="Configuration" position="before">
-                        <separator string="Partner" colspan="4"/>
-                        <field name="partner_fiscal_category_id"/>
-                        <newline/>
-                    </separator>
+                    <page string="States" position="after">
+                        <page string="Partner">
+                            <field name="partner_fiscal_category_ids" />
+                        </page>
+                    </page>
                 </data>
             </field>
         </record>
@@ -52,11 +52,11 @@
             <field name="name">account.fiscal.position.rule.tree.custgroup</field>
             <field name="model">account.fiscal.position.rule</field>
             <field name="inherit_id" ref="account_fiscal_position_rule.view_account_fiscal_position_rule_tree"/>
-            <field name="type">form</field>
+            <field name="type">tree</field>
             <field name="arch" type="xml">
                 <data>
-                    <field name="to_state" position="after">
-                        <field name="partner_fiscal_category_id"/>
+                    <field name="to_state_ids" position="after">
+                        <field name="partner_fiscal_category_ids"/>
                     </field>
                 </data>
             </field>
