@@ -32,7 +32,7 @@ class account_fiscal_position_rule(osv.osv):
             rel='account_fiscal_rule_res_country_from_rel',
             id1='rule_id', id2='country_id',
             string='Origin Countries'),
-         'from_state_ids' : fields.many2many(
+         'from_state_ids': fields.many2many(
              'res.country.state',
              rel='account_fiscal_rule_state_from_rel',
              id1='rule_id', id2='state_id',
@@ -42,7 +42,7 @@ class account_fiscal_position_rule(osv.osv):
             rel='account_fiscal_rule_res_country_to_rel',
             id1='rule_id', id2='country_id',
             string='Destination Countries'),
-        'to_state_ids' : fields.many2many(
+        'to_state_ids': fields.many2many(
             'res.country.state',
             rel='account_fiscal_rule_state_to_rel',
             id1='rule_id', id2='state_id',
@@ -93,13 +93,17 @@ class account_fiscal_position_rule(osv.osv):
         domain = super(account_fiscal_position_rule, self)._map_domain(
             cr, uid, partner, partner_address, company, context=context)
 
+        new_domain = []
         for clause in domain:
-            # skip the operators '|', '&'
-            if not isinstance(clause, (tuple, list)):
-                continue
-            if clause[0] in self.m2o_replaced_fields:
-                clause[0] = self._m2m_field_name(clause[0])
-        return domain
+            # check type to skip the operators '|', '&'
+            if (isinstance(clause, (tuple, list)) and
+               clause[0] in self.m2o_replaced_fields):
+                new_domain.append(
+                    (self._m2m_field_name(clause[0]), clause[1], clause[2]))
+            else:
+                new_domain.append(clause)
+
+        return new_domain
 
 account_fiscal_position_rule()
 
@@ -114,7 +118,7 @@ class account_fiscal_position_rule_template(osv.osv):
             rel='account_fiscal_rule_tmpl_res_country_from_rel',
             id1='rule_id', id2='country_id',
             string='Origin Countries'),
-        'from_state_ids' : fields.many2many(
+        'from_state_ids': fields.many2many(
                     'res.country.state',
                     rel='account_fiscal_rule_tmpl_state_from_rel',
                     id1='rule_id', id2='state_id',
@@ -124,7 +128,7 @@ class account_fiscal_position_rule_template(osv.osv):
             rel='account_fiscal_rule_tmpl_res_country_to_rel',
             id1='rule_id', id2='country_id',
             string='Destination Countries'),
-        'to_state_ids' : fields.many2many(
+        'to_state_ids': fields.many2many(
                     'res.country.state',
                     rel='account_fiscal_rule_tmpl_state_to_rel',
                     id1='rule_id', id2='state_id',
