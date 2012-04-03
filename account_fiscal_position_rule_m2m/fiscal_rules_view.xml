@@ -9,7 +9,7 @@
             <field name="type">form</field>
             <field name="arch" type="xml">
                 <data>
-                    <separator string="Form" position="replace"/>
+                    <separator string="From" position="replace"/>
                     <separator string="To" position="replace"/>
                     <field name="from_country" position="replace"/>
                     <field name="from_state" position="replace"/>
@@ -17,7 +17,7 @@
                     <field name="to_state" position="replace"/>
                     <field name="description" position="after">
                         <separator string="Conditions" colspan="4"/>
-                        <notebook>
+                        <notebook colspan="4">
                             <page string="Countries">
                                 <field name="from_country_ids"/>
                                 <field name="to_country_ids" />
@@ -62,7 +62,7 @@
             <field name="type">form</field>
             <field name="arch" type="xml">
                 <data>
-                    <separator string="Form" position="replace"/>
+                    <separator string="From" position="replace"/>
                     <separator string="To" position="replace"/>
                     <field name="from_country" position="replace"/>
                     <field name="from_state" position="replace"/>
@@ -70,7 +70,7 @@
                     <field name="to_state" position="replace"/>
                     <field name="description" position="after">
                         <separator string="Conditions" colspan="4"/>
-                        <notebook>
+                        <notebook colspan="4">
                             <page string="Countries">
                                 <field name="from_country_ids"/>
                                 <field name="to_country_ids" />
