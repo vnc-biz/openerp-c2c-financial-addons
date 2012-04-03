@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_account_fiscal_position_rule_template_form_m2m" model="ir.ui.view">
+            <field name="name">account.fiscal.position.rule.template.form.m2m</field>
+            <field name="model">account.fiscal.position.rule.template</field>
+            <field name="inherit_id" ref="account_fiscal_position_rule.view_account_fiscal_position_rule_template_form"/>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <data>
+                    <separator string="Form" position="replace"/>
+                    <separator string="To" position="replace"/>
+                    <field name="from_country" position="replace"/>
+                    <field name="from_state" position="replace"/>
+                    <field name="to_country" position="replace"/>
+                    <field name="to_state" position="replace"/>
+                    <field name="description" position="after">
+                        <separator string="Conditions" colspan="4"/>
+                        <notebook>
+                            <page string="Countries">
+                                <field name="from_country_ids"/>
+                                <field name="to_country_ids" />
+                            </page>
+                            <page string="States">
+                                <field name="from_state_ids"/>
+                                <field name="to_state_ids"/>
+                            </page>
+                        </notebook>
+                    </field>
+                </data>
+            </field>
+        </record>
+
+        <record id="view_account_fiscal_position_rule_template_tree_m2m" model="ir.ui.view">
+            <field name="name">account.fiscal.position.rule.template.m2m</field>
+            <field name="model">account.fiscal.position.rule.template</field>
+            <field name="inherit_id" ref="account_fiscal_position_rule.view_account_fiscal_position_rule_template_tree"/>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <data>
+                    <field name="from_country" position="replace">
+                        <field name="from_country_ids"/>
+                    </field>
+                    <field name="from_state" position="replace">
+                        <field name="from_state_ids"/>
+                    </field>
+                    <field name="to_country" position="replace">
+                        <field name="to_country_ids"/>
+                    </field>
+                    <field name="to_state" position="replace">
+                        <field name="to_state_ids"/>
+                    </field>
+                </data>
+            </field>
+        </record>
+
+        <record id="view_account_fiscal_position_rule_form_m2m" model="ir.ui.view">
+            <field name="name">account.fiscal.position.rule.form.m2m</field>
+            <field name="model">account.fiscal.position.rule</field>
+            <field name="inherit_id" ref="account_fiscal_position_rule.view_account_fiscal_position_rule_form"/>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <data>
+                    <separator string="Form" position="replace"/>
+                    <separator string="To" position="replace"/>
+                    <field name="from_country" position="replace"/>
+                    <field name="from_state" position="replace"/>
+                    <field name="to_country" position="replace"/>
+                    <field name="to_state" position="replace"/>
+                    <field name="description" position="after">
+                        <separator string="Conditions" colspan="4"/>
+                        <notebook>
+                            <page string="Countries">
+                                <field name="from_country_ids"/>
+                                <field name="to_country_ids" />
+                            </page>
+                            <page string="States">
+                                <field name="from_state_ids"/>
+                                <field name="to_state_ids"/>
+                            </page>
+                        </notebook>
+                    </field>
+                </data>
+            </field>
+        </record>
+
+        <record id="view_account_fiscal_position_rule_tree_m2m" model="ir.ui.view">
+            <field name="name">account.fiscal.position.rule.tree.m2m</field>
+            <field name="model">account.fiscal.position.rule</field>
+            <field name="inherit_id" ref="account_fiscal_position_rule.view_account_fiscal_position_rule_tree"/>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <data>
+                    <field name="from_country" position="replace">
+                        <field name="from_country_ids"/>
+                    </field>
+                    <field name="from_state" position="replace">
+                        <field name="from_state_ids"/>
+                    </field>
+                    <field name="to_country" position="replace">
+                        <field name="to_country_ids"/>
+                    </field>
+                    <field name="to_state" position="replace">
+                        <field name="to_state_ids"/>
+                    </field>
+                </data>
+            </field>
+        </record>
+
+    </data>
+</openerp>
