@@ -48,6 +48,8 @@ class account_consolidation_consolidate(osv.osv_memory):
         'target_move': fields.selection([('posted', 'All Posted Entries'),
                                          ('all', 'All Entries'),
                                         ], 'Target Moves', required=True),
+        'subsidiary_ids': fields.many2many('res.company', 'account_conso_conso_comp_rel', 'conso_id', 'company_id',
+                                            'Subsidiaries', required=True),
     }
 
     _defaults = {
