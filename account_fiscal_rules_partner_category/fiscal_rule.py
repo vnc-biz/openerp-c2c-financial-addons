@@ -27,8 +27,12 @@ class account_fiscal_position_rule(osv.osv):
     _inherit = "account.fiscal.position.rule"
 
     _columns = {
-        'partner_fiscal_category_id': fields.many2one(
-            'res.partner.category', 'Partner Fiscal Category'),
+        'partner_fiscal_category_ids': fields.many2many(
+            'res.partner.category',
+            rel='account_fisc_rule_res_partner_cat_rel',
+            id1='rule_id',
+            id2='cat_id',
+            string='Partner Fiscal Category'),
     }
 
     def _map_domain(self, cr, uid, partner,
@@ -39,10 +43,10 @@ class account_fiscal_position_rule(osv.osv):
         if partner.fiscal_category_id:
             domain += \
             ('|',
-            ('partner_fiscal_category_id', '=', partner.fiscal_category_id.id),
+            ('partner_fiscal_category_ids', '=', partner.fiscal_category_id.id),
             )
 
-        domain += (('partner_fiscal_category_id', '=', False), )
+        domain += (('partner_fiscal_category_ids', '=', False), )
         return domain
 
 account_fiscal_position_rule()
@@ -53,8 +57,12 @@ class account_fiscal_position_rule_template(osv.osv):
     _inherit = "account.fiscal.position.rule.template"
 
     _columns = {
-        'partner_fiscal_category_id': fields.many2one(
-            'res.partner.category', 'Partner Fiscal Category'),
+        'partner_fiscal_category_ids': fields.many2many(
+            'res.partner.category',
+            rel='account_fisc_rule_tmpl_res_partner_cat_rel',
+            id1='rule_id',
+            id2='cat_id',
+            string='Partner Fiscal Category'),
         }
 
 account_fiscal_position_rule_template()
@@ -69,8 +77,9 @@ class wizard_account_fiscal_position_rule(osv.osv_memory):
         vals = super(wizard_account_fiscal_position_rule, self)._template_vals(
             cr, uid, template, company_id, fiscal_position_ids, context=context
         )
-        vals['partner_fiscal_category_id'] = \
-            template.partner_fiscal_category_id
+        cat_ids = [item.id for item in template.partner_fiscal_category_ids]
+        vals['partner_fiscal_category_ids'] = [(6, 0, cat_ids)]
+
         return vals
 
 wizard_account_fiscal_position_rule()

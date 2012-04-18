@@ -12,7 +12,7 @@ Improve l10n_fr module to fix main tax and trouble
     """,
     'author': 'Camptocamp',
     'website': 'http://openerp.camptocamp.com',
-    'depends': ['l10n_fr'],
+    'depends': ['l10n_fr','report_webkit'],
     'init_xml': [],
     'update_xml': ['taxe_codes.xml',
                    'account_type.xml',

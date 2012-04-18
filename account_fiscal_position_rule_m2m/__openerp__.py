@@ -19,20 +19,30 @@
 #
 ##############################################################################
 
-from osv import osv, fields
+{
+    'name': 'Fiscal Position Rules Multi Selection',
+    'version': '1.0',
+    'category': 'Generic Modules',
+    "author" : "Camptocamp",
+    'license': 'AGPL-3',
+    'description': """
+Replaces the selection fields for countries and states
+by multi-selection fields
+on the module account fiscal position rules.
+It allows to create rules from and to multiple countries
+instead of one only actually.
+As instance :
+ - From France
+ - To each country in EU
+Will apply the same Fiscal Position
 
-
-class res_partner(osv.osv):
-
-    _inherit = 'res.partner'
-
-    _columns = {
-        'fiscal_category_id': fields.many2one(
-            'res.partner.category',
-            string='Fiscal Category',
-            help="Used to automatically determine the Fiscal " \
-                 "Position according to the Fiscal Position Rules. \n" \
-                 "(Except if a Fiscal Position has been defined)")
-    }
-
-res_partner()
+""",
+    'images': [],
+    "website" : "http://www.camptocamp.com",
+    'depends': ['account_fiscal_position_rule'],
+    'init_xml': [],
+    'update_xml': ['fiscal_rules_view.xml', ],
+    'demo_xml': [],
+    'installable': True,
+    'auto_install': False,
+}
