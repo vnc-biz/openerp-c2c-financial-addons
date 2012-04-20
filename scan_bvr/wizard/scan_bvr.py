@@ -211,7 +211,7 @@ class scan_bvr(osv.osv_memory):
                             'reference' :  data['bvr_struct']['reference'],
                             'amount_total' :  data['bvr_struct']['amount'],
                             'check_total' :  data['bvr_struct']['amount'],
-                            'partner_bank' : account_info.id,
+                            'partner_bank_id' : account_info.id,
                             'comment': '',
                             'currency_id': currency_id.id,
                             'journal_id' : data['journal_id'] ,
@@ -220,7 +220,7 @@ class scan_bvr(osv.osv_memory):
                     
                     last_invoice = pool.get('account.invoice').create(cr, uid, curr_invoice)
                     action = {
-                    'domain': "[('id','=', "+ str(last_invoice),
+                    'domain': "[('id','=', "+ str(last_invoice) + ")]",
                     'name': 'Invoices',
                     'view_type': 'form',
                     'view_mode': 'form',
