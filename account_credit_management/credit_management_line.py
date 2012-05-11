@@ -37,7 +37,7 @@ class CreditManagementLine (Model):
                                         required=True,
                                         readonly=True,
                                         states={'draft': [('readonly', False)]}),
-                                        
+
                 'state': fields.selection([('draft', 'Draft'),
                                            ('to_be_sent', 'To be sent'),
                                            ('sent', 'Done')],
@@ -54,23 +54,23 @@ class CreditManagementLine (Model):
                 'amount_due': fields.float('Due Amount Tax inc.', required=True, readonly=True),
                 'balance_due': fields.float('Due balance', required=True, readonly=True),
                 'mail_id': fields.many2one('mail.thread', 'Sent mail', readonly=True),
-                
+
                 'move_line_id': fields.many2one('account.move.line', 'Move line',
                                                 required=True, readonly=True),
-                                                
+
                 'account_id': fields.related('move_line_id', 'account_id', type='many2one',
                                              relation='account.account', string='Account',
                                              store=True, readonly=True),
-                                             
+
                 # we can allow a manual change of profile in draft state
                 'profile_rule_id':fields.many2one('credit.management.profile.rule',
                                                   'Overdue Rule', required=True, readonly=True,
                                                   states={'draft': [('readonly', False)]}),
-                                                  
+
                 'profile_id': fields.related('profile_rule_id', 'profile_id', type='many2one',
                                              relation='credit.management.profile', string='Profile',
                                              store=True, readonly=True),
-                                             
+
                 'level': fields.related('profile_rule_id', 'level', type='float',
                                          relation='credit.management.profile', string='Profile',
                                          store=True, readonly=True),
@@ -78,4 +78,3 @@ class CreditManagementLine (Model):
             }
 
     _defaults = {'state': 'draft'}
-

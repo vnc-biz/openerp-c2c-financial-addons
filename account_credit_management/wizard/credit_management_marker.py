@@ -37,4 +37,4 @@ class CreditManagementMarker(TransientModel):
         context = context or {}
         if isinstance(ids, (int, long)):
             ids = [ids]
-        return False   
+        return False

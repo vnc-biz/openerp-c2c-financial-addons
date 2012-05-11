@@ -65,8 +65,8 @@ class CreditManagementProfileRule (Model):
             if smallest_rule.computation_mode == 'previous_date':
                 return False
         return True
-        
-            
+
+
 
     _sql_constraint = [('unique level',
                         'UNIQUE (profile_id, level)',

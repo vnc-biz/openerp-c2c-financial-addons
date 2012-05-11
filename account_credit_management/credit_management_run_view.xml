@@ -32,18 +32,18 @@
           </notebook>
           <group col="3" colspan="4">
             <button name="check_all_periods"
-                    string="Compute credit  lines" 
-                    colspan="1" 
+                    string="Compute credit  lines"
+                    colspan="1"
                     type="object" icon="gtk-execute"
                     attrs="{'invisible': [('state', '!=', 'draft')]}"/>
-	  </group>
+          </group>
           <field name="state"/>
         </form>
       </field>
     </record>
 
-    
-    
+
+
     <record model="ir.actions.act_window" id="credit_management_run">
       <field name="name">Credit management run</field>
       <field name="type">ir.actions.act_window</field>
@@ -53,8 +53,8 @@
       <field name="view_mode">tree,form</field>
       <field name="view_id" ref="credit_management_run_tree"/>
     </record>
-    
-    
+
+
     <menuitem
         name="Credit management run"
         parent="base_credit_management_menu"

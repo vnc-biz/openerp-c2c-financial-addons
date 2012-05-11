@@ -26,7 +26,7 @@ class CreditManagementMailer(TransientModel):
     _name = "credit.management.mailer"
     _description = """Mass credit line mailer"""
     _rec_name = 'id'
-    
+
     _columns = {'mail_all': fields.boolean('Mail all draft lines')}
 
 
@@ -34,4 +34,4 @@ class CreditManagementMailer(TransientModel):
         context = context or {}
         if isinstance(ids, (int, long)):
             ids = [ids]
-        return False   
+        return False

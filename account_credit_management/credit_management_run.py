@@ -36,7 +36,7 @@ class CreditManagementRun (Model):
                                                  string='Non evaluated lines',
                                                  readonly=True),
                 'report': fields.text('Report', readonly=True),
-                
+
                 'state': fields.selection([('draft', 'Draft'),
                                             ('running', 'Running'),
                                             ('done', 'Done'),
@@ -53,5 +53,3 @@ class CreditManagementRun (Model):
             ids = [ids]
         # TODO
         return False
-            
-        
