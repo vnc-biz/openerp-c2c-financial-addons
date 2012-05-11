@@ -1,0 +1,76 @@
+<openerp>
+  <data>
+    <record id="credit_management_line_form" model="ir.ui.view">
+      <field name="name">credit.management.line.form</field>
+      <field name="model">credit.management.line</field>
+      <field name="type">form</field>
+      <field name="arch" type="xml">
+        <form>
+          <field name="date"/>
+          <field name="date_due"/>
+          <field name="level"/>
+          <field name="state"/>
+          <field name="canal"/>
+          <field name="invoice_id"/>
+          <field name="partner_id"/>
+          <field name="amount_due"/>
+          <field name="balance_due"/>
+          <field name="move_line_id"/>
+          <field name="account_id"/>
+          <field name="profile_rule_id"/>
+          <field name="profile_id"/>
+          <field name="mail_id"/>
+        </form>
+      </field>
+    </record>
+
+    <record id="credit_management_line_tree" model="ir.ui.view">
+      <field name="name">credit.management.line.tree</field>
+      <field name="model">credit.management.line</field>
+      <field name="type">tree</field>
+      <field name="arch" type="xml">
+        <tree editable="bottom">
+          <field name="date"/>
+          <field name="date_due"/>
+          <field name="level"/>
+          <field name="state"/>
+          <field name="canal"/>
+          <field name="invoice_id"/>
+          <field name="partner_id"/>
+          <field name="amount_due"/>
+          <field name="balance_due"/>
+          <field name="move_line_id"/>
+          <field name="account_id"/>
+          <field name="profile_rule_id"/>
+          <field name="profile_id"/>
+          <field name="mail_id"/>
+        </tree>
+      </field>
+    </record>
+
+
+    <menuitem
+        name="Credit management"
+        parent="account.menu_finance_periodical_processing"
+        id="base_credit_management_menu"/>
+
+    <record model="ir.actions.act_window" id="credit_management_line_action">
+      <field name="name">Credit lines</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">credit.management.line</field>
+      <field name="domain"></field>
+      <field name="view_type">form</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="credit_management_line_tree"/>
+    </record>
+
+
+    <menuitem
+        name="Credit lines"
+        parent="base_credit_management_menu"
+        action="credit_management_line_action"
+        id="credit_management_line_action_menu"/>
+
+
+  </data>
+</openerp>
