@@ -1,1 +1,33 @@
-<openerp><data></data></openerp>
+<openerp>
+  <data>
+
+    <record id="account_followup_form_view" model="ir.ui.view">
+      <field name="name">account.followup.form.view</field>
+      <field name="model">account.account</field>
+      <field name="inherit_id" ref="account.view_account_form" />
+      <field name="type">form</field>
+      <field name="arch" type="xml">
+        <notebook position="inside">
+          <page string="Credit Management">
+            <field name="credit_profile_id"/>
+          </page>
+        </notebook>
+      </field>
+    </record>
+
+    <record id="invoice_followup_form_view" model="ir.ui.view">
+      <field name="name">invoice.followup.form.view</field>
+      <field name="model">account.invoice</field>
+      <field name="inherit_id" ref="account.invoice_form" />
+      <field name="type">form</field>
+      <field name="arch" type="xml">
+        <notebook position="inside">
+          <page string="Credit Management">
+            <field name="credit_profile_id"/>
+          </page>
+        </notebook>
+      </field>
+    </record>
+
+  </data>
+</openerp>

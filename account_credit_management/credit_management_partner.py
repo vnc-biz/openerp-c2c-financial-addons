@@ -18,3 +18,14 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from openerp.osv.orm import Model, fields
+
+class ResPartner(Model):
+    """Add a link to a credit management profile on account account"""
+
+    _inherit = "res.partner"
+    _description = """Add a link to a credit profile"""
+    _columns = {'credit_profile_id': fields.many2one('credit.management.profile',
+                                                     'Credit management profile',
+                                                     help=("Define global credit profile"
+                                                           "order is account partner invoice"))}
