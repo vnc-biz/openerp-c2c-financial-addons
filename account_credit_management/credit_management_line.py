@@ -51,6 +51,7 @@ class CreditManagementLine (Model):
 
                 'invoice_id': fields.many2one('account.invoice', 'Invoice', readonly=True),
                 'partner_id': fields.many2one('res.partner', "Partner", required=True),
+                'address_id': fields.many2one('res.partner.address', 'Mail address', required=True),
                 'amount_due': fields.float('Due Amount Tax inc.', required=True, readonly=True),
                 'balance_due': fields.float('Due balance', required=True, readonly=True),
                 'mail_id': fields.many2one('mail.thread', 'Sent mail', readonly=True),
@@ -74,7 +75,10 @@ class CreditManagementLine (Model):
                 'level': fields.related('profile_rule_id', 'level', type='float',
                                          relation='credit.management.profile', string='Profile',
                                          store=True, readonly=True),
+                'company_id': fields.many2one('res.company', 'Company'),
 
             }
 
-    _defaults = {'state': 'draft'}
+    _defaults = {'state': 'draft',
+                 'company_id': lambda s,cr,uid,c: s.pool.get('res.company')._company_default_get(
+                                      cr, uid, 'res.partner.address', context=c),}

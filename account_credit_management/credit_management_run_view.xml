@@ -31,7 +31,7 @@
             </page>
           </notebook>
           <group col="3" colspan="4">
-            <button name="check_all_periods"
+            <button name="generate_credit_lines"
                     string="Compute credit  lines"
                     colspan="1"
                     type="object" icon="gtk-execute"

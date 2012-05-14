@@ -34,6 +34,8 @@ class CreditManagementProfile(Model):
                 'do_nothing' : fields.boolean('Do nothing',
                                               help=('For profiling who should not '
                                                     'generate lines or are obsolete')),
+                                                    
+                'company_id' : fields.many2one('res.company', 'Company')
                 }
 
 
@@ -96,13 +98,9 @@ class CreditManagementProfile(Model):
                                           'res.partner', 'partner_id', context=context)
 
 
-
     def _get_invoice_related_lines(self, cursor, uid, profile_id, lookup_date, lines, context=None):
         return self._get_sum_reduce_range(self, cursor, uid, profile_id, lookup_date, lines,
                                           'account.invoice', 'invoice', context=context)
-
-
-
 
 
     def _get_moves_line_to_process(self, cursor, uid, profile_id, lookup_date, context=None):
@@ -144,7 +142,6 @@ class CreditManagementProfileRule (Model):
                 'mail_template_id': fields.many2one('email.template', 'Mail template',
                                                     required=True),
                 }
-
 
 
     def _check_level_mode(self, cursor, uid, rids, context=None):

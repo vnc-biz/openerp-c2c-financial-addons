@@ -20,7 +20,8 @@
 ##############################################################################
 from openerp.osv.orm import Model, fields
 
-class CreditManagementRun (Model):
+
+class CreditManagementRun(Model):
     """Credit management run generate all credit management lines and reject"""
 
     _name = "credit.management.run"
@@ -47,9 +48,26 @@ class CreditManagementRun (Model):
 
     _defaults = {'state': 'draft'}
 
-    def generate_credit_lines(self, cursor, uid, ids, optional_args, context=None):
+    def generate_credit_lines(self, cursor, uid, run_id, context=None):
+        import pdb; pdb.set_trace()
+
+        #Generate credit management lines, this function will try
         context = context or {}
-        if isinstance(ids, (int, long)):
-            ids = [ids]
-        # TODO
+        if isinstance(run_id, list):
+            run_id = run_id[0]
+        run = self.browse(cursor, uid, run_id, context=context)
+        report = []
+        profile_ids = run.profile_ids
+        if not profile_ids:
+            profile_obj = self.pool.get('credit.management.profile')
+            profile_ids_ids = profile_obj.search(cursor, uid, [])
+            profile_ids =  profile_obj.browse(cursor, uid, profile_ids_ids)
+        for profile in profile_ids:
+            if profile.do_nothing:
+                continue
+            #try:
+            lines = profile._get_moves_line_to_process(run.name, context=context)
+            print lines
+            #except Exception, exc:
+                #report.append(unicode(exc))
         return False

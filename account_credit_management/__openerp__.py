@@ -24,7 +24,7 @@
  'maintainer': 'Camptocamp',
  'category': 'Finance',
  'complexity': "normal",  # easy, normal, expert
- 'depends' : ['base', 'account', 'mail_template'],
+ 'depends' : ['base', 'account', 'email_template'],
  'description': """Credit control management TODO""",
  'website': 'http://www.camptocamp.com',
  'init_xml': ["data.xml"],

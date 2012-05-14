@@ -1,0 +1,83 @@
+<openerp>
+  <data noupdate="1">
+
+    <!--Email template -->
+    <record id="email_template_credit_management_base" model="credit.management.line">
+      <field name="name">Credit Management demo mail</field>
+      <field name="email_from">noreply@localhost</field>
+      <field name="subject">Credit Management Invoice (${object.profile_rule_id.level or 'n/a' })</field>
+      <field name="email_to">${object.address_id.email or  ''}</field>
+      <field name="model_id" ref="account.model_account_invoice"/>
+      <field name="auto_delete" eval="True"/>
+      <field name="body_html"><![CDATA[
+      <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
+
+      <p>Dear {object.address_id.name and ' ' or ''},</p>
+
+      <p>Your text here</p>
+
+      <b>Summary:</b>
+      <table>
+      <tr>
+      <td>date due:</td> <td>${object.date_due}</td>
+      </tr>
+      <tr>
+      <td>Amount due:</td> <td>${object.amount_due}</td>
+      </tr>
+      <tr>
+      <td>Amount balance:</td> <td>${object.amount_balance}</td>
+      </tr>
+      %if object.invoice_id:
+      <tr>
+      <td>Invoice number:</td> <td>object.invoice_id.number</td>
+      </tr>
+      %endif
+      </td
+
+
+      If you have any question, do not hesitate to contact us.
+
+
+      Thank you for choosing ${object.company_id.name}!
+
+
+      -- more info here --
+      ${object.user_id.name} ${object.user_id.user_email and '<%s>'%(object.user_id.user_email) or ''}
+      ${object.company_id.name}
+      % if object.company_id.street:
+      ${object.company_id.street or ''}
+      % endif
+      % if object.company_id.street2:
+      ${object.company_id.street2}
+      % endif
+      % if object.company_id.city or object.company_id.zip:
+      ${object.company_id.zip or ''} ${object.company_id.city or ''}
+      % endif
+      % if object.company_id.country_id:
+      ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}
+      % endif
+      % if object.company_id.phone:
+      Phone: ${object.company_id.phone}
+      % endif
+      % if object.company_id.website:
+      ${object.company_id.website or ''}
+      % endif
+      ]]></field>
+    </record>
+
+    <record model="credit.management.profile"
+            id="credit_management_3_time">
+      <field name="name">3 time policy</field>
+      <field name="do_nothing" eval="1"/>
+    </record>
+
+    <record model="credit.management.profile.rule"
+            id="3_time_1">
+      <field name="name">10 days end of month</field>
+      <field name="level" eval="1"/>
+      <field name="computation_mode">net_days</field>
+      <field name="delay_days" eval="10"/>
+      <field name="email_template_credit_management_base"/>
+    </record>
+  </data>
+</openerp>

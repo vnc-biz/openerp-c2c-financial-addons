@@ -9,6 +9,7 @@
         <form> <!-- editable="bottom" -->
           <field name="name"/>
           <field name="do_nothing"/>
+          <field name="company_id"/>
           <notebook  colspan="4">
             <page string="Rules">
               <field name="profile_rule_ids" colspan="4" />

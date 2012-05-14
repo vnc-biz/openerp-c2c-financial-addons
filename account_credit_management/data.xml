@@ -1,5 +1,9 @@
 <openerp>
-  <data>
-    
+  <data noupdate="1">
+    <record model="credit.management.profile"
+            id="credit_management_no_follow">
+      <field name="name">No follow</field>
+      <field name="do_nothing" eval="1"/>
+    </record>
   </data>
 </openerp>

@@ -13,6 +13,7 @@
           <field name="canal"/>
           <field name="invoice_id"/>
           <field name="partner_id"/>
+          <field name="address_id" domain="[('partner_id', '=', partner_id)]"/>
           <field name="amount_due"/>
           <field name="balance_due"/>
           <field name="move_line_id"/>

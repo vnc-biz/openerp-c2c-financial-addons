@@ -34,7 +34,7 @@
       <field name="view_mode">form</field>
       <field name="view_id" ref="credit_line_marker_form"/>
       <field name="target">new</field>
-      <field name="help">Mark all lines</field>
+      <field name="help">Mark all lines. You can the send marked lines</field>
     </record>
 
   </data>
