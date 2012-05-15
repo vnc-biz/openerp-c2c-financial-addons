@@ -50,7 +50,7 @@ class CreditManagementProfile(Model):
         if not acc_ids:
             return lines
         move_ids =  move_l_obj.search(cursor, uid, [('account_id', 'in', acc_ids),
-                                                    ('maturity_date', '<=', lookup_date),
+                                                    ('date_maturity', '<=', lookup_date),
                                                     ('reconcile_id', '=', False),
                                                     ('partner_id', '!=', False)])
 
@@ -69,15 +69,15 @@ class CreditManagementProfile(Model):
             with account move line"""
         # MARK possible place for a good optimisation
         context = context or {}
-        my_obj = self.pool.get('res.partner')
+        my_obj = self.pool.get(model)
         move_l_obj = self.pool.get('account.move.line')
         add_obj_ids =  my_obj.search(cursor, uid, [('credit_profile_id', '=', profile_id)])
         if add_obj_ids:
             add_lines = move_l_obj.search(cursor, uid, [(move_relation_field, 'in', add_obj_ids),
-                                                        ('maturity_date', '<=', lookup_date),
+                                                        ('date_maturity', '<=', lookup_date),
                                                         ('partner_id', '!=', False),
                                                         ('reconcile_id', '=', False)])
-            lines = list[set(lines + add_lines)]
+            lines = list(set(lines + add_lines))
         # we get all the lines that must be excluded at partner_level
         # from the global set (even the one included at account level)
         neg_obj_ids =  my_obj.search(cursor, uid, [('credit_profile_id', '!=', profile_id),
@@ -85,7 +85,7 @@ class CreditManagementProfile(Model):
         if neg_obj_ids:
             # should we add ('id', 'in', lines) in domain ? it may give a veeery long SQL...
             neg_lines = move_l_obj.search(cursor, uid, [(move_relation_field, 'in', neg_obj_ids),
-                                                        ('maturity_date', '<=', lookup_date),
+                                                        ('date_maturity', '<=', lookup_date),
                                                         ('partner_id', '!=', False),
                                                         ('reconcile_id', '=', False)])
             if neg_lines:
@@ -94,12 +94,12 @@ class CreditManagementProfile(Model):
 
 
     def _get_partner_related_lines(self, cursor, uid, profile_id, lookup_date, lines, context=None):
-        return self._get_sum_reduce_range(self, cursor, uid, profile_id, lookup_date, lines,
+        return self._get_sum_reduce_range(cursor, uid, profile_id, lookup_date, lines,
                                           'res.partner', 'partner_id', context=context)
 
 
     def _get_invoice_related_lines(self, cursor, uid, profile_id, lookup_date, lines, context=None):
-        return self._get_sum_reduce_range(self, cursor, uid, profile_id, lookup_date, lines,
+        return self._get_sum_reduce_range(cursor, uid, profile_id, lookup_date, lines,
                                           'account.invoice', 'invoice', context=context)
 
 
@@ -112,10 +112,13 @@ class CreditManagementProfile(Model):
         if isinstance(profile_id, list):
             profile_id = profile_id[0]
         # order of call MUST be respected priority is account, partner, invoice
-        self._get_account_related_lines(cursor, profile_id, uid, lookup_date, lines, context=context)
-        self._get_partner_related_lines(cursor, profile_id, uid, lookup_date, lines, context=context)
-        self._get_invoice_related_lines(cursor, profile_id, uid, lookup_date, lines, context=context)
-        print lines
+        lines = self._get_account_related_lines(cursor, uid, profile_id,
+                                                lookup_date, lines, context=context)
+        lines = self._get_partner_related_lines(cursor, uid, profile_id,
+                                                lookup_date, lines, context=context)
+        lines = self._get_invoice_related_lines(cursor, uid, profile_id,
+                                                lookup_date, lines, context=context)
+        return lines
 
 
 

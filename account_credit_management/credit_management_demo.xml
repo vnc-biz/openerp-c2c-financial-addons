@@ -69,7 +69,6 @@
     <record model="credit.management.profile"
             id="credit_management_3_time">
       <field name="name">3 time policy</field>
-      <field name="do_nothing" eval="1"/>
     </record>
 
     <record model="credit.management.profile.rule"
@@ -106,7 +105,6 @@
     <record model="credit.management.profile"
             id="credit_management_2_time">
       <field name="name">2 time policy</field>
-      <field name="do_nothing" eval="1"/>
     </record>
 
     <record model="credit.management.profile.rule"
@@ -127,6 +125,37 @@
       <field name="delay_days" eval="60"/>
       <field name="mail_template_id" ref="email_template_credit_management_base"/>
       <field name="profile_id" ref="credit_management_2_time"/>
+    </record>
+
+
+    <record id="a_recv_1" model="account.account">
+      <field name="code">X11002-a</field>
+      <field name="name">Trusted Debtors - (test)</field>
+      <field ref="account.cas" name="parent_id"/>
+      <field name="type">receivable</field>
+      <field eval="True" name="reconcile"/>
+      <field name="credit_profile_id" ref="credit_management_no_follow"/>
+      <field name="user_type" ref="account.data_account_type_receivable"/>
+    </record>
+
+    <record id="a_recv_2" model="account.account">
+      <field name="code">X11002-b</field>
+      <field name="name">Not so trusted Debtors - (test)</field>
+      <field ref="account.cas" name="parent_id"/>
+      <field name="type">receivable</field>
+      <field eval="True" name="reconcile"/>
+      <field name="credit_profile_id" ref="credit_management_2_time"/>
+      <field name="user_type" ref="account.data_account_type_receivable"/>
+    </record>
+
+    <record id="a_recv_3" model="account.account">
+      <field name="code">X11002-c</field>
+      <field name="name">Untrusted Debtors - (test)</field>
+      <field ref="account.cas" name="parent_id"/>
+      <field name="type">receivable</field>
+      <field eval="True" name="reconcile"/>
+      <field name="credit_profile_id" ref="credit_management_3_time"/>
+      <field name="user_type" ref="account.data_account_type_receivable"/>
     </record>
   </data>
 </openerp>

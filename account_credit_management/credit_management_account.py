@@ -39,7 +39,15 @@ class AccountInvoice(Model):
                                                      'Credit management profile',
                                                      help=("Define global credit profile"
                                                            "order is account partner invoice"))}
-
+    def action_move_create(self, cursor, uid, ids, context=None):
+        """We ensure writing of invoice id in move line because
+           Trigger field may not work without account_voucher"""
+        res = super(AccountInvoice, self).action_move_create(cursor, uid, ids, context=context)
+        for inv in self.browse(cursor, uid, ids, context=context):
+            if inv.move_id:
+                for line in inv.move_id.line_id:
+                    line.write({'invoice_id': inv.id})
+        return res
 
 class AccountMoveLine(Model):
     """Add a function field tha link the invoice to the move line
@@ -49,29 +57,39 @@ class AccountMoveLine(Model):
        If we merge into core we need to write the existing invoice field"""
 
     _inherit = "account.move.line"
+    # Stor fields has strange behavior with voucher module
+    # def _invoice_id(self, cursor, user, ids, name, arg, context=None):
+    #     #Code taken from OpenERP account addon
+    #     invoice_obj = self.pool.get('account.invoice')
+    #     res = {}
+    #     for line_id in ids:
+    #         res[line_id] = False
+    #     cursor.execute('SELECT l.id, i.id ' \
+    #                     'FROM account_move_line l, account_invoice i ' \
+    #                     'WHERE l.move_id = i.move_id ' \
+    #                     'AND l.id IN %s',
+    #                     (tuple(ids),))
+    #     invoice_ids = []
+    #     for line_id, invoice_id in cursor.fetchall():
+    #         res[line_id] = invoice_id
+    #         invoice_ids.append(invoice_id)
+    #     invoice_names = {False: ''}
+    #     for invoice_id, name in invoice_obj.name_get(cursor, user, invoice_ids, context=context):
+    #         invoice_names[invoice_id] = name
+    #     for line_id in res.keys():
+    #         invoice_id = res[line_id]
+    #         res[line_id] = (invoice_id, invoice_names[invoice_id])
+    #     return res
 
-    def _invoice_id(self, cursor, user, ids, name, arg, context=None):
-        #Code taken from OpenERP account addon
-        invoice_obj = self.pool.get('account.invoice')
-        res = {}
-        for line_id in ids:
-            res[line_id] = False
-        cursor.execute('SELECT l.id, i.id ' \
-                        'FROM account_move_line l, account_invoice i ' \
-                        'WHERE l.move_id = i.move_id ' \
-                        'AND l.id IN %s',
-                        (tuple(ids),))
-        invoice_ids = []
-        for line_id, invoice_id in cursor.fetchall():
-            res[line_id] = invoice_id
-            invoice_ids.append(invoice_id)
-        invoice_names = {False: ''}
-        for invoice_id, name in invoice_obj.name_get(cursor, user, invoice_ids, context=context):
-            invoice_names[invoice_id] = name
-        for line_id in res.keys():
-            invoice_id = res[line_id]
-            res[line_id] = (invoice_id, invoice_names[invoice_id])
-        return res
+    # def _get_invoice(self, cursor, uid, ids, context=None):
+    #     result = set()
+    #     for line in self.pool.get('account.invoice').browse(cursor, uid, ids, context=context):
+    #         if line.move_id:
+    #             ids = [x.id for x in line.move_id.line_id or []]
+    #     return list(result)
 
-    _columns = {'invoice_id': fields.function(_invoice_id, string='Invoice',
-                type='many2one', relation='account.invoice', store=True)}
+    # _columns = {'invoice_id': fields.function(_invoice_id, string='Invoice',
+    #             type='many2one', relation='account.invoice',
+    #             store={'account.invoice': (_get_invoice, ['move_id'], 20)})}
+
+    _columns = {'invoice_id': fields.many2one('account.invoice', 'Invoice')}

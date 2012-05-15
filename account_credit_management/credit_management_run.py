@@ -49,9 +49,7 @@ class CreditManagementRun(Model):
     _defaults = {'state': 'draft'}
 
     def generate_credit_lines(self, cursor, uid, run_id, context=None):
-        import pdb; pdb.set_trace()
-
-        #Generate credit management lines, this function will try
+        """Generate credit management lines"""
         context = context or {}
         if isinstance(run_id, list):
             run_id = run_id[0]
@@ -67,7 +65,6 @@ class CreditManagementRun(Model):
                 continue
             #try:
             lines = profile._get_moves_line_to_process(run.name, context=context)
-            print lines
             #except Exception, exc:
                 #report.append(unicode(exc))
         return False
