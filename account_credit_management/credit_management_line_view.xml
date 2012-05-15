@@ -8,6 +8,7 @@
         <form>
           <field name="date"/>
           <field name="date_due"/>
+          <field name="date_sent"/>
           <field name="level"/>
           <field name="state"/>
           <field name="canal"/>

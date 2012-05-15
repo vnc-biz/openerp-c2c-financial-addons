@@ -36,7 +36,7 @@
                 "wizard/credit_management_mailer_view.xml",
                 "wizard/credit_management_marker_view.xml",
                 "wizard/credit_management_printer_view.xml"],
- 'demo_xml': [],
+ 'demo_xml': ["credit_management_demo.xml"],
  'tests': [],
  'installable': True,
  'license': 'AGPL-3',

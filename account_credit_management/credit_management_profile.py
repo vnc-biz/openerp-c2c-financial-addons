@@ -34,7 +34,7 @@ class CreditManagementProfile(Model):
                 'do_nothing' : fields.boolean('Do nothing',
                                               help=('For profiling who should not '
                                                     'generate lines or are obsolete')),
-                                                    
+
                 'company_id' : fields.many2one('res.company', 'Company')
                 }
 
@@ -150,7 +150,7 @@ class CreditManagementProfileRule (Model):
             rids = [rids]
         for rule in self.browse(cursor, uid, rids, context):
             smallest_rule_id = self.search(cursor, uid, [('profile_id', '=', rule.profile_id.id)],
-                                           order='level desc', limit=1, context=context)
+                                           order='level asc', limit=1, context=context)
             smallest_rule = self.browse(cursor, uid, smallest_rule_id[0], context)
             if smallest_rule.computation_mode == 'previous_date':
                 return False

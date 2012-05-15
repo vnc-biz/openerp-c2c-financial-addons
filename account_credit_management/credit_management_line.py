@@ -38,6 +38,10 @@ class CreditManagementLine (Model):
                                         readonly=True,
                                         states={'draft': [('readonly', False)]}),
 
+                'date_sent': fields.date('Sent date',
+                                         readonly=True,
+                                         states={'draft': [('readonly', False)]}),
+
                 'state': fields.selection([('draft', 'Draft'),
                                            ('to_be_sent', 'To be sent'),
                                            ('sent', 'Done')],
