@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi, Joel Grand-Guillaume
+#    Author: Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
+#    Thanks to EduSense BV (<http://www.edusense.nl>) for some part and idea 
+#    taken from the account_banking module
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,6 +21,26 @@
 #
 ##############################################################################
 
-import file_parser
-import wizard
-import statement
+{'name': "Account Bank Statement without Period",
+ 'version': '1.0',
+ 'author': 'Camptocamp',
+ 'maintainer': 'Camptocamp',
+ 'category': 'Finance',
+ 'complexity': 'normal', #easy, normal, expert
+ 'depends': ['account'],
+ 'description': """
+ Remove the period on the bank statement, and compute it for each line based on their date instead.
+ """,
+ 'website': 'http://www.camptocamp.com',
+ 'init_xml': [],
+ 'update_xml': [
+     'statement_view.xml',
+ ],
+ 'demo_xml': [],
+ 'test': [],
+ 'installable': True,
+ 'images': [],
+ 'auto_install': False,
+ 'license': 'AGPL-3',
+ 'active': False,
+}

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi
+#    Author: Nicolas Bessi, Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@
  'maintainer': 'Camptocamp',
  'category': 'Finance',
  'complexity': 'normal', #easy, normal, expert
- 'depends': ['base_transaction_id'],
+ 'depends': ['base_transaction_id','account_statement_no_period'],
  'description': """
  This allows you to import statement from financial credit partners like Visa.
  The module takes in account commission and partner relation.
@@ -35,6 +35,7 @@
  'website': 'http://www.camptocamp.com',
  'init_xml': [],
  'update_xml': [
+     'statement_view.xml',
      'wizard/import_statement_view.xml',
  ],
  'demo_xml': [],

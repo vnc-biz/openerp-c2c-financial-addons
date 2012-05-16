@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+
+    <record id="statement_importer_view_form" model="ir.ui.view">
+        <field name="name">credit.statement.import.config.view</field>
+        <field name="model">credit.statement.import.config</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Import statement">
+                <separator string="" colspan="4"/>
+                <field name="name" />
+                <field name="partner_id" />
+                <field name="journal_id" />
+                <field name="commission_account_id" />
+                <field name="receivable_account_id" />
+                <field name="mode"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="statement_importer_view_tree" model="ir.ui.view">
+        <field name="name">credit.statement.import.config.view</field>
+        <field name="model">credit.statement.import.config</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Import statement">
+                <field name="name" />
+                <field name="partner_id" />
+                <field name="journal_id" />
+                <field name="commission_account_id" />
+                <field name="receivable_account_id" />
+                <field name="mode"/>
+            </tree>
+        </field>
+    </record>
+
+
+
+    <record id="account.action_bank_statement_periodic_tree" model="ir.actions.act_window">
+            <field name="domain">[('journal_id.type', '=', 'bank'),('statement_type', '=', 'standard')]</field>
+    </record>
+        
+    <record id="view_bank_statement_form" model="ir.ui.view">
+        <field name="name">account.bank.statement.form</field>
+        <field name="model">account.bank.statement</field>
+        <field name="inherit_id" ref="account.view_bank_statement_form"/>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <field name='company_id' widget="selection" groups="base.group_multi_company" position="after">
+                <field name="statement_type"/>
+                <!-- <field name="credit_partner_id"/>
+                                <field name="ref"/> -->
+            </field>
+        </field>
+    </record>
+    <record id="view_treasury_statement_search" model="ir.ui.view">
+        <field name="name">account.treasury.statement.search</field>
+        <field name="model">account.bank.statement</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Search Treasury Statements">
+                <group>
+                    <filter string="Draft" domain="[('state','=','draft')]" icon="terp-document-new"/>
+                    <filter string="Confirmed" domain="[('state','=','confirm')]" icon="terp-camera_test"/>
+                    <separator orientation="vertical"/>
+                    <field name="import_config_id"/>
+                    <field name="credit_partner_id"/>
+                    <field name="ref"/>
+                    <separator orientation="vertical"/>
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="journal_id" widget="selection" domain="[('type', '=', 'bank')]" />
+                </group>
+                <newline/>
+                <group expand="0" string="Group By...">
+                    <filter string="Journal" context="{'group_by': 'journal_id'}" icon="terp-folder-orange"/>
+                    <filter string="State" context="{'group_by': 'state'}" icon="terp-stock_effects-object-colorize"/>
+                    <separator orientation="vertical"/>
+                    <filter string="Period" context="{'group_by': 'period_id'}" icon="terp-go-month"/>
+                    <filter string="Financial Partner" context="{'group_by': 'credit_partner_id'}" icon="terp-partner"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_treasury_statement_tree" model="ir.ui.view">
+        <field name="name">account.treasury.statement.tree</field>
+        <field name="model">account.bank.statement</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree colors="blue:state=='draft';black:state=='confirm'" string="Treasury Statement">
+                <field name="name"/>
+                <field name="import_config_id"/>
+                <field name="ref"/>
+                <field name="date"/>
+                <field name="journal_id"/>
+                <field name="credit_partner_id"/>
+                <field name="state"/>
+                <button type="object" string="Cancel" name="button_cancel" states="confirm" icon="gtk-cancel"/>
+                <button type="object" string="Confirm" name="button_confirm_bank" states="draft" icon="terp-camera_test"/>
+            </tree>
+        </field>
+    </record>
+
+    
+    <record id="view_treasury_statement_form" model="ir.ui.view">
+        <field name="name">account.treasury.statement.form</field>
+        <field name="model">account.bank.statement</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Treasury Statement">
+                <group col="7" colspan="4">
+                    <field name="name" select="1"/>
+                    <field name="import_config_id" select="1"/>
+                    <field name="date" select="1" on_change="onchange_date(date, company_id)"/>
+                    <field name="journal_id" domain="[('type', '=', 'bank')]" on_change="onchange_journal_id(journal_id)" select="1" widget="selection" invisible="1"/>
+                    <newline/>
+                    <field name="statement_type"/>
+                    <field name="credit_partner_id"/>
+                    <field name="ref"/>
+                    
+                    <!-- <field name="period_id"/>
+                                        <field name="balance_start"/>
+                                        <field name="balance_end_real"/> -->
+                    <field name="currency" invisible="1"/>
+                    <field name='company_id' widget="selection" groups="base.group_multi_company" />
+                </group>
+                <notebook colspan="4">
+                    <page string="Transaction" name="statement_line_ids">
+                        <field colspan="4" name="line_ids" nolabel="1" context="{'date':date,'statement_config':import_config_id}">
+                            <tree editable="bottom" string="Statement lines">
+                                <field name="sequence" readonly="1" invisible="1"/>
+                                <field name="date" groups="base.group_extended"/>
+                                <field name="name"/>
+                                <field name="ref"/>
+                                <field name="partner_id" on_change="onchange_partner_id(partner_id)"/>
+                                <field name="type" on_change="onchange_type(partner_id, type)"/>
+                                <field domain="[('journal_id','=',parent.journal_id), ('company_id', '=', parent.company_id)]" name="account_id"/>
+                                <field name="analytic_account_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', parent.company_id), ('type', '&lt;&gt;', 'view')]"/>
+                                <field name="amount"/>
+                            </tree>
+                            <form string="Statement lines">
+                                <field name="date"/>
+                                <field name="name"/>
+                                <field name="ref"/>
+                                <field name="partner_id" on_change="onchange_partner_id(partner_id)"/>
+                                <field name="type" on_change="onchange_type(partner_id, type)"/>
+                                <field domain="[('journal_id', '=', parent.journal_id), ('type', '&lt;&gt;', 'view'), ('company_id', '=', parent.company_id)]" name="account_id"/>
+                                <field name="analytic_account_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', parent.company_id), ('type', '&lt;&gt;', 'view')]"/>
+                                <field name="amount"/>
+                                <field name="sequence" readonly="0"/>
+                                <separator colspan="4" string="Notes"/>
+                                <field colspan="4" name="note" nolabel="1"/>
+                            </form>
+                        </field>
+                    </page>
+                    <page string="Journal Entries" name="move_live_ids">
+                        <field colspan="4" name="move_line_ids" nolabel="1"/>
+                    </page>
+                </notebook>
+                <group col="8" colspan="4">
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm"/>
+                    <!-- <field name="balance_end"/> -->
+                    <button name="button_cancel" states="confirm" string="Cancel" type="object" icon="gtk-cancel"/>
+                    <button name="button_dummy" states="draft" string="Compute" type="object" icon="terp-stock_format-scientific"/>
+                    <button name="button_confirm_bank" states="draft" string="Confirm" type="object"  icon="terp-camera_test"/>
+                </group>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_treasury_statement_tree" model="ir.actions.act_window">
+        <field name="name">Treasury Statements</field>
+        <field name="res_model">account.bank.statement</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form,graph</field>
+        <field name="domain">[('journal_id.type', '=', 'bank'),('statement_type', '=', 'credit_partner')]</field>
+        <field name="context">{'journal_type':'bank','statement_type':'credit_partner'}</field>
+        <field name="search_view_id" ref="view_treasury_statement_search"/>
+        <field name="help">A treasury statement is a summary of all financial transactions occurring a credit card or any other type of intermediate financial account.</field>
+    </record>
+    <record model="ir.actions.act_window.view" id="action_treasury_statement_tree_bank">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_treasury_statement_tree"/>
+        <field name="act_window_id" ref="action_treasury_statement_tree"/>
+    </record>
+    <record model="ir.actions.act_window.view" id="action_treasury_statement_form_bank">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_treasury_statement_form"/>
+        <field name="act_window_id" ref="action_treasury_statement_tree"/>
+    </record>
+    
+    
+    <menuitem string="Treasury Statements" action="action_treasury_statement_tree" id="menu_treasury_statement_tree" parent="account.menu_finance_bank_and_cash" sequence="9"/>    
+
+</data>
+</openerp>

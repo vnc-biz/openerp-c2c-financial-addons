@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi
+#    Author: Nicolas Bessi, Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -26,18 +26,55 @@ import datetime
 import netsvc
 logger = netsvc.Logger()
 
+class CreditStatementImportConfig(osv.osv):
+    _name = "credit.statement.import.config"
+    _description = __doc__
+    _columns = {
+        'name': fields.char('Name', size=128, required=True),
+        'partner_id': fields.many2one('res.partner',
+                                      'Credit insitute partner',
+                                      required=True),
+        'journal_id': fields.many2one('account.journal',
+                                      'Financial journal to use for transaction',
+                                      required=True),
+        'commission_account_id': fields.many2one('account.account',
+                                                         'Commission account',
+                                                         required=True),
+        'receivable_account_id': fields.many2one('account.account',
+                                                        'Force Receivable/Payable Account',
+                                                        help="Choose a receivable account to force the default\
+                                                        debit/credit account (eg. an intermediat bank account instead of\
+                                                        default debitors)."),
+                
+        'mode': fields.selection([('transaction_id', 'Based on transaction id'),
+                                  ('origin', 'Based on order number')],
+                                 string="Mode",
+                                 required=True)
+    }
+
+    _defaults = {'mode': lambda *x: 'transaction_id' }
+
+
+
 
 class AccountSatement(osv.osv):
     """Override account statement to add import."""
 
     _inherit = "account.bank.statement"
+    
+    def _get_default_statement_type(self,cr,uid,context=None):
+        """Return standard as type unless the key statement_type is in the context."""
+        if not context:
+            context = {}
+        if 'statement_type' in context:
+            return context.get('statement_type')
+        else:
+            return 'standard'
+    
     _columns = {
-        'credit_partner_id': fields.many2one(
-                                        'res.partner',
-                                        'Financial Partner',
-                                        required=False
-        ),
-
+        'import_config_id': fields.many2one('credit.statement.import.config',
+                                  'Configuration parameter'),
+        'credit_partner_id': fields.related('partner_id', 'credit_partner_id', type='many2one', relation='res.partner', string='Financial Partner', store=True, readonly=True),
         'statement_type': fields.selection(
                         [
                             ('standard', 'Standard'),
@@ -47,11 +84,11 @@ class AccountSatement(osv.osv):
                         readonly=True
 
         ),
-        'ref': fields.char('Ref.', size=64),
+        'ref': fields.char('Ref.', size=64, states={'draft': [('readonly', False)]}, readonly=True),
     }
 
     _defaults = {
-        'statement_type': lambda *x: 'standard',
+        'statement_type': _get_default_statement_type
     }
 
     def init(self, cr):
@@ -88,37 +125,42 @@ class AccountSatement(osv.osv):
             return False
 
 
-    def get_default_accounts(self, cursor, uid, context=None):
-        """we try to determine default accounts"""
+    def get_default_accounts(self, cursor, uid, receivable_account_id, context=None):
+        """We try to determine default accounts if not receivable_account_id set, otherwise
+        take it for both receivable and payable account"""
         # TODO find a cleaner way to do it
-        context = context or {}
-        property_obj = self.pool.get('ir.property')
-        model_fields_obj = self.pool.get('ir.model.fields')
-        model_fields_ids = model_fields_obj.search(
-            cursor,
-            uid,
-            [('name', 'in', ['property_account_receivable',
-                             'property_account_payable']),
-             ('model', '=', 'res.partner'),],
-            context=context
-        )
-        property_ids = property_obj.search(
-                    cursor,
-                    uid, [
-                            ('fields_id', 'in', model_fields_ids),
-                            ('res_id', '=', False),
-                        ],
-                    context=context
-        )
-
         account_receivable = False
         account_payable = False
-        for erp_property in property_obj.browse(cursor, uid,
-            property_ids, context=context):
-            if erp_property.fields_id.name == 'property_account_receivable':
-                account_receivable = erp_property.value_reference.id
-            elif erp_property.fields_id.name == 'property_account_payable':
-                account_payable = erp_property.value_reference.id
+        if receivable_account_id:
+            account_receivable = account_payable = receivable_account_id
+        else:
+            context = context or {}
+            property_obj = self.pool.get('ir.property')
+            model_fields_obj = self.pool.get('ir.model.fields')
+            model_fields_ids = model_fields_obj.search(
+                cursor,
+                uid,
+                [('name', 'in', ['property_account_receivable',
+                                 'property_account_payable']),
+                 ('model', '=', 'res.partner'),],
+                context=context
+            )
+            property_ids = property_obj.search(
+                        cursor,
+                        uid, [
+                                ('fields_id', 'in', model_fields_ids),
+                                ('res_id', '=', False),
+                            ],
+                        context=context
+            )
+
+            
+            for erp_property in property_obj.browse(cursor, uid,
+                property_ids, context=context):
+                if erp_property.fields_id.name == 'property_account_receivable':
+                    account_receivable = erp_property.value_reference.id
+                elif erp_property.fields_id.name == 'property_account_payable':
+                    account_payable = erp_property.value_reference.id
         return account_receivable, account_payable
 
     def _get_account_id(self, cursor, uid,
@@ -136,10 +178,20 @@ class AccountSatement(osv.osv):
             )
         return account_id
 
+    def balance_check(self, cr, uid, st_id, journal_type='bank', context=None):
+        """If standard bank statement check the balance, otherwise not."""
+        st = self.browse(cr, uid, st_id, context=context)
+        if st.statement_type == 'standard':
+            return super(AccountSatement, self).balance_check(cr, uid, st_id, journal_type, context)
+        else:
+            return True
+
+
     def credit_statement_import(self, cursor, uid, ids,
                                 partner_id,
                                 journal_id,
                                 commission_account_id,
+                                receivable_account_id,
                                 file_stream,
                                 ftype="csv",
                                 mode='transaction_id',
@@ -150,7 +202,7 @@ class AccountSatement(osv.osv):
         statement_line_obj = self.pool.get('account.bank.statement.line')
         attachment_obj = self.pool.get('ir.attachment')
 
-        account_receivable, account_payable = self.get_default_accounts(cursor, uid)
+        account_receivable, account_payable = self.get_default_accounts(cursor, uid, receivable_account_id)
 
         ##Order of cols does not matter but first row has to be header
         keys = ['transaction_id', 'label', 'date', 'amount', 'commission_amount']
@@ -206,6 +258,7 @@ class AccountSatement(osv.osv):
                     'statement_id': statement_id,
                     #'account_id': journal.default_debit_account_id
                 }
+                #TODO => take receivable_account_id into account !
                 values['account_id'] = self._get_account_id(
                         cursor,
                         uid,
@@ -258,3 +311,25 @@ class AccountSatement(osv.osv):
             raise exc
         return statement_id
 
+class account_bank_statement_line(osv.osv):
+    _inherit = "account.bank.statement.line"
+
+    def onchange_partner_id(self, cr, uid, ids, partner_id, context=None):
+        if context is None:
+            context = {}
+        res = super(account_bank_statement_line,self).onchange_partner_id(cr, uid, ids, partner_id, context)
+        if 'statement_config' in context:
+            c = self.pool.get("credit.statement.import.config").browse(cr,uid,context['statement_config'])
+            res['value'].update({'account_id':c.receivable_account_id})
+        return res
+
+    def onchange_type(self, cr, uid, line_id, partner_id, type, context=None):
+        if context is None:
+            context = {}
+        res = super(account_bank_statement_line,self).onchange_type(cr, uid, ids, line_id, partner_id, type, context)
+        if 'statement_config' in context:
+            c = self.pool.get("credit.statement.import.config").browse(cr,uid,context['statement_config'])
+            res['value'].update({'account_id':c.receivable_account_id})
+        return res
+
+            
