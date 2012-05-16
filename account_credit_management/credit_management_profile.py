@@ -195,9 +195,9 @@ class CreditManagementProfileRule (Model):
         """Return a where clauses statement for the given
            lookup date and computation mode of the rule"""
         fname = "_%s_get_boundary" % (rule_br.computation_mode,)
-        if hasattr(rule_br, fname):
-            fnc = getattr(rule_br, fname)
-            return fnc(lookup_date)
+        if hasattr(self, fname):
+            fnc = getattr(self, fname)
+            return fnc()
         else:
             raise Exception(_('Can not get date for computation mode: '
                                '%s is not implemented') % (fname,))
@@ -205,15 +205,17 @@ class CreditManagementProfileRule (Model):
     # -----------------------------------------
 
     def _get_first_level_lines(self, cursor, uid, rule_br, lookup_date, lines, context=None):
+        if not lines:
+            return []
         """Retrieve all the line that are linked to a frist level rules.
            We use Raw SQL for perf. Security rule where applied in
            profile object when line where retrieved"""
-        sql = ("SELECT DISTINCT mv_line.id"
-               " FROM account_move_line mv_line"
-               " WHERE mv_line.id in %(line_ids)s"
-               " AND NOT EXISTS (SELECT cr_line.id from credit_management_line cr_line"
+        sql = ("SELECT DISTINCT mv_line.id\n"
+               " FROM account_move_line mv_line\n"
+               " WHERE mv_line.id in %(line_ids)s\n"
+               " AND NOT EXISTS (SELECT cr_line.id from credit_management_line cr_line\n"
                "                  WHERE cr_line.move_line_id = mv_line.id)")
-        sql += "\n AND" + self._get_sql_date_boundary_for_computation_mode(cursor,
+        sql += " AND" + self._get_sql_date_boundary_for_computation_mode(cursor,
                                                                            uid, rule_br,
                                                                            lookup_date, context)
         data_dict = {'lookup_date': lookup_date, 'line_ids': tuple(lines),
@@ -230,15 +232,17 @@ class CreditManagementProfileRule (Model):
         # We filter line that have a level smaller than current one
         # TODO if code fits need refactor _get_first_level_lines and _get_other_level_lines
         # Code is not DRY
-        sql = ("SELECT mv_line.id"
-               " FROM account_move_line mv_line"
-               " JOIN  credit_management_line cr_line"
-               " ON (mv_line.id = cr_line.move_line_id)"
-               " WHERE cr_line.id = (SELECT credit_management_line.id FROM credit_management_line"
-               "                            WHERE credit_management_line.move_line_id = mv_line.id"
-                                            "ORDER BY credit_management_line.level desc limit 1)"
-               " AND where cr_line.level < %(level)s"
-               " AND mv_line.id in %(line_ids)s")
+        if not lines:
+            return []
+        sql = ("SELECT mv_line.id\n"
+               " FROM account_move_line mv_line\n"
+               " JOIN  credit_management_line cr_line\n"
+               " ON (mv_line.id = cr_line.move_line_id)\n"
+               " WHERE cr_line.id = (SELECT credit_management_line.id FROM credit_management_line\n"
+               "                            WHERE credit_management_line.move_line_id = mv_line.id\n"
+               "                              ORDER BY credit_management_line.level desc limit 1)\n"
+               " AND cr_line.level < %(level)s\n"
+               " AND mv_line.id in %(line_ids)s\n")
         sql += " AND " + self._get_sql_date_boundary_for_computation_mode(cursor,
                                                                           uid, rule_br,
                                                                           lookup_date, context)
@@ -257,7 +261,7 @@ class CreditManagementProfileRule (Model):
             rule_id = rule_id[0]
         matching_lines = []
         rule = self.browse(cursor, uid, rule_id, context=context)
-        if rule._is_first_level(cursor, uid, rule):
+        if self._is_first_level(cursor, uid, rule):
             matching_lines += self._get_first_level_lines(cursor, uid, rule, lookup_date,
                                                           lines, context=context)
         else:

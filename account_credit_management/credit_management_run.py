@@ -27,7 +27,7 @@ class CreditManagementRun(Model):
     _name = "credit.management.run"
     _rec_name = 'date'
     _description = """Credit management line generator"""
-    _columns = {'date': fields.date('Lookup date'),
+    _columns = {'date': fields.date('Lookup date', required=True),
                 'profile_ids': fields.many2many('credit.management.profile',
                                                 rel="credit_run_profile_rel",
                                                 string='Profiles',
@@ -71,8 +71,10 @@ class CreditManagementRun(Model):
                 continue
             # profile rules are sorted by level so iteration is in the correct order
             for rule in profile.profile_rule_ids:
-                rule.get_rule_lines(run.date, lines)
-                cr_line_obj._create_or_update_from_mv_lines(lines, rule.id, context=context)
+                rule_lines = rule.get_rule_lines(run.date, lines)
+                cr_line_obj.create_or_update_from_mv_lines(cursor, uid, [], rule_lines, rule.id, context=context)
+                print 'Here we go:', rule_lines
+                lines = list(set(lines) - set(rule_lines))
             #except Exception, exc:
                 #report.append(unicode(exc))
         return False

@@ -18,5 +18,5 @@ Feature: Ensure that mail credit line generation first pass is correct
     Given I need a "credit.management.run" with oid: credit_management.run1
     And having:
       | name |      value |
-      | name | 2012-03-01 |
+      | date | 2012-03-01 |
     Then I launch the credit run
