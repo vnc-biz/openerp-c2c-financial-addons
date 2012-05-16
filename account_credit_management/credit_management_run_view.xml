@@ -7,7 +7,7 @@
       <field name="type">tree</field>
       <field name="arch" type="xml">
         <tree> <!-- editable="bottom" -->
-          <field name="name"/>
+          <field name="date"/>
           <field name="state"/>
         </tree>
       </field>
@@ -19,7 +19,7 @@
       <field name="type">form</field>
       <field name="arch" type="xml">
         <form> <!-- editable="bottom" -->
-          <field name="name"/>
+          <field name="date"/>
           <newline/>
           <notebook colspan="4">
             <page string="Profile">

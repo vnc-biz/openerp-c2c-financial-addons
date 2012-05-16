@@ -25,8 +25,9 @@ class CreditManagementRun(Model):
     """Credit management run generate all credit management lines and reject"""
 
     _name = "credit.management.run"
+    _rec_name = 'date'
     _description = """Credit management line generator"""
-    _columns = {'name': fields.date('Lookup date'),
+    _columns = {'date': fields.date('Lookup date'),
                 'profile_ids': fields.many2many('credit.management.profile',
                                                 rel="credit_run_profile_rel",
                                                 string='Profiles',
@@ -51,6 +52,7 @@ class CreditManagementRun(Model):
     def generate_credit_lines(self, cursor, uid, run_id, context=None):
         """Generate credit management lines"""
         context = context or {}
+        cr_line_obj = self.pool.get('credit.management.line')
         if isinstance(run_id, list):
             run_id = run_id[0]
         run = self.browse(cursor, uid, run_id, context=context)
@@ -64,7 +66,13 @@ class CreditManagementRun(Model):
             if profile.do_nothing:
                 continue
             #try:
-            lines = profile._get_moves_line_to_process(run.name, context=context)
+            lines = profile._get_moves_line_to_process(run.date, context=context)
+            if not lines:
+                continue
+            # profile rules are sorted by level so iteration is in the correct order
+            for rule in profile.profile_rule_ids:
+                rule.get_rule_lines(run.date, lines)
+                cr_line_obj._create_or_update_from_mv_lines(lines, rule.id, context=context)
             #except Exception, exc:
                 #report.append(unicode(exc))
         return False

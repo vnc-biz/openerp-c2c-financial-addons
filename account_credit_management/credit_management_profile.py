@@ -19,6 +19,7 @@
 #
 ##############################################################################
 from openerp.osv.orm import Model, fields
+from openerp.tools.translate import _
 
 class CreditManagementProfile(Model):
     """Define a profile of reminder"""
@@ -42,7 +43,9 @@ class CreditManagementProfile(Model):
     def _get_account_related_lines(self, cursor, uid, profile_id, lookup_date, lines, context=None):
         """ We get all the lines related to accounts with given credit profile.
             We try not to use direct SQL in order to respect security rules.
-            As we define the first set it is important"""
+            As we define the first set it is important, The date is used to do a prefilter.
+            !!!We take the asumption that only receivable lines have a maturity date
+            and account must be reconcillable"""
         context = context or {}
         move_l_obj = self.pool.get('account.move.line')
         account_obj = self.pool.get('account.account')
@@ -66,7 +69,9 @@ class CreditManagementProfile(Model):
             As we define the first set it is important.
             The profile relation field MUST be named credit_profile_id
             and the model must have a relation
-            with account move line"""
+            with account move line.
+            !!! We take the asumption that only receivable lines have a maturity date
+            and account must be reconcillable"""
         # MARK possible place for a good optimisation
         context = context or {}
         my_obj = self.pool.get(model)
@@ -168,3 +173,95 @@ class CreditManagementProfileRule (Model):
     _constraints = [(_check_level_mode,
                      'The smallest level can not be of type Previous reminder',
                      ['level'])]
+
+    def _is_first_level(self, cursor, uid, rule_br, context=None):
+        """Check if rule has the smallest priority"""
+        first_rule = self.search(cursor, uid, [('profile_id', '=', rule_br.profile_id.id)],
+                                 order='level asc', limit=1, context=context)
+        return first_rule[0] == rule_br.id
+    # ----- time related functions ---------
+
+    def _net_days_get_boundary(self):
+        return " (mv_line.date_maturity + %(delay)s)::date <= date(%(lookup_date)s)"
+
+    def _end_of_month_get_boundary(self):
+        return ("(date_trunc('MONTH', (mv_line.date_maturity + %(delay)s))+INTERVAL '1 MONTH - 1 day')::date"
+                "<= date(%(lookup_date)s)")
+
+    def _previous_date_get_boundary(self):
+        return "(cr_line.date + %(delay)s)::date <= date(%(lookup_date)s)"
+
+    def _get_sql_date_boundary_for_computation_mode(self, cursor, uid, rule_br, lookup_date, context=None):
+        """Return a where clauses statement for the given
+           lookup date and computation mode of the rule"""
+        fname = "_%s_get_boundary" % (rule_br.computation_mode,)
+        if hasattr(rule_br, fname):
+            fnc = getattr(rule_br, fname)
+            return fnc(lookup_date)
+        else:
+            raise Exception(_('Can not get date for computation mode: '
+                               '%s is not implemented') % (fname,))
+
+    # -----------------------------------------
+
+    def _get_first_level_lines(self, cursor, uid, rule_br, lookup_date, lines, context=None):
+        """Retrieve all the line that are linked to a frist level rules.
+           We use Raw SQL for perf. Security rule where applied in
+           profile object when line where retrieved"""
+        sql = ("SELECT DISTINCT mv_line.id"
+               " FROM account_move_line mv_line"
+               " WHERE mv_line.id in %(line_ids)s"
+               " AND NOT EXISTS (SELECT cr_line.id from credit_management_line cr_line"
+               "                  WHERE cr_line.move_line_id = mv_line.id)")
+        sql += "\n AND" + self._get_sql_date_boundary_for_computation_mode(cursor,
+                                                                           uid, rule_br,
+                                                                           lookup_date, context)
+        data_dict = {'lookup_date': lookup_date, 'line_ids': tuple(lines),
+                     'delay': rule_br.delay_days}
+
+        cursor.execute(sql, data_dict)
+        res = cursor.fetchall()
+        if not res:
+            return []
+        return [x[0] for x in res]
+
+
+    def _get_other_level_lines(self, cursor, uid, rule_br, lookup_date, lines, context=None):
+        # We filter line that have a level smaller than current one
+        # TODO if code fits need refactor _get_first_level_lines and _get_other_level_lines
+        # Code is not DRY
+        sql = ("SELECT mv_line.id"
+               " FROM account_move_line mv_line"
+               " JOIN  credit_management_line cr_line"
+               " ON (mv_line.id = cr_line.move_line_id)"
+               " WHERE cr_line.id = (SELECT credit_management_line.id FROM credit_management_line"
+               "                            WHERE credit_management_line.move_line_id = mv_line.id"
+                                            "ORDER BY credit_management_line.level desc limit 1)"
+               " AND where cr_line.level < %(level)s"
+               " AND mv_line.id in %(line_ids)s")
+        sql += " AND " + self._get_sql_date_boundary_for_computation_mode(cursor,
+                                                                          uid, rule_br,
+                                                                          lookup_date, context)
+        data_dict =  {'lookup_date': lookup_date, 'line_ids': tuple(lines),
+                     'delay': rule_br.delay_days, 'level': rule_br.level}
+
+        cursor.execute(sql, data_dict)
+        res = cursor.fetchall()
+        if not res:
+            return []
+        return [x[0] for x in res]
+
+    def get_rule_lines(self, cursor, uid, rule_id, lookup_date, lines, context=None):
+        """get all move lines in entry lines that match the current rule"""
+        if isinstance(rule_id, list):
+            rule_id = rule_id[0]
+        matching_lines = []
+        rule = self.browse(cursor, uid, rule_id, context=context)
+        if rule._is_first_level(cursor, uid, rule):
+            matching_lines += self._get_first_level_lines(cursor, uid, rule, lookup_date,
+                                                          lines, context=context)
+        else:
+            matching_lines += self._get_other_level_lines(cursor, uid, rule, lookup_date,
+                                                          lines, context=context)
+
+        return matching_lines

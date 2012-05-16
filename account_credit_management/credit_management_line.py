@@ -86,3 +86,6 @@ class CreditManagementLine (Model):
     _defaults = {'state': 'draft',
                  'company_id': lambda s,cr,uid,c: s.pool.get('res.company')._company_default_get(
                                       cr, uid, 'res.partner.address', context=c),}
+
+    def create_or_update_from_mv_lines(self, cursor, uid, ids, lines, rule_id, context=None):
+        print 'TODO'
