@@ -19,9 +19,20 @@
 #
 ##############################################################################
 from openerp.osv.orm import Model, fields
+from openerp.tools.translate import _
 
 class AccountAccount(Model):
     """Add a link to a credit management profile on account account"""
+
+
+    def _check_account_type_compatibility(self, cursor, uid, acc_ids, context=None):
+        """We check that account is of type reconcile"""
+        if not isinstance(acc_ids, list):
+            acc_ids = [acc_ids]
+        for acc in self.browse(cursor, uid, acc_ids, context):
+            if acc.credit_profile_id and not acc.reconcile:
+                return False
+        return True
 
     _inherit = "account.account"
     _description = """Add a link to a credit profile"""
@@ -29,6 +40,10 @@ class AccountAccount(Model):
                                                      'Credit management profile',
                                                      help=("Define global credit profile"
                                                            "order is account partner invoice"))}
+
+    _constraints = [(_check_account_type_compatibility,
+                     _('You can not set a credit profile on a non reconciliable account'),
+                     ['credit_profile_id'])]
 
 class AccountInvoice(Model):
     """Add a link to a credit management profile on account account"""
