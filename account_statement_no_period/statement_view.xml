@@ -21,6 +21,30 @@
         </field>
     </record>
 
+    <record id="view_banking_bank_statement_form_add_period" model="ir.ui.view">
+        <field name="name">account.bank.statement.form.add_period</field>
+        <field name="inherit_id" ref="account.view_bank_statement_form" />
+        <field name="model">account.bank.statement</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <xpath expr="/form/notebook/page[@string='Transaction']/field/tree/field[@name='ref']" position="after">
+                <field name="period_id"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_banking_bank_statement_add_period_2" model="ir.ui.view">
+        <field name="name">account.bank.statement.form.add_period2</field>
+        <field name="inherit_id" ref="account.view_bank_statement_form" />
+        <field name="model">account.bank.statement</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="/form/notebook/page[@string='Transaction']/field/form/field[@name='ref']" position="after">
+                    <field name="period_id"/>
+                </xpath>
+            </data>
+        </field>
+    </record>
     
 
 </data>

@@ -27,16 +27,32 @@
  'complexity': 'normal', #easy, normal, expert
  'depends': ['base_transaction_id','account_statement_no_period'],
  'description': """
- This allows you to import statement from financial credit partners like Visa.
- The module takes in account commission and partner relation.
- The module creates a account bank statement after the import.
- You can now confirm the statement and it will create the correct account move.
+ The goal of this module is to help dealing with huge volume of reconciliation through
+ payment offices like Paypal, Lazer, Visa, Amazon and so on. It's mostly used for
+ E-commerce.
+ 
+ Features:
+ 
+ 1) This module adds a new view on bank statement called 'Treasury Statement' that allow you 
+ to import your bank transactions given by those payment offices. It provide a standard
+ .csv or .xls file (you'll find it in the 'data' folder) that you can easily import. We take care
+ of:
+  - Account commission and partner relation
+  - Can force an account for the reconciliation
+ 
+ 2) Adds a report on bank statement that can be used for Checks
+ 
+ 3) When an error occurs in a bank statement, it will go through all line anyway and summarize 
+ all the erronous line in a same popup instead of raising and crashing on every step.
+ 
  """,
  'website': 'http://www.camptocamp.com',
  'init_xml': [],
  'update_xml': [
      'statement_view.xml',
      'wizard/import_statement_view.xml',
+     'report/bank_statement_webkit_header.xml',
+     'report.xml',
  ],
  'demo_xml': [],
  'test': [],

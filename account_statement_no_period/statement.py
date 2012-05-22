@@ -71,7 +71,8 @@ class AccountSatement(osv.osv):
     
     def create_move_from_st_line(self, cr, uid, st_line_id, company_currency_id, st_line_number, context=None):
         """Override a large portion of the code to compute the periode for each line instead of
-        taking the period of the whole statement."""
+        taking the period of the whole statement.
+        Remove the entry posting on generated account moves."""
         if context is None:
             context = {}
         res_currency_obj = self.pool.get('res.currency')
@@ -173,7 +174,49 @@ class AccountSatement(osv.osv):
                         _('Journal item "%s" is not valid.') % line.name)
 
         # Bank statements will not consider boolean on journal entry_posted
-        account_move_obj.post(cr, uid, [move_id], context=context)
+        # We don't want to post validate the entries
+        # account_move_obj.post(cr, uid, [move_id], context=context)    # Chg
         return move_id
-    
-    
+
+    def _get_st_number_period(self, cr, uid, date, journal_sequence_id):
+        """Retrieve the name of bank statement from sequence, according to the period 
+        corresponding to the date passed in args"""
+        year = self.pool.get('account.period').browse(cr, uid, self._get_period(cr, uid, date)).fiscalyear_id.id
+        c = {'fiscalyear_id': year}
+        obj_seq = self.pool.get('ir.sequence')
+        if journal_sequence_id:
+            st_number = obj_seq.next_by_id(cr, uid, journal_sequence_id, context=c)
+        else:
+            st_number = obj_seq.next_by_code(cr, uid, 'account.bank.statement', context=c)
+        return st_number
+        
+    def button_confirm_bank(self, cr, uid, ids, context=None):
+        """Take Period from date instead of the one on statement"""
+        if context is None: context = {}
+        for st in self.browse(cr, uid, ids, context=context):
+            if not st.name == '/':
+                st_number = st.name
+            else:
+                seq_id = st.journal_id.sequence_id and st.journal_id.sequence_id.id or False
+                st_number = self._get_st_number_period(cr, uid, st.date, seq_id)
+            self.write(cr, uid, st.id, {'name': st_number})
+        return super(AccountSatement, self).button_confirm_bank(cr, uid, ids, context)
+
+class AccountSatementLine(osv.osv):
+    '''
+    Adds the period on line, matched on the date.
+    '''
+    _inherit = 'account.bank.statement.line'
+
+    def _get_period(self, cursor, user, context=None):
+        date = context.get('date', None)
+        periods = self.pool.get('account.period').find(cursor, user, dt=date)
+        return periods and periods[0] or False
+
+    _columns = {
+        'period_id': fields.many2one('account.period', 'Period', required=True),
+    }
+
+    _defaults = {
+        'period_id': _get_period,
+    }

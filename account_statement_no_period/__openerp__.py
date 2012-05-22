@@ -29,7 +29,8 @@
  'complexity': 'normal', #easy, normal, expert
  'depends': ['account'],
  'description': """
- Remove the period on the bank statement, and compute it for each line based on their date instead.
+ Remove the period on the bank statement, and compute it for each line based on their date instead. 
+ Bank statement will not validate the generated entries anymore.
  """,
  'website': 'http://www.camptocamp.com',
  'init_xml': [],

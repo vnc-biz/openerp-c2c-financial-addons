@@ -34,11 +34,9 @@
             </tree>
         </field>
     </record>
-
-
-
-    <record id="account.action_bank_statement_periodic_tree" model="ir.actions.act_window">
-            <field name="domain">[('journal_id.type', '=', 'bank'),('statement_type', '=', 'standard')]</field>
+    
+    <record id="account.action_bank_statement_tree" model="ir.actions.act_window">
+            <field name="domain" eval="[('journal_id.type', '=', 'bank'),('statement_type', '=', 'standard')]" />
     </record>
         
     <record id="view_bank_statement_form" model="ir.ui.view">
@@ -47,13 +45,28 @@
         <field name="inherit_id" ref="account.view_bank_statement_form"/>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <field name='company_id' widget="selection" groups="base.group_multi_company" position="after">
+            <!-- <field name='company_id' widget="selection" groups="base.group_multi_company" position="after"> -->
+            <group col="7" colspan="4" position="after">
                 <field name="statement_type"/>
                 <!-- <field name="credit_partner_id"/>
                                 <field name="ref"/> -->
-            </field>
+            </group>
         </field>
     </record>
+    
+    <record model="ir.ui.view" id="id_in_statement_line">
+        <field name="name">account.bank.statement.line.inherit</field>
+        <field name="model">account.bank.statement</field>
+        <field name="inherit_id" ref="account.view_bank_statement_periodic_form"/>
+        <field name="priority" eval="30"/>
+        <field name="arch" type="xml">
+                <xpath expr="/form/notebook/page[@string='Journal Entries']/field/tree/field[@name='ref']" position="before">
+                    <field name="id" />
+                </xpath>
+        </field>
+    </record>
+
+    
     <record id="view_treasury_statement_search" model="ir.ui.view">
         <field name="name">account.treasury.statement.search</field>
         <field name="model">account.bank.statement</field>
@@ -97,8 +110,6 @@
                 <field name="journal_id"/>
                 <field name="credit_partner_id"/>
                 <field name="state"/>
-                <button type="object" string="Cancel" name="button_cancel" states="confirm" icon="gtk-cancel"/>
-                <button type="object" string="Confirm" name="button_confirm_bank" states="draft" icon="terp-camera_test"/>
             </tree>
         </field>
     </record>
@@ -112,9 +123,9 @@
             <form string="Treasury Statement">
                 <group col="7" colspan="4">
                     <field name="name" select="1"/>
-                    <field name="import_config_id" select="1"/>
+                    <field name="import_config_id" select="1" required="1" on_change="onchange_imp_config_id(import_config_id)"/>
                     <field name="date" select="1" on_change="onchange_date(date, company_id)"/>
-                    <field name="journal_id" domain="[('type', '=', 'bank')]" on_change="onchange_journal_id(journal_id)" select="1" widget="selection" invisible="1"/>
+                    <field name="journal_id" domain="[('type', '=', 'bank')]" select="1" widget="selection" invisible="1"/>
                     <newline/>
                     <field name="statement_type"/>
                     <field name="credit_partner_id"/>
@@ -124,6 +135,8 @@
                                         <field name="balance_start"/>
                                         <field name="balance_end_real"/> -->
                     <field name="currency" invisible="1"/>
+                    
+                    <field name="account_id" invisible="1"/>
                     <field name='company_id' widget="selection" groups="base.group_multi_company" />
                 </group>
                 <notebook colspan="4">
@@ -131,21 +144,25 @@
                         <field colspan="4" name="line_ids" nolabel="1" context="{'date':date,'statement_config':import_config_id}">
                             <tree editable="bottom" string="Statement lines">
                                 <field name="sequence" readonly="1" invisible="1"/>
+                                <field name="id"/>
                                 <field name="date" groups="base.group_extended"/>
                                 <field name="name"/>
                                 <field name="ref"/>
-                                <field name="partner_id" on_change="onchange_partner_id(partner_id)"/>
-                                <field name="type" on_change="onchange_type(partner_id, type)"/>
+                                <field name="period_id"/>
+                                <field name="partner_id" on_change="onchange_partner_id(partner_id,context)"/>
+                                <field name="type" on_change="onchange_type(partner_id, type,context)"/>
                                 <field domain="[('journal_id','=',parent.journal_id), ('company_id', '=', parent.company_id)]" name="account_id"/>
                                 <field name="analytic_account_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', parent.company_id), ('type', '&lt;&gt;', 'view')]"/>
                                 <field name="amount"/>
                             </tree>
                             <form string="Statement lines">
+                                <field name="id"/>
                                 <field name="date"/>
                                 <field name="name"/>
                                 <field name="ref"/>
-                                <field name="partner_id" on_change="onchange_partner_id(partner_id)"/>
-                                <field name="type" on_change="onchange_type(partner_id, type)"/>
+                                <field name="period_id"/>
+                                <field name="partner_id" on_change="onchange_partner_id(partner_id,context)"/>
+                                <field name="type" on_change="onchange_type(partner_id, type,context)"/>
                                 <field domain="[('journal_id', '=', parent.journal_id), ('type', '&lt;&gt;', 'view'), ('company_id', '=', parent.company_id)]" name="account_id"/>
                                 <field name="analytic_account_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', parent.company_id), ('type', '&lt;&gt;', 'view')]"/>
                                 <field name="amount"/>
