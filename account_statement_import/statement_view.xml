@@ -2,26 +2,50 @@
 <openerp>
 <data>
 
+    <!-- Account Move Line : add statement_treasury_id -->
+     <record id="view_move_line_tree" model="ir.ui.view">
+            <field name="name">account.move.line.tree</field>
+            <field name="model">account.move.line</field>
+            <field name="type">tree</field>
+            <field name="inherit_id" ref="account.view_move_line_tree"/>
+            <field name="arch" type="xml">
+                <field name="ref" position="after">
+                    <field name="statement_treasury_id"/>
+                </field>
+            </field>
+        </record>
+        <record id="view_account_move_line_filter" model="ir.ui.view">
+            <field name="model">account.move.line</field>
+            <field name="type">search</field>
+            <field name="inherit_id" ref="account.view_account_move_line_filter"/>
+            <field name="arch" type="xml">
+                <field name="period_id" context="{'period_id':self}" position="after">
+                    <field name="statement_treasury_id"/>
+                </field>
+            </field>
+        </record>
+        
     <record id="statement_importer_view_form" model="ir.ui.view">
-        <field name="name">credit.statement.import.config.view</field>
-        <field name="model">credit.statement.import.config</field>
+        <field name="name">account.treasury.statement.profil.view</field>
+        <field name="model">account.treasury.statement.profil</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Import statement">
                 <separator string="" colspan="4"/>
-                <field name="name" />
-                <field name="partner_id" />
-                <field name="journal_id" />
+                <field name="name" select="1" />
+                <field name="partner_id" select="1"/>
+                <field name="journal_id" select="1"/>
                 <field name="commission_account_id" />
+                <field name="commission_analytic_id" />
                 <field name="receivable_account_id" />
-                <field name="mode"/>
+                <field name="force_partner_on_bank"/>
             </form>
         </field>
     </record>
 
     <record id="statement_importer_view_tree" model="ir.ui.view">
-        <field name="name">credit.statement.import.config.view</field>
-        <field name="model">credit.statement.import.config</field>
+        <field name="name">account.treasury.statement.profil.view</field>
+        <field name="model">account.treasury.statement.profil</field>
         <field name="type">tree</field>
         <field name="arch" type="xml">
             <tree string="Import statement">
@@ -29,50 +53,27 @@
                 <field name="partner_id" />
                 <field name="journal_id" />
                 <field name="commission_account_id" />
+                <field name="commission_analytic_id" />
                 <field name="receivable_account_id" />
-                <field name="mode"/>
+                <field name="force_partner_on_bank"/>
             </tree>
         </field>
     </record>
-    
-    <record id="account.action_bank_statement_tree" model="ir.actions.act_window">
-            <field name="domain" eval="[('journal_id.type', '=', 'bank'),('statement_type', '=', 'standard')]" />
-    </record>
-        
-    <record id="view_bank_statement_form" model="ir.ui.view">
-        <field name="name">account.bank.statement.form</field>
-        <field name="model">account.bank.statement</field>
-        <field name="inherit_id" ref="account.view_bank_statement_form"/>
-        <field name="type">form</field>
-        <field name="arch" type="xml">
-            <!-- <field name='company_id' widget="selection" groups="base.group_multi_company" position="after"> -->
-            <group col="7" colspan="4" position="after">
-                <field name="statement_type"/>
-                <!-- <field name="credit_partner_id"/>
-                                <field name="ref"/> -->
-            </group>
-        </field>
+    <record id="action_treasury_statement_profil_tree" model="ir.actions.act_window">
+        <field name="name">Treasury Statements Profile</field>
+        <field name="res_model">account.treasury.statement.profil</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
     </record>
     
-    <record model="ir.ui.view" id="id_in_statement_line">
-        <field name="name">account.bank.statement.line.inherit</field>
-        <field name="model">account.bank.statement</field>
-        <field name="inherit_id" ref="account.view_bank_statement_periodic_form"/>
-        <field name="priority" eval="30"/>
-        <field name="arch" type="xml">
-                <xpath expr="/form/notebook/page[@string='Journal Entries']/field/tree/field[@name='ref']" position="before">
-                    <field name="id" />
-                </xpath>
-        </field>
-    </record>
-
+    <menuitem string="Intermediate Statements Profile" action="action_treasury_statement_profil_tree" id="menu_treasury_statement_profil_tree" parent="account.menu_configuration_misc" sequence="30"/>    
     
     <record id="view_treasury_statement_search" model="ir.ui.view">
         <field name="name">account.treasury.statement.search</field>
-        <field name="model">account.bank.statement</field>
+        <field name="model">account.treasury.statement</field>
         <field name="type">search</field>
         <field name="arch" type="xml">
-            <search string="Search Treasury Statements">
+            <search string="Search Intermediate Statements">
                 <group>
                     <filter string="Draft" domain="[('state','=','draft')]" icon="terp-document-new"/>
                     <filter string="Confirmed" domain="[('state','=','confirm')]" icon="terp-camera_test"/>
@@ -99,7 +100,7 @@
 
     <record id="view_treasury_statement_tree" model="ir.ui.view">
         <field name="name">account.treasury.statement.tree</field>
-        <field name="model">account.bank.statement</field>
+        <field name="model">account.treasury.statement</field>
         <field name="type">tree</field>
         <field name="arch" type="xml">
             <tree colors="blue:state=='draft';black:state=='confirm'" string="Treasury Statement">
@@ -117,7 +118,7 @@
     
     <record id="view_treasury_statement_form" model="ir.ui.view">
         <field name="name">account.treasury.statement.form</field>
-        <field name="model">account.bank.statement</field>
+        <field name="model">account.treasury.statement</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Treasury Statement">
@@ -127,7 +128,6 @@
                     <field name="date" select="1" on_change="onchange_date(date, company_id)"/>
                     <field name="journal_id" domain="[('type', '=', 'bank')]" select="1" widget="selection" invisible="1"/>
                     <newline/>
-                    <field name="statement_type"/>
                     <field name="credit_partner_id"/>
                     <field name="ref"/>
                     
@@ -140,17 +140,16 @@
                     <field name='company_id' widget="selection" groups="base.group_multi_company" />
                 </group>
                 <notebook colspan="4">
-                    <page string="Transaction" name="statement_line_ids">
-                        <field colspan="4" name="line_ids" nolabel="1" context="{'date':date,'statement_config':import_config_id}">
+                    <page string="Transaction">
+                        <field colspan="4" name="line_ids" nolabel="1" context="{'date':date}">
                             <tree editable="bottom" string="Statement lines">
                                 <field name="sequence" readonly="1" invisible="1"/>
                                 <field name="id"/>
                                 <field name="date" groups="base.group_extended"/>
                                 <field name="name"/>
                                 <field name="ref"/>
-                                <field name="period_id"/>
-                                <field name="partner_id" on_change="onchange_partner_id(partner_id,context)"/>
-                                <field name="type" on_change="onchange_type(partner_id, type,context)"/>
+                                <field name="partner_id" on_change="onchange_partner_id(partner_id,import_config_id)"/>
+                                <field name="type" on_change="onchange_type(partner_id, type,import_config_id)"/>
                                 <field domain="[('journal_id','=',parent.journal_id), ('company_id', '=', parent.company_id)]" name="account_id"/>
                                 <field name="analytic_account_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', parent.company_id), ('type', '&lt;&gt;', 'view')]"/>
                                 <field name="amount"/>
@@ -160,9 +159,8 @@
                                 <field name="date"/>
                                 <field name="name"/>
                                 <field name="ref"/>
-                                <field name="period_id"/>
-                                <field name="partner_id" on_change="onchange_partner_id(partner_id,context)"/>
-                                <field name="type" on_change="onchange_type(partner_id, type,context)"/>
+                                <field name="partner_id" on_change="onchange_partner_id(partner_id,import_config_id)"/>
+                                <field name="type" on_change="onchange_type(partner_id, type,import_config_id)"/>
                                 <field domain="[('journal_id', '=', parent.journal_id), ('type', '&lt;&gt;', 'view'), ('company_id', '=', parent.company_id)]" name="account_id"/>
                                 <field name="analytic_account_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', parent.company_id), ('type', '&lt;&gt;', 'view')]"/>
                                 <field name="amount"/>
@@ -172,7 +170,7 @@
                             </form>
                         </field>
                     </page>
-                    <page string="Journal Entries" name="move_live_ids">
+                    <page string="Journal Entries">
                         <field colspan="4" name="move_line_ids" nolabel="1"/>
                     </page>
                 </notebook>
@@ -188,12 +186,12 @@
     </record>
     
     <record id="action_treasury_statement_tree" model="ir.actions.act_window">
-        <field name="name">Treasury Statements</field>
-        <field name="res_model">account.bank.statement</field>
+        <field name="name">Intermediate Statements</field>
+        <field name="res_model">account.treasury.statement</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form,graph</field>
-        <field name="domain">[('journal_id.type', '=', 'bank'),('statement_type', '=', 'credit_partner')]</field>
-        <field name="context">{'journal_type':'bank','statement_type':'credit_partner'}</field>
+        <field name="domain">[('journal_id.type', '=', 'bank')]</field>
+        <field name="context">{'journal_type':'bank'}</field>
         <field name="search_view_id" ref="view_treasury_statement_search"/>
         <field name="help">A treasury statement is a summary of all financial transactions occurring a credit card or any other type of intermediate financial account.</field>
     </record>

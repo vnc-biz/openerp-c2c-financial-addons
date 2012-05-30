@@ -4,7 +4,7 @@
 
         <report auto="False"
             id="report_bank_statement_webkit"
-            model="account.bank.statement"
+            model="account.treasury.statement"
             name="account_statement_import.report_bank_statement_webkit"
             file="account_statement_import/report/bank_statement_report.mako"
             string="Bank Statement"
@@ -17,7 +17,7 @@
             <field name="value_unpickle"
                 eval="'ir.actions.report.xml,' +str(ref('report_bank_statement_webkit'))"/>
             <field name="key">action</field>
-            <field name="model">account.bank.statement</field>
+            <field name="model">account.treasury.statement</field>
         </record>
 
     </data>

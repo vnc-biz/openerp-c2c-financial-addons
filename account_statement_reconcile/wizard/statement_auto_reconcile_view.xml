@@ -9,7 +9,8 @@
              <field name="arch" type="xml">
                 <form string="Reconciliation">
                     <separator string="Reconciliation" colspan="4"/>
-                    <label colspan="4" nolabel="1" string="For an invoice to be considered as paid, the invoice entries must be reconciled with counterparts, usually payments. With the automatic reconciliation functionality, OpenERP makes its own search for entries to reconcile in a series of accounts. It finds entries for each transaction where the id correspond."/>
+                    <label colspan="4" nolabel="1" string="For an invoice to be considered as paid, the invoice entries must be reconciled with counterparts, usually bank payments. It could also be reconciled with an intermediate account of a payment office (like PayPal, Amazone, ...). 
+                        With this automatic reconciliation functionality, OpenERP makes its own search for entries to reconcile in a series of accounts. It finds entries for each transaction where the id or origin correspond."/>
                     <newline/>
                     <group>
                         <field name="account_ids" colspan="4" domain="[('reconcile','=',True)]"/>
@@ -23,7 +24,6 @@
                         <field name="writeoff_acc_id" attrs="{ 'required':[('allow_write_off', '=', True)]}"/>
                         <field name="writeoff_amount_limit" attrs="{ 'required':[('allow_write_off', '=', True)]}"/>
                         <field name="journal_id" attrs="{ 'required':[('allow_write_off', '=', True)]}"/>
-                        <field name="period_id" attrs="{ 'required':[('allow_write_off', '=', True)]}"/>
                     </group>
                     <separator string ="" colspan="4"/>
                     <group colspan="2" col="4">

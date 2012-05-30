@@ -25,7 +25,7 @@
  'maintainer': 'Camptocamp',
  'category': 'Finance',
  'complexity': 'normal', #easy, normal, expert
- 'depends': ['base_transaction_id','account_statement_no_period'],
+ 'depends': ['base_transaction_id','account_statement_ext'],
  'description': """
  The goal of this module is to help dealing with huge volume of reconciliation through
  payment offices like Paypal, Lazer, Visa, Amazon and so on. It's mostly used for

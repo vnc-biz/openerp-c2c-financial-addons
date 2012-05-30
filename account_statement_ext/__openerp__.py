@@ -30,7 +30,7 @@
  'depends': ['account'],
  'description': """
  Remove the period on the bank statement, and compute it for each line based on their date instead. 
- Bank statement will not validate the generated entries anymore.
+ If errors occurs, it will summarize them all in one popup instead of blocking all the process at every error.
  """,
  'website': 'http://www.camptocamp.com',
  'init_xml': [],

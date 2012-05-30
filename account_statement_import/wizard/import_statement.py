@@ -34,7 +34,7 @@ class CreditPartnerStatementImporter(osv.osv_memory):
     _description = __doc__
     _columns = {
         
-        'import_config_id': fields.many2one('credit.statement.import.config',
+        'import_config_id': fields.many2one('account.treasury.statement.profil',
                                       'Import configuration parameter',
                                       required=True),
         'partner_id': fields.many2one('res.partner',
@@ -46,25 +46,29 @@ class CreditPartnerStatementImporter(osv.osv_memory):
         'input_statement': fields.binary('Statement file', required=True),
         'file_name': fields.char('File Name', size=128),
         'commission_account_id': fields.many2one('account.account',
-                                                 'Commission account',
+                                                         'Commission account',
+                                                         ),
+        'commission_analytic_id': fields.many2one('account.analytic.account',
+                                                     'Commission analytic account',
                                                  ),
         'receivable_account_id': fields.many2one('account.account',
                                                  'Force Receivable/Payable Account'),
-        'mode': fields.selection([('transaction_id', 'Based on transaction id'),
-                                  ('origin', 'Based on order number')],
-                                 string="Mode",
-                                 )
-    }
-
-    _defaults = {'mode': lambda *x: 'transaction_id' }
+        'force_partner_on_bank': fields.boolean('Force partner on bank move', 
+                                                    help="Tic that box if you want to use the credit insitute partner\
+                                                    in the counterpart of the treasury/banking move."
+                                                    ),
+    }   
 
     def onchange_import_config_id(self, cr, uid, ids, import_config_id, context=None):
         res={}
         if import_config_id:
-            c = self.pool.get("credit.statement.import.config").browse(cr,uid,import_config_id)
-            res = {'value': {'partner_id': c.partner_id.id, 'journal_id': c.journal_id.id, 'commission_account_id': \
-                    c.commission_account_id.id, 'receivable_account_id': c.receivable_account_id and c.receivable_account_id.id or False,
-                    'mode':c.mode}}
+            c = self.pool.get("account.treasury.statement.profil").browse(cr,uid,import_config_id)
+            res = {'value': {'partner_id': c.partner_id and c.partner_id.id or False,
+                    'journal_id': c.journal_id and c.journal_id.id or False, 'commission_account_id': \
+                    c.commission_account_id and c.commission_account_id.id or False, 
+                    'receivable_account_id': c.receivable_account_id and c.receivable_account_id.id or False,
+                    'commission_a':c.commission_analytic_id and c.commission_analytic_id.id or False,
+                    'force_partner_on_bank':c.force_partner_on_bank}}
         return res
 
     def import_statement(self, cursor, uid, req_id, context=None):
@@ -78,7 +82,7 @@ class CreditPartnerStatementImporter(osv.osv_memory):
             #We do not use osv exception we do not want to have it logged
             raise Exception(_('Please use a file with an extention'))
         sid = self.pool.get(
-                'account.bank.statement').credit_statement_import(
+                'account.treasury.statement').credit_statement_import(
                                             cursor,
                                             uid,
                                             False,

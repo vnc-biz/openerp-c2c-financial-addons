@@ -41,7 +41,7 @@ class BankStatementWebkit(report_sxw.rml_parse):
         company = self.pool.get('res.users').browse(self.cr, uid, uid, context=context).company_id
         header_report_name = ' - '.join((_('BORDEREAU DE REMISE DE CHEQUES'),
                                          company.name, company.currency_id.name))
-        statement = self.pool.get('account.bank.statement').browse(cursor,uid,context['active_id']);
+        statement = self.pool.get('account.treasury.statement').browse(cursor,uid,context['active_id']);
         footer_date_time = self.formatLang(str(datetime.today())[:19], date_time=True)
         self.localcontext.update({
             'cr': cursor,
@@ -67,6 +67,6 @@ class BankStatementWebkit(report_sxw.rml_parse):
         return statement_lines
 
 webkit_report.WebKitParser('report.report_bank_statement_webkit',
-                           'account.bank.statement',
+                           'account.treasury.statement',
                            'addons/account_statement_import/report/bank_statement_report.mako',
                            parser=BankStatementWebkit)

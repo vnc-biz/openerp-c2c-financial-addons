@@ -174,8 +174,7 @@ class AccountSatement(osv.osv):
                         _('Journal item "%s" is not valid.') % line.name)
 
         # Bank statements will not consider boolean on journal entry_posted
-        # We don't want to post validate the entries
-        # account_move_obj.post(cr, uid, [move_id], context=context)    # Chg
+        account_move_obj.post(cr, uid, [move_id], context=context)
         return move_id
 
     def _get_st_number_period(self, cr, uid, date, journal_sequence_id):
@@ -189,18 +188,73 @@ class AccountSatement(osv.osv):
         else:
             st_number = obj_seq.next_by_code(cr, uid, 'account.bank.statement', context=c)
         return st_number
-        
+
     def button_confirm_bank(self, cr, uid, ids, context=None):
-        """Take Period from date instead of the one on statement"""
-        if context is None: context = {}
+        """Completely override the method in order to have
+           an error message which displays all the messages
+           instead of having them pop one by one.
+           We have to copy paste a big block of code, changing the error
+           stack + managing period from date."""
+        # obj_seq = self.pool.get('irerrors_stack.sequence')
+        if context is None:
+            context = {}
         for st in self.browse(cr, uid, ids, context=context):
+            
+            j_type = st.journal_id.type
+            company_currency_id = st.journal_id.company_id.currency_id.id
+            if not self.check_status_condition(cr, uid, st.state, journal_type=j_type):
+                continue
+
+            self.balance_check(cr, uid, st.id, journal_type=j_type, context=context)
+            if (not st.journal_id.default_credit_account_id) \
+                    or (not st.journal_id.default_debit_account_id):
+                raise osv.except_osv(_('Configuration Error !'),
+                        _('Please verify that an account is defined in the journal.'))
+
             if not st.name == '/':
                 st_number = st.name
             else:
+# Begin Changes                
                 seq_id = st.journal_id.sequence_id and st.journal_id.sequence_id.id or False
                 st_number = self._get_st_number_period(cr, uid, st.date, seq_id)
-            self.write(cr, uid, st.id, {'name': st_number})
-        return super(AccountSatement, self).button_confirm_bank(cr, uid, ids, context)
+                # c = {'fiscalyear_id': st.period_id.fiscalyear_id.id}
+                # if st.journal_id.sequence_id:
+                #     st_number = obj_seq.next_by_id(cr, uid, st.journal_id.sequence_id.id, context=c)
+                # else:
+                #     st_number = obj_seq.next_by_code(cr, uid, 'account.bank.statement', context=c)
+# End Changes 
+            for line in st.move_line_ids:
+                if line.state <> 'valid':
+                    raise osv.except_osv(_('Error !'),
+                            _('The account entries lines are not in valid state.'))
+# begin changes
+            errors_stack = []
+            for st_line in st.line_ids:
+                try:
+                    if st_line.analytic_account_id:
+                        if not st.journal_id.analytic_journal_id:
+                            raise osv.except_osv(_('No Analytic Journal !'),
+                                             _("You have to assign an analytic journal on the '%s' journal!") % (st.journal_id.name,))
+                    if not st_line.amount:
+                        continue
+                    st_line_number = self.get_next_st_line_number(cr, uid, st_number, st_line, context)
+                    self.create_move_from_st_line(cr, uid, st_line.id, company_currency_id, st_line_number, context)
+                except osv.except_osv, exc:
+                    msg = "Line ID %s with ref %s had following error: %s" % (st_line.id, st_line.ref, exc.value)
+                    errors_stack.append(msg)
+                except Exception, exc:
+                    msg = "Line ID %s with ref %s had following error: %s" % (st_line.id, st_line.ref, str(exc))
+                    errors_stack.append(msg)
+            if errors_stack:
+                msg = u"\n".join(errors_stack)
+                raise osv.except_osv(_('Error'), msg)
+#end changes
+            self.write(cr, uid, [st.id], {
+                    'name': st_number,
+                    'balance_end_real': st.balance_end
+            }, context=context)
+            self.log(cr, uid, st.id, _('Statement %s is confirmed, journal items are created.') % (st_number,))
+        return self.write(cr, uid, ids, {'state':'confirm'}, context=context)
 
 class AccountSatementLine(osv.osv):
     '''

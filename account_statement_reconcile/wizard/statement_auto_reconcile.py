@@ -23,11 +23,10 @@ import netsvc
 
 from osv import osv, fields
 from tools.translate import _
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 from itertools import groupby
-
-logger = netsvc.Logger()
-
+import logging
+logger = logging.getLogger('account.statement.reconcile')
 
 class AccountsStatementAutoReconcile(osv.osv_memory):
     _name = 'account.statement.import.automatic.reconcile'
@@ -54,7 +53,6 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
         'writeoff_acc_id': fields.many2one('account.account', 'Account'),
         'writeoff_amount_limit': fields.float('Max amount allowed for write off'),
         'journal_id': fields.many2one('account.journal', 'Journal'),
-        'period_id': fields.many2one('account.period', 'Period'),
         'reconciled': fields.integer('Reconciled transactions', readonly=True),
         'allow_write_off': fields.boolean('Allow write off'),
     }
@@ -101,31 +99,41 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
         return bool(writeoff_limit >= abs(writeoff_amount))
 
     def _query_moves(self, cr, uid, form, context=None):
-        account_ids = [str(x.id) for x in form.account_ids]
-        sql_params = {'account_ids': tuple(account_ids)}
-        sql = ("SELECT l.account_id, i.transaction_id, i.origin, "
-               "i.id AS invoice_id, m.id AS move_id, l.id AS move_line_id, "
-               "l.debit, l.credit "
-               "FROM account_invoice i "
-               "LEFT JOIN account_move m "
-               "ON m.id = i.move_id "
-               "RIGHT JOIN account_move_line l "
-               "ON l.move_id = m.id "
-               "WHERE (i.reconciled = 'f' OR i.reconciled IS NULL) "
-               "AND i.type ='out_invoice' "
-               "AND (i.transaction_id IS NOT NULL or i.origin IS NOT NULL) "
-               "AND i.move_id is NOT NULL "
-               "AND l.reconcile_id IS NULL "
-               "AND l.state = 'valid' "
-               "AND l.account_id IN %(account_ids)s ")
+        """Select all move (debit>0) as candidate. Optionnal choice on invoice
+        will filter with an inner join on the related moves.
+        """
+        sql_params=[]
+        select_sql = ("SELECT "
+                   "l.account_id, "
+                   "l.ref as transaction_id, "
+                   "l.name as origin, "
+                   "l.id as invoice_id, "
+                   "l.move_id as move_id, "
+                   "l.id as move_line_id, "
+                   "l.debit, l.credit "
+                   "FROM account_move_line l "
+                   "INNER JOIN account_move m "
+                   "ON m.id = l.move_id ")
+        where_sql = (
+                   "WHERE "
+                   # "AND l.move_id NOT IN %(invoice_move_ids)s "
+                   "l.reconcile_id IS NULL "
+                   # "AND NOT EXISTS (select id FROM account_invoice i WHERE i.move_id = m.id) "
+                   "AND l.debit > 0 ")
+        if form.account_ids:
+            account_ids = [str(x.id) for x in form.account_ids]
+            sql_params = {'account_ids': tuple(account_ids)}
+            where_sql += "AND l.account_id in %(account_ids)s "
         if form.invoice_ids:
             invoice_ids = [str(x.id) for x in form.invoice_ids]
-            sql += "AND i.id IN %(invoice_ids)s "
+            where_sql += "AND i.id IN %(invoice_ids)s "
+            select_sql += "INNER JOIN account_invoice i ON m.id = i.move_id "
             sql_params['invoice_ids'] = tuple(invoice_ids)
         if form.partner_ids:
             partner_ids = [str(x.id) for x in form.partner_ids]
-            sql += "AND i.partner_id IN %(partner_ids)s "
+            where_sql += "AND l.partner_id IN %(partner_ids)s "
             sql_params['partner_ids'] = tuple(partner_ids)
+        sql = select_sql + where_sql
         cr.execute(sql, sql_params)
         return cr.dictfetchall()
 
@@ -134,7 +142,8 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
                       'invoice_move_ids': tuple(invoice_move_ids)}
         sql = ("SELECT l.id, l.move_id, "
                "l.ref, l.name, "
-               "l.debit, l.credit "
+               "l.debit, l.credit, "
+               "l.period_id as period_id "
                "FROM account_move_line l "
                "INNER JOIN account_move m "
                "ON m.id = l.move_id "
@@ -143,7 +152,6 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
                "AND l.reconcile_id IS NULL "
                "AND NOT EXISTS (select id FROM account_invoice i WHERE i.move_id = m.id) "
                "AND l.credit > 0")
-
         cr.execute(sql, sql_params)
         return cr.dictfetchall()
 
@@ -212,7 +220,8 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
     def reconcile(self, cr, uid, form_id, context=None):
         context = context or {}
         move_line_obj = self.pool.get('account.move.line')
-
+        period_obj = self.pool.get('account.period')
+        
         if isinstance(form_id, list):
             form_id = form_id[0]
 
@@ -225,43 +234,37 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
                                  _('You must select accounts to reconcile'))
 
         # returns a list with a dict per line :
-        # [{'reference': 'A', 'invoice_id': 1, 'move_id': 1, 'move_line_id': 1},
-        #  {'reference': 'A', 'invoice_id': 1, 'move_id': 1, 'move_line_id': 2},
-        #  {'reference': 'B', 'invoice_id': 3, 'move_id': 3, 'move_line_id': 3}],
+        # [{'account_id': 5,'reference': 'A', 'move_id': 1, 'move_line_id': 1},
+        #  {'account_id': 5,'reference': 'A', 'move_id': 1, 'move_line_id': 2},
+        #  {'account_id': 6,'reference': 'B', 'move_id': 3, 'move_line_id': 3}],
         moves = self._query_moves(cr, uid, form, context=context)
         if not moves:
             return False
         # returns a tree :
-        # {'A': {1: {1: {1: {'reference': 'A', 'invoice_id': 1, 'move_id': 1, 'move_line_id': 1}},
-        #               {2: {'reference': 'A', 'invoice_id': 1, 'move_id': 2, 'move_line_id': 2}}}},
-        #  'B': {3: {3: {3: {'reference': 'B', 'invoice_id': 3, 'move_id': 3, 'move_line_id': 3}}}}}
+        # { 5: {1: {1: {'reference': 'A', 'move_id': 1, 'move_line_id': 1}},
+        #          {2: {'reference': 'A', 'move_id': 1, 'move_line_id': 2}}}},
+        #   6: {3: {3: {'reference': 'B', 'move_id': 3, 'move_line_id': 3}}}}}
         moves_tree = self._groupby_keys(['account_id',
-                                         'invoice_id',
                                          'move_id',
                                          'move_line_id'],
                                          moves)
 
         reconciled = 0
-        ### Set the date for reconcile
-        if not context.has_key('date_p') or (context.has_key('date_p') and not context['date_p']):
-            # TODO check date to set
-            context['date_p'] = form.period_id.date_stop or False
-            print str(context) 
-        ###
+        details = ""
         for account_id, account_tree in moves_tree.iteritems():
             # [0] because one move id per invoice
-            account_move_ids = [invoice_tree.keys()[0] for
-                                invoice_tree in account_tree.values()]
+            account_move_ids = [move_tree.keys() for
+                                move_tree in account_tree.values()]
 
             account_payments = self._query_payments(cr, uid,
                                                     account_id,
-                                                    account_move_ids,
+                                                    account_move_ids[0],
                                                     context=context)
 
-            for invoice_id, invoice_tree in account_tree.iteritems():
+            for move_id, move_tree in account_tree.iteritems():
 
                 # in any case one invoice = one move
-                move_id, move_tree = invoice_tree.items()[0]
+                # move_id, move_tree = invoice_tree.items()[0]
 
                 move_line_ids = []
                 move_lines = []
@@ -286,6 +289,13 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
                     continue
 
                 payment_ids = [p['id'] for p in payments]
+                # take the period of the payment last move line
+                # it will be used as the reconciliation date
+                # and for the write off date
+                period_ids = [ml['period_id'] for ml in payments]
+                periods = period_obj.browse(
+                    cr, uid, period_ids, context=context)
+                last_period = max(periods, key=attrgetter('date_stop'))
 
                 reconcile_ids = move_line_ids + payment_ids
                 do_write_off = (allow_write_off and
@@ -293,29 +303,29 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
                                      cr, uid, move_lines + payments,
                                      form.writeoff_amount_limit,
                                      context=context))
+                # date of reconciliation
+                rec_ctx = dict(context, date_p=last_period.date_stop)
                 try:
                     if do_write_off:
-                        move_line_obj.reconcile(cr,
+                        r_id = move_line_obj.reconcile(cr,
                                                 uid,
                                                 reconcile_ids,
                                                 'auto',
                                                 form.writeoff_acc_id.id,
-                                                form.period_id.id,
+                                                # period of the write-off
+                                                last_period.id,
                                                 form.journal_id.id,
-                                                context)
-                        logger.notifyChannel("Auto statement reconcile", netsvc.LOG_INFO,
-                            _("Reconciled with write-off invoice id %s") % (invoice_id,))
+                                                context=rec_ctx)
+                        logger.info("Auto statement reconcile: Reconciled with write-off move id %s" % (move_id,))
                     else:
-                        move_line_obj.reconcile_partial(cr,
+                        r_id = move_line_obj.reconcile_partial(cr,
                                                         uid,
                                                         reconcile_ids,
                                                         'manual',
-                                                        context=context)
-                        logger.notifyChannel("Auto statement reconcile", netsvc.LOG_INFO,
-                            _("Reconciled invoice id %s") % (invoice_id,))
+                                                        context=rec_ctx)
+                        logger.info("Auto statement reconcile: Partial Reconciled move id %s" % (move_id,))
                 except Exception, exc:
-                    logger.notifyChannel("Auto statement reconcile", netsvc.LOG_ERROR,
-                        _("Can't reconcile invoice id %s because: %s") % (invoice_id, exc,))
+                    logger.error("Auto statement reconcile: Can't reconcile move id %s because: %s" % (move_id, exc,))
                 reconciled += 1
                 cr.commit()
         return self.return_stats(cr, uid, reconciled, context)
