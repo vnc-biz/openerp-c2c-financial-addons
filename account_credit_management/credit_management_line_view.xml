@@ -22,6 +22,7 @@
           <field name="profile_rule_id"/>
           <field name="profile_id"/>
           <field name="mail_id"/>
+          <field name="mail_status"/>
         </form>
       </field>
     </record>
@@ -46,6 +47,7 @@
           <field name="profile_rule_id"/>
           <field name="profile_id"/>
           <field name="mail_id"/>
+          <field name="mail_status"/>
         </tree>
       </field>
     </record>

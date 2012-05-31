@@ -25,9 +25,9 @@
             <page string="Profile">
               <field name="profile_ids" colspan="4"/>
             </page>
-            <page string="Report and reject">
-              <field name="rejected_ids" colspan="4"/>
+            <page string="Report and Errors">
               <field name="report" colspan="4"/>
+              <field name="manual_ids" colspan="4"/>
             </page>
           </notebook>
           <group col="3" colspan="4">
@@ -41,7 +41,6 @@
         </form>
       </field>
     </record>
-
 
 
     <record model="ir.actions.act_window" id="credit_management_run">

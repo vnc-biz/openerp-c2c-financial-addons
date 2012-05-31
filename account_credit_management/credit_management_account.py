@@ -18,6 +18,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from datetime import datetime
+
 from openerp.osv.orm import Model, fields
 from openerp.tools.translate import _
 
@@ -64,6 +66,7 @@ class AccountInvoice(Model):
                     line.write({'invoice_id': inv.id})
         return res
 
+
 class AccountMoveLine(Model):
     """Add a function field tha link the invoice to the move line
        It is mostly a performance trick as function search is way too
@@ -108,3 +111,66 @@ class AccountMoveLine(Model):
     #             store={'account.invoice': (_get_invoice, ['move_id'], 20)})}
 
     _columns = {'invoice_id': fields.many2one('account.invoice', 'Invoice')}
+
+
+    def _compute_residual_currency(self, cursor, uid, mv_line_br, lookup_date):
+        """Compute residual of a line with currency"""
+        cur_obj = self.pool.get('res.currency')
+        move_line_total = 0.0
+        for payment_line in mv_line_br.reconcile_partial_id.line_partial_ids:
+            if self._should_exlude_line(mv_line_br, lookup_date):
+                continue
+            if (payment_line.currency_id and mv_line_br.currency_id
+                and payment_line.currency_id.id == mv_line_br.currency_id.id):
+                move_line_total += payment_line.amount_currency
+            else:
+                context_unreconciled = ({'date': payment_line.date})
+                amount_in_foreign_currency = cur_obj.compute(cursor,
+                                                             uid,
+                                                             mv_line_br.company_id.currency_id.id,
+                                                             mv_line_br.currency_id.id,
+                                                             (payment_line.debit - payment_line.credit),
+                                                             round=False,
+                                                             context=context_unreconciled)
+                move_line_total += amount_in_foreign_currency
+        return move_line_total
+
+
+    def _compute_residual_standard(self, cursor, uid, mv_line_br, lookup_date):
+        """Compute residual of a line without currency"""
+        move_line_total = 0.0
+        for payment_line in mv_line_br.reconcile_partial_id.line_partial_ids:
+            if self._should_exlude_line(mv_line_br, lookup_date):
+                continue
+            move_line_total += (payment_line.debit - payment_line.credit)
+        return move_line_total
+
+
+    def _should_exlude_line(self, mv_line_br, payment_line, lookup_date):
+        """Check if line is applicable"""
+        if payment_line.id == mv_line_br.id:
+            return True
+        if (datetime.strptime(payment_line.date, "%Y-%m-%d").date()
+            > datetime.strptime(lookup_date, "%Y-%m-%d").date()):
+            return True
+        return False
+
+    #TODO REWRITE function to take care of multiple payment that's gonna be fun
+    def _amount_residual_from_date(self, cursor, uid, mv_line_br, lookup_date, context=None):
+        """
+        Code  taken from function _amount_residual of account/account_move_line.py
+        TODO refactor it (gasp) once I have got time and be more advances in scenarios.
+        Code computes residual amount at lookup date for mv_line_br in entry
+        """
+        context = context or {}
+        if mv_line_br.reconcile_id:
+            return (mv_line_br.amount_currency
+                    or (mv_line_br.debit - mv_line_br.credit))
+        if not mv_line_br.account_id.type in ('payable', 'receivable'):
+            return (mv_line_br.amount_currency
+                    or (mv_line_br.debit - mv_line_br.credit))
+        if mv_line_br.reconcile_partial_id:
+            if mv_line_br.currency_id:
+                return self._compute_residual_currency(cursor, uid, mv_line_br, lookup_date)
+            else:
+                return self._compute_residual_standard(cursor, uid, mv_line_br, lookup_date)

@@ -62,6 +62,7 @@
           <notebook colspan="4">
             <page string="Delay Setting">
               <field name="level"/>
+              <field name="canal"/>
               <field name="delay_days"/>
               <field name="computation_mode"/>
             </page>
@@ -81,6 +82,7 @@
         <tree  editable="bottom">
           <field name="name"/>
           <field name="level"/>
+          <field name="canal"/>
           <field name="delay_days"/>
           <field name="computation_mode"/>
           <field name="mail_template_id"/>

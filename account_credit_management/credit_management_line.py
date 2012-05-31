@@ -18,7 +18,14 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+import logging
+
 from openerp.osv.orm import Model, fields
+from openerp.tools.translate import _
+import pooler
+#from datetime import datetime
+
+logger = logging.getLogger('credit.line.management')
 
 class CreditManagementLine (Model):
     """A credit Management line decribe a line of amount due by a customer.
@@ -28,7 +35,7 @@ class CreditManagementLine (Model):
 
     _name = "credit.management.line"
     _description = """A credit Management line"""
-    _rec_name ="id"
+    _rec_name = "id"
 
     _columns = {'date': fields.date('Controlling date', required=True),
                 # maturity date of related move line we do not use a related field in order to
@@ -59,6 +66,11 @@ class CreditManagementLine (Model):
                 'amount_due': fields.float('Due Amount Tax inc.', required=True, readonly=True),
                 'balance_due': fields.float('Due balance', required=True, readonly=True),
                 'mail_id': fields.many2one('mail.thread', 'Sent mail', readonly=True),
+                'mail_status': fields.selection([('none', 'None'),
+                                                 ('error', 'Error'),
+                                                 ('sent', 'Done')],
+                                                'Mail status',
+                                                readonly=True),
 
                 'move_line_id': fields.many2one('account.move.line', 'Move line',
                                                 required=True, readonly=True),
@@ -77,15 +89,86 @@ class CreditManagementLine (Model):
                                              store=True, readonly=True),
 
                 'level': fields.related('profile_rule_id', 'level', type='float',
-                                         relation='credit.management.profile', string='Profile',
+                                         relation='credit.management.profile', string='Level',
                                          store=True, readonly=True),
-                'company_id': fields.many2one('res.company', 'Company'),
-
-            }
+                # Maybe it should be a related fields of move line company_id
+                'company_id': fields.many2one('res.company', 'Company')}
 
     _defaults = {'state': 'draft',
-                 'company_id': lambda s,cr,uid,c: s.pool.get('res.company')._company_default_get(
+                 'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(
                                       cr, uid, 'res.partner.address', context=c),}
 
-    def create_or_update_from_mv_lines(self, cursor, uid, ids, lines, rule_id, context=None):
-        print 'TODO'
+    def _update_from_mv_line(self, cursor, uid, ids, mv_line_br, rule_br,
+                             lookup_date, context=None):
+        """hook function to update line if required"""
+        context =  context or {}
+        return []
+
+    def _create_from_mv_line(self, cursor, uid, ids, mv_line_br,
+                             rule_br, lookup_date, context=None):
+        """Create credit line"""
+        acc_line_obj = self.pool.get('account.move.line')
+        context = context or {}
+        data_dict = {}
+        part_obj = self.pool.get('res.partner')
+        data_dict['date'] = lookup_date
+        data_dict['date_due'] = mv_line_br.date_maturity
+        data_dict['state'] = 'draft'
+        data_dict['canal'] = rule_br.canal
+        data_dict['invoice_id'] = (mv_line_br.invoice_id and mv_line_br.invoice_id.id
+                                   or False)
+        add = part_obj.address_get(cursor, uid, [mv_line_br.partner_id.id], adr_pref=['invoice', 'default'])
+        data_dict['partner_id'] = mv_line_br.partner_id.id
+        data_dict['address_id'] = add.get('invoice', add.get('default'))
+        if not data_dict['address_id']:
+            raise Exception(_('No address for partner %s') % (mv_line_br.partner_id.name))
+        data_dict['amount_due'] = (mv_line_br.amount_currency or mv_line_br.debit
+                                   or mv_line_br.credit)
+        data_dict['balance_due'] = acc_line_obj._amount_residual_from_date(cursor, uid, mv_line_br,
+                                                                      lookup_date, context=context)
+        data_dict['profile_rule_id'] = rule_br.id
+        data_dict['company_id'] = mv_line_br.company_id.id
+        data_dict['move_line_id'] = mv_line_br.id
+        print data_dict
+        import pdb; pdb.set_trace()
+
+        return [self.create(cursor, uid, data_dict)]
+
+
+    def create_or_update_from_mv_lines(self, cursor, uid, ids, lines,
+                                       rule_id, lookup_date, context=None):
+        """Create or update line base on rules"""
+        context = context or {}
+        rule_obj = self.pool.get('credit.management.profile.rule')
+        ml_obj = self.pool.get('account.move.line')
+        rule = rule_obj.browse(cursor, uid, rule_id, context)
+        current_lvl = rule.level
+        credit_line_ids = []
+        errors =  []
+        existings = self.search(cursor, uid, [('move_line_id', 'in', lines),
+                                              ('level', '=', current_lvl)])
+        for line in ml_obj.browse(cursor, uid, lines, context):
+            # we want to create as many line as possible
+            import pdb; pdb.set_trace()
+
+            db, pool = pooler.get_db_and_pool(cursor.dbname)
+
+            local_cr = db.cursor()
+            try:
+                if line.id in existings:
+                    # does nothing just a hook
+                    credit_line_ids += self._update_from_mv_line(local_cr, uid, ids,
+                                                                 line, rule, lookup_date,
+                                                                 context=context)
+                else:
+                    credit_line_ids += self._create_from_mv_line(local_cr, uid, ids,
+                                                                 line, rule, lookup_date,
+                                                                 context=context)
+            except Exception, exc:
+                logger.error(exc)
+                errors.append(unicode(exc))
+                local_cr.rollback()
+            finally:
+                local_cr.commit()
+                local_cr.close()
+            return (credit_line_ids, errors)

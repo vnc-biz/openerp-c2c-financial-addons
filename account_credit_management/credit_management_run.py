@@ -19,6 +19,8 @@
 #
 ##############################################################################
 from openerp.osv.orm import Model, fields
+from openerp.tools.translate import _
+from openerp.osv.osv import except_osv
 
 
 class CreditManagementRun(Model):
@@ -33,10 +35,6 @@ class CreditManagementRun(Model):
                                                 string='Profiles',
                                                 readonly=True,
                                                 states={'draft': [('readonly', False)]}),
-                'rejected_ids': fields.many2many('account.move.line',
-                                                 rel="credit_runreject_rel",
-                                                 string='Non evaluated lines',
-                                                 readonly=True),
                 'report': fields.text('Report', readonly=True),
 
                 'state': fields.selection([('draft', 'Draft'),
@@ -45,9 +43,24 @@ class CreditManagementRun(Model):
                                             ('error', 'Error')],
                                            string='State',
                                            required=True,
-                                           readonly=True)}
+                                           readonly=True),
+                 'manual_ids': fields.many2many('account.move.line',
+                                                rel="credit_runreject_rel",
+                                                string='Line to be handled manually',
+                                                readonly=True),}
 
     _defaults = {'state': 'draft'}
+
+    def check_run_date(self, cursor, uid, ids, lookup_date, context=None):
+        """Ensure that there is no credit line in the future using lookup_date"""
+        line_obj =  self.pool.get('credit.management.line')
+        lines = line_obj.search(cursor, uid, [('date', '>', lookup_date)],
+                                order='date DESC', limit=1)
+        if lines:
+            line = line_obj.browse(cursor, uid, lines[0])
+            raise except_osv(_('A run was already executed in a greater date'),
+                             _('Run date should be >= %s') % (line.date))
+
 
     def generate_credit_lines(self, cursor, uid, run_id, context=None):
         """Generate credit management lines"""
@@ -56,7 +69,9 @@ class CreditManagementRun(Model):
         if isinstance(run_id, list):
             run_id = run_id[0]
         run = self.browse(cursor, uid, run_id, context=context)
-        report = []
+        errors = []
+        manualy_managed_lines = []
+        run.check_run_date(run.date, context=context)
         profile_ids = run.profile_ids
         if not profile_ids:
             profile_obj = self.pool.get('credit.management.profile')
@@ -67,14 +82,22 @@ class CreditManagementRun(Model):
                 continue
             #try:
             lines = profile._get_moves_line_to_process(run.date, context=context)
+            tmp_manual = profile._check_lines_profiles(lines, context=context)
+            lines = list(set(lines) - set(tmp_manual))
+            manualy_managed_lines += tmp_manual
+            print'RAW lines -->', lines
             if not lines:
                 continue
             # profile rules are sorted by level so iteration is in the correct order
             for rule in profile.profile_rule_ids:
                 rule_lines = rule.get_rule_lines(run.date, lines)
-                cr_line_obj.create_or_update_from_mv_lines(cursor, uid, [], rule_lines, rule.id, context=context)
                 print 'Here we go:', rule_lines
+                #only write action own separate cursor
+                cr_line_obj.create_or_update_from_mv_lines(cursor, uid, [], rule_lines, rule.id,
+                                                           run.date, context=context)
                 lines = list(set(lines) - set(rule_lines))
             #except Exception, exc:
-                #report.append(unicode(exc))
-        return False
+                #cursor.rollback()
+                #errors.append(unicode(exc))
+        # lines will correspond to line that where not treated
+        return lines

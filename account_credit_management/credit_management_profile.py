@@ -125,6 +125,20 @@ class CreditManagementProfile(Model):
                                                 lookup_date, lines, context=context)
         return lines
 
+    def _check_lines_profiles(self, cursor, uid, profile_id, lines, context=None):
+        context = context or {}
+        if not lines:
+            return []
+        if isinstance(profile_id, list):
+            profile_id = profile_id[0]
+        cursor.execute("SELECT move_line_id FROM credit_management_line"
+                       " WHERE profile_id != %s and move_line_id in %s",
+                       (profile_id, tuple(lines)))
+        res = cursor.fetchall()
+        if res:
+            return [x[0] for x in res]
+        else:
+            return []
 
 
 
@@ -149,11 +163,15 @@ class CreditManagementProfileRule (Model):
                 'delay_days': fields.integer('Delay in day', required='True'),
                 'mail_template_id': fields.many2one('email.template', 'Mail template',
                                                     required=True),
+                'canal': fields.selection([('manual', 'Manual'),
+                                           ('mail', 'Mail')],
+                                          'Canal', required=True),
                 }
 
 
     def _check_level_mode(self, cursor, uid, rids, context=None):
-        """We check that the smallest level is not base on previous rules"""
+        """We check that the smallest level is not based
+            on a rule using previous_date mode"""
         if not isinstance(rids, list):
             rids = [rids]
         for rule in self.browse(cursor, uid, rids, context):
