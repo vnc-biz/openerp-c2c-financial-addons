@@ -7,6 +7,8 @@
       <field name="type">form</field>
       <field name="arch" type="xml">
         <form> <!-- editable="bottom" -->
+          <label string="This wizard will mark selected  draft lines
+                         to the selected state. Done Lines will be ignored " colspan="4"/>
           <field name="name"/>
           <field name="mark_all"/>
           <group>

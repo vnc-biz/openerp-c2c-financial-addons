@@ -217,7 +217,8 @@ class CreditManagementProfileRule (Model):
             fnc = getattr(self, fname)
             return fnc()
         else:
-            raise Exception(_('Can not get date for computation mode: '
+            # maybe a UnboundLocalError
+            raise NameError(_('Can not get function for computation mode: '
                                '%s is not implemented') % (fname,))
 
     # -----------------------------------------

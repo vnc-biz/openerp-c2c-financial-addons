@@ -10,6 +10,7 @@
         <notebook position="inside">
           <page string="Credit Management">
             <field name="credit_profile_id"/>
+            <field name="credit_management_line_ids" colspan="4"/>
           </page>
         </notebook>
       </field>
@@ -24,6 +25,7 @@
         <notebook position="inside">
           <page string="Credit Management">
             <field name="credit_profile_id"/>
+            <field name="credit_management_line_ids" colspan="4"/>
           </page>
         </notebook>
       </field>

@@ -21,3 +21,4 @@
 from . import credit_management_mailer
 from . import credit_management_marker
 from . import credit_management_printer
+from . import credit_management_communication

@@ -21,7 +21,6 @@
 import logging
 
 from openerp.osv.orm import Model, fields
-from openerp.tools.translate import _
 import pooler
 #from datetime import datetime
 
@@ -62,7 +61,6 @@ class CreditManagementLine (Model):
 
                 'invoice_id': fields.many2one('account.invoice', 'Invoice', readonly=True),
                 'partner_id': fields.many2one('res.partner', "Partner", required=True),
-                'address_id': fields.many2one('res.partner.address', 'Mail address', required=True),
                 'amount_due': fields.float('Due Amount Tax inc.', required=True, readonly=True),
                 'balance_due': fields.float('Due balance', required=True, readonly=True),
                 'mail_id': fields.many2one('mail.thread', 'Sent mail', readonly=True),
@@ -110,18 +108,13 @@ class CreditManagementLine (Model):
         acc_line_obj = self.pool.get('account.move.line')
         context = context or {}
         data_dict = {}
-        part_obj = self.pool.get('res.partner')
         data_dict['date'] = lookup_date
         data_dict['date_due'] = mv_line_br.date_maturity
         data_dict['state'] = 'draft'
         data_dict['canal'] = rule_br.canal
         data_dict['invoice_id'] = (mv_line_br.invoice_id and mv_line_br.invoice_id.id
                                    or False)
-        add = part_obj.address_get(cursor, uid, [mv_line_br.partner_id.id], adr_pref=['invoice', 'default'])
         data_dict['partner_id'] = mv_line_br.partner_id.id
-        data_dict['address_id'] = add.get('invoice', add.get('default'))
-        if not data_dict['address_id']:
-            raise Exception(_('No address for partner %s') % (mv_line_br.partner_id.name))
         data_dict['amount_due'] = (mv_line_br.amount_currency or mv_line_br.debit
                                    or mv_line_br.credit)
         data_dict['balance_due'] = acc_line_obj._amount_residual_from_date(cursor, uid, mv_line_br,
@@ -129,9 +122,7 @@ class CreditManagementLine (Model):
         data_dict['profile_rule_id'] = rule_br.id
         data_dict['company_id'] = mv_line_br.company_id.id
         data_dict['move_line_id'] = mv_line_br.id
-        print data_dict
-        import pdb; pdb.set_trace()
-
+        data_dict['mail_status'] = 'none'
         return [self.create(cursor, uid, data_dict)]
 
 
@@ -149,10 +140,7 @@ class CreditManagementLine (Model):
                                               ('level', '=', current_lvl)])
         for line in ml_obj.browse(cursor, uid, lines, context):
             # we want to create as many line as possible
-            import pdb; pdb.set_trace()
-
             db, pool = pooler.get_db_and_pool(cursor.dbname)
-
             local_cr = db.cursor()
             try:
                 if line.id in existings:

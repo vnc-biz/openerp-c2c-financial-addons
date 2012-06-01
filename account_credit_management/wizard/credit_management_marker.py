@@ -19,6 +19,8 @@
 #
 ##############################################################################
 from openerp.osv.orm import  TransientModel, fields
+from openerp.osv.osv import except_osv
+from openerp.tools.translate import _
 
 class CreditManagementMarker(TransientModel):
     """Change the state of lines in mass"""
@@ -33,8 +35,49 @@ class CreditManagementMarker(TransientModel):
 
     _defaults = {'name': 'to_be_sent'}
 
-    def mark_lines(self, cursor, uid, ids, optional_args, context=None):
+    def _get_lids(self, cursor, uid, mark_all, active_ids, context=None):
+        """get line to be marked filter done lines"""
+        line_obj = self.pool.get('credit.management.line')
+        if mark_all:
+            domain = [('state', '=', 'draft')]
+        else:
+            domain = [('state', '!=', 'sent'), ('id', 'in', active_ids)]
+        return line_obj.search(cursor, uid, domain, context=context)
+
+    def _mark_lines(self, cursor, uid, filtered_ids, state, context=None):
+        """write hook"""
+        line_obj = self.pool.get('credit.management.line')
+        if not state:
+            raise ValueError(_('state can not be empty'))
+        line_obj.write(cursor, uid, filtered_ids, {'state': state})
+        return filtered_ids
+
+
+
+    def mark_lines(self, cursor, uid, wiz_id, context=None):
+        """Write state of selected credit lines to the one in entry
+        done credit line will be ignored"""
         context = context or {}
-        if isinstance(ids, (int, long)):
-            ids = [ids]
-        return False
+        if isinstance(wiz_id, list):
+            wiz_id = wiz_id[0]
+        current = self.browse(cursor, uid, wiz_id, context)
+        lines_ids = context.get('active_ids')
+
+        if not lines_ids and not current.mark_all:
+            raise except_osv(_('Not lines ids are selected'),
+                             _('You may check "Mark all draft lines"'))
+        filtered_ids = self._get_lids(cursor, uid, current.mark_all, lines_ids, context)
+        if not filtered_ids:
+            raise except_osv(_('No lines will be changed'),
+                             _('All selected lines are allready done'))
+
+        # hook function a simple write should be enought
+        self._mark_lines(cursor, uid, filtered_ids, current.name, context)
+
+        return  {'domain': "[('id','in',%s)]" % (filtered_ids,),
+                 'name': _('%s marked line') % (current.name,),
+                 'view_type': 'form',
+                 'view_mode': 'tree,form',
+                 'view_id': False,
+                 'res_model': 'credit.management.line',
+                 'type': 'ir.actions.act_window'}

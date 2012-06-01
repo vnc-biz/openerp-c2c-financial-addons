@@ -6,13 +6,13 @@
       <field name="name">Credit Management demo mail</field>
       <field name="email_from">noreply@localhost</field>
       <field name="subject">Credit Management Invoice (${object.profile_rule_id.level or 'n/a' })</field>
-      <field name="email_to">${object.address_id.email or  ''}</field>
-      <field name="model_id" ref="model_credit_management_line"/>
+      <field name="email_to">${object.get_mail() or  ''}</field>
+      <field name="model_id" ref="model_credit_management_communication"/>
       <field name="auto_delete" eval="True"/>
       <field name="body_html"><![CDATA[
       <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
 
-      <p>Dear {object.address_id.name and ' ' or ''},</p>
+      <p>Dear {object.name and ' ' or ''},</p>
 
       <p>Your text here</p>
 

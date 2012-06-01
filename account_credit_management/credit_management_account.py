@@ -41,7 +41,12 @@ class AccountAccount(Model):
     _columns = {'credit_profile_id': fields.many2one('credit.management.profile',
                                                      'Credit management profile',
                                                      help=("Define global credit profile"
-                                                           "order is account partner invoice"))}
+                                                           "order is account partner invoice")),
+
+                'credit_management_line_ids': fields.one2many('credit.management.line',
+                                                              'account_id',
+                                                              string='Credit Lines',
+                                                              readonly=True)}
 
     _constraints = [(_check_account_type_compatibility,
                      _('You can not set a credit profile on a non reconciliable account'),
@@ -55,7 +60,13 @@ class AccountInvoice(Model):
     _columns = {'credit_profile_id': fields.many2one('credit.management.profile',
                                                      'Credit management profile',
                                                      help=("Define global credit profile"
-                                                           "order is account partner invoice"))}
+                                                           "order is account partner invoice")),
+
+                'credit_management_line_ids': fields.one2many('credit.management.line',
+                                                              'account_id',
+                                                              string='Credit Lines',
+                                                              readonly=True)}
+
     def action_move_create(self, cursor, uid, ids, context=None):
         """We ensure writing of invoice id in move line because
            Trigger field may not work without account_voucher"""

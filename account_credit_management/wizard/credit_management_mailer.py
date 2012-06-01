@@ -19,6 +19,8 @@
 #
 ##############################################################################
 from openerp.osv.orm import  TransientModel, fields
+from openerp.osv.osv import except_osv
+from openerp.tools.translate import _
 
 class CreditManagementMailer(TransientModel):
     """Change the state of lines in mass"""
@@ -27,11 +29,35 @@ class CreditManagementMailer(TransientModel):
     _description = """Mass credit line mailer"""
     _rec_name = 'id'
 
-    _columns = {'mail_all': fields.boolean('Mail all draft lines')}
+    _columns = {'mail_all': fields.boolean('Mail all ready lines')}
 
 
-    def mail_lines(self, cursor, uid, ids, optional_args, context=None):
+    def _get_lids(self, cursor, uid, mark_all, active_ids, context=None):
+        """get line to be marked filter done lines"""
+        line_obj = self.pool.get('credit.management.line')
+        if mark_all:
+            domain = [('state', '=', 'to_be_sent'),
+                      ('canal', '=', 'mail')]
+        else:
+            domain = [('state', '=', 'to_be_sent'),
+                      ('id', 'in', active_ids),
+                      ('canal', '=', 'mail')]
+        return line_obj.search(cursor, uid, domain, context=context)
+
+
+    def mail_lines(self, cursor, uid, wiz_id, context=None):
+        comm_obj = self.pool.get('credit.management.communication')
         context = context or {}
-        if isinstance(ids, (int, long)):
-            ids = [ids]
-        return False
+        if isinstance(wiz_id, list):
+            wiz_id = wiz_id[0]
+        current = self.browse(cursor, uid, wiz_id, context)
+        lines_ids = context.get('active_ids')
+
+        if not lines_ids and not current.mark_all:
+            raise except_osv(_('Not lines ids are selected'),
+                             _('You may check "Mail all ready lines"'))
+        filtered_ids = self._get_lids(cursor, uid, current.mark_all, lines_ids, context)
+        comms = comm_obj._generate_comm_from_credit_line_ids(cursor, uid, filtered_ids,
+                                                             context=context)
+        comm_obj._generate_mails(cursor, uid, comms, context=context)
+        return {}

@@ -8,20 +8,19 @@
 # Features Generic tags (none for all)
 ##############################################################################
 
-@credit_management_module
+@credit_management_mark_mail
 
 Feature: Ensure that mail credit line generation first pass is correct
 
 
-  @credit_management_first_run
-  Scenario: clean data
-    Given I clean all the credit lines
-    #Given I unreconcile and clean all move line
+  @credit_management_mark
+  Scenario: mark lines
+    Given there is "draft" credit lines
+    And I mark all draft mail to state "to_be_sent"
+    Then the draft line should be in state "to_be_sent"
 
-  @credit_management_first_run
-  Scenario: Create run
-    Given I need a "credit.management.run" with oid: credit_management.run1
-    And having:
-      | name |      value |
-      | date | 2012-03-01 |
-    Then I launch the credit run
+  @credit_management_mail
+  Scenario: mail lines
+    Given there is "to_be_sent" credit lines
+    And I mail all ready lines
+    Then All sent lines should be linked to a mail and in mail status "sent"

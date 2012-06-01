@@ -28,4 +28,9 @@ class ResPartner(Model):
     _columns = {'credit_profile_id': fields.many2one('credit.management.profile',
                                                      'Credit management profile',
                                                      help=("Define global credit profile"
-                                                           "order is account partner invoice"))}
+                                                           "order is account partner invoice")),
+
+                'credit_management_line_ids': fields.one2many('credit.management.line',
+                                                              'invoice_id',
+                                                              string='Credit Lines',
+                                                              readonly=True)}
