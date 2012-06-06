@@ -27,8 +27,13 @@
  'complexity': 'normal', #easy, normal, expert
  'depends': ['base_transaction_id'],
  'description': """
- This allows you auto reconcile statement
- from financial credit partners like Visa.
+ This allows you auto reconcile entries with payment from financial credit partners like Paypal, Visa, Amazon,... It is
+ mostly use in E-Commerce, but could also be useful in other cases. 
+ 
+ The automatic reconciliation features match, if available, a transaction ID propagated from the Sale Order to 
+ match transaction. If not present, it will look for the SO Name in the Origin or description of the move line.
+ 
+ You can choose which account you want to reconcile, which partner or which invoice.
  """,
  'website': 'http://www.camptocamp.com',
  'init_xml': [],

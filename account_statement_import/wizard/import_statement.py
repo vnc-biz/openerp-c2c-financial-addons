@@ -33,26 +33,43 @@ class CreditPartnerStatementImporter(osv.osv_memory):
     _name = "credit.statement.import"
     _description = __doc__
     _columns = {
+        
+        'import_config_id': fields.many2one('account.treasury.statement.profil',
+                                      'Import configuration parameter',
+                                      required=True),
         'partner_id': fields.many2one('res.partner',
                                       'Credit insitute partner',
-                                      required=True),
+                                      ),
         'journal_id': fields.many2one('account.journal',
                                       'Financial journal to use transaction',
-                                      required=True),
-        #'label': fields.char('Label', size=64, required=True),
+                                      ),
         'input_statement': fields.binary('Statement file', required=True),
         'file_name': fields.char('File Name', size=128),
         'commission_account_id': fields.many2one('account.account',
-                                                 'Commission account',
-                                                 required=True),
-        'mode': fields.selection([('transaction_id', 'Based on transaction id'),
-                                  ('origin', 'Based on order number')],
-                                 string="Mode",
-                                 required=True)
-    }
+                                                         'Commission account',
+                                                         ),
+        'commission_analytic_id': fields.many2one('account.analytic.account',
+                                                     'Commission analytic account',
+                                                 ),
+        'receivable_account_id': fields.many2one('account.account',
+                                                 'Force Receivable/Payable Account'),
+        'force_partner_on_bank': fields.boolean('Force partner on bank move', 
+                                                    help="Tic that box if you want to use the credit insitute partner\
+                                                    in the counterpart of the treasury/banking move."
+                                                    ),
+    }   
 
-    _defaults = {'mode': lambda *x: 'transaction_id' }
-
+    def onchange_import_config_id(self, cr, uid, ids, import_config_id, context=None):
+        res={}
+        if import_config_id:
+            c = self.pool.get("account.treasury.statement.profil").browse(cr,uid,import_config_id)
+            res = {'value': {'partner_id': c.partner_id and c.partner_id.id or False,
+                    'journal_id': c.journal_id and c.journal_id.id or False, 'commission_account_id': \
+                    c.commission_account_id and c.commission_account_id.id or False, 
+                    'receivable_account_id': c.receivable_account_id and c.receivable_account_id.id or False,
+                    'commission_a':c.commission_analytic_id and c.commission_analytic_id.id or False,
+                    'force_partner_on_bank':c.force_partner_on_bank}}
+        return res
 
     def import_statement(self, cursor, uid, req_id, context=None):
         """This Function import credit card agency statement"""
@@ -65,17 +82,20 @@ class CreditPartnerStatementImporter(osv.osv_memory):
             #We do not use osv exception we do not want to have it logged
             raise Exception(_('Please use a file with an extention'))
         sid = self.pool.get(
-                'account.bank.statement').credit_statement_import(
+                'account.treasury.statement').credit_statement_import(
                                             cursor,
                                             uid,
                                             False,
-                                            importer.partner_id.id,
-                                            importer.journal_id.id,
-                                            importer.commission_account_id.id,
+                                            importer.import_config_id.id,
                                             importer.input_statement,
                                             ftype.replace('.',''),
-                                            mode=importer.mode,
                                             context=context
         )
-        return {'statement_id': sid}
-
+        obj_data = self.pool.get('ir.model.data')
+        act_obj = self.pool.get('ir.actions.act_window')
+        result = obj_data.get_object_reference(cursor, uid, 'account_statement_import', 'action_treasury_statement_tree')
+        
+        id = result and result[1] or False
+        result = act_obj.read(cursor, uid, [id], context=context)[0]
+        result['domain'] = str([('id','in',[sid])])
+        return result
