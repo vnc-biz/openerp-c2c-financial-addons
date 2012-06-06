@@ -80,7 +80,7 @@ class AccountTreasurySatement(Model):
     
     _columns = {
         'import_config_id': fields.many2one('account.treasury.statement.profil',
-                                  'Profil', required=True),
+                                  'Profil', required=True, states={'draft': [('readonly', False)]}),
         'credit_partner_id': fields.related(
                         'import_config_id', 
                         'partner_id', 
@@ -491,15 +491,45 @@ class AccountTreasurySatementLine(Model):
             'Moves'),
         'ref': fields.char('Reference', size=32, required=True),
     }
-    # TOFIX
+    # WARNING => Crash cause the super method here calls onchange_type => and then
+    # we don't call it from the good model.... => We'll need to override the complete method here
     def onchange_partner_id(self, cr, uid, ids, partner_id, import_config_id, context=None):
+        # import pdb;pdb.set_trace()
+        # if context is None:
+        #     context = {}
+        # res = super(AccountTreasurySatementLine,self).onchange_partner_id(cr, uid, ids, partner_id, context)
+        # c = self.pool.get("account.treasury.statement.profil").browse(cr,uid,import_config_id)
+        # acc_id=c.receivable_account_id and c.receivable_account_id.id or False
+        # if acc_id:
+        #     res['value'].update({'account_id':acc_id})
+        # return res
+        obj_partner = self.pool.get('res.partner')
         if context is None:
             context = {}
-        res = super(AccountTreasurySatementLine,self).onchange_partner_id(cr, uid, ids, partner_id, context)
+        if not partner_id:
+            return {}
+        part = obj_partner.browse(cr, uid, partner_id, context=context)
+        if not part.supplier and not part.customer:
+            type = 'general'
+        elif part.supplier and part.customer:
+            type = 'general'
+        else:
+            if part.supplier == True:
+                type = 'supplier'
+            if part.customer == True:
+                type = 'customer'
+        res_type = self.onchange_type(cr, uid, ids, partner_id, type, import_config_id, context=context)
+        if res_type['value'] and res_type['value'].get('account_id', False):
+            res = {'value': {'type': type, 'account_id': res_type['value']['account_id']}}
+        else:
+            res = {'value': {'type': type}}
+                
         c = self.pool.get("account.treasury.statement.profil").browse(cr,uid,import_config_id)
         acc_id=c.receivable_account_id and c.receivable_account_id.id or False
-        res['value'].update({'account_id':acc_id})
+        if acc_id:
+            res['value'].update({'account_id':acc_id})
         return res
+        
     # TOFIX
     def onchange_type(self, cr, uid, line_id, partner_id, type, import_config_id, context=None):
         if context is None:
@@ -507,7 +537,8 @@ class AccountTreasurySatementLine(Model):
         res = super(AccountTreasurySatementLine,self).onchange_type(cr, uid, line_id, partner_id, type, context)
         c = self.pool.get("account.treasury.statement.profil").browse(cr,uid,import_config_id)
         acc_id=c.receivable_account_id and c.receivable_account_id.id or False
-        res['value'].update({'account_id':acc_id})
+        if acc_id:
+            res['value'].update({'account_id':acc_id})
         return res
 
 class AccountMoveLine(Model):
