@@ -18,6 +18,7 @@
                         <field name="commission_analytic_id" readonly="1"/>
                         <field name="receivable_account_id" readonly="1"/>
                         <field name="force_partner_on_bank" readonly="1"/>
+                        <field name="balance_check" readonly="1"/>
                     </group>
                     <separator string="" colspan="4"/>
                     <group colspan="4" col="6">

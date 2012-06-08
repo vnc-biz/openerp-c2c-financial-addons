@@ -18,5 +18,24 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from openerp.osv.orm import Model, fields
 
-import statement
+
+class AccountVoucher(Model):
+    
+    _inherit = 'account.voucher'
+
+    def _get_period(self, cr, uid, context=None):
+        """If perdiod not in context, take it from the move lines"""
+        if context is None: context = {}
+        if not context.get('period_id') and context.get('move_line_ids'):
+            res = self.pool.get('account.move.line').browse(cr, uid , context.get('move_line_ids'))[0].period_id.id
+            context['period_id'] = res
+        return super(AccountVoucher, self)._get_period(cr, uid, context)
+
+    def create(self, cr, uid, values, context=None):
+        """If no period defined in values, ask it from moves."""
+        if values.get('period_id') == False and context.get('move_line_ids'):
+            values['period_id'] = self._get_period(cr, uid, context)
+        return super(AccountVoucher, self).create(cr, uid, values, context)
+
