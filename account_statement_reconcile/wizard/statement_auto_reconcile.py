@@ -110,7 +110,8 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
                    "l.id as invoice_id, "
                    "l.move_id as move_id, "
                    "l.id as move_line_id, "
-                   "l.debit, l.credit "
+                   "l.debit, l.credit, "
+                   "l.partner_id "
                    "FROM account_move_line l "
                    "INNER JOIN account_move m "
                    "ON m.id = l.move_id ")
@@ -143,7 +144,8 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
         sql = ("SELECT l.id, l.move_id, "
                "l.ref, l.name, "
                "l.debit, l.credit, "
-               "l.period_id as period_id "
+               "l.period_id as period_id, "
+               "l.partner_id "
                "FROM account_move_line l "
                "INNER JOIN account_move m "
                "ON m.id = l.move_id "
@@ -221,7 +223,7 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
         context = context or {}
         move_line_obj = self.pool.get('account.move.line')
         period_obj = self.pool.get('account.period')
-        
+
         if isinstance(form_id, list):
             form_id = form_id[0]
 
@@ -278,12 +280,15 @@ class AccountsStatementAutoReconcile(osv.osv_memory):
                 # is the same everywhere for an invoice
                 transaction_id = move_lines[0]['transaction_id']
                 origin = move_lines[0]['origin']
+                partner_id = move_lines[0]['partner_id']
 
                 references = (('transaction_id', transaction_id),
                               ('origin', origin))
 
+                partner_payments = [p for p in account_payments if \
+                    p['partner_id'] == partner_id]
                 payments = self._search_payments(
-                    cr, uid, account_payments, references, context=context)
+                    cr, uid, partner_payments, references, context=context)
 
                 if not payments:
                     continue
