@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-##############################################################################
+# -*- coding: utf-8 -*- ##############################################################################
 #
 #    Author: Nicolas Bessi, Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
@@ -19,36 +18,32 @@
 #
 ##############################################################################
 
-{'name': "Auto reconcile statements",
+{'name': "Advanced Reconcile",
  'version': '1.0',
  'author': 'Camptocamp',
  'maintainer': 'Camptocamp',
  'category': 'Finance',
- 'complexity': 'normal', #easy, normal, expert
- 'depends': ['base_transaction_id'],
+ 'complexity': 'normal',
+ 'depends': ['base_transaction_id', 'account_easy_reconcile'],
  'description': """
- This module allows you auto reconcile entries with payment. It is
- mostly use in E-Commerce, but could also be useful in other cases. You can choose which account 
- you want to reconcile, which partner or which invoice.
- 
- The automatic reconciliation features match, if available, a transaction ID propagated from the Sale Order to 
- match transaction. If not present, it will look for the SO Name in the Origin or description of the move line.
- 
- Basicaly, this module will match account move line with a matching reference on a same account. It will make
- a partial reconciliation if more than one move has the same reference (like 3x payments). Once all payment will 
- be there, it will make a full reconciliation. You can choose a write-off amount as well.
- 
+This module allows you auto reconcile entries with payment.
+It is mostly used in E-Commerce, but could also be useful in other cases.
+
+The automatic reconciliation matches a transaction ID, if available, propagated from the Sale Order.
+It can also search for the sale order name in the origin or description of the move line.
+
+Basically, this module will match account move line with a matching reference on a same account.
+It will make a partial reconciliation if more than one move has the same reference (like 3x payments)
+Once all payment will be there, it will make a full reconciliation.
+You can choose a write-off amount as well.
  """,
  'website': 'http://www.camptocamp.com',
  'init_xml': [],
- 'update_xml': [
-     'wizard/statement_auto_reconcile_view.xml',
- ],
+ 'update_xml': [],
  'demo_xml': [],
  'test': [],
- 'installable': True,
  'images': [],
+ 'installable': True,
  'auto_install': False,
  'license': 'AGPL-3',
- 'active': False,
 }
