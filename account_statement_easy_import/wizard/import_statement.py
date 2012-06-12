@@ -34,7 +34,7 @@ class CreditPartnerStatementImporter(osv.osv_memory):
     _description = __doc__
     _columns = {
         
-        'import_config_id': fields.many2one('account.statement.profil',
+        'profile_id': fields.many2one('account.statement.profil',
                                       'Import configuration parameter',
                                       required=True),
         'partner_id': fields.many2one('res.partner',
@@ -64,10 +64,10 @@ class CreditPartnerStatementImporter(osv.osv_memory):
                                                     
     }   
 
-    def onchange_import_config_id(self, cr, uid, ids, import_config_id, context=None):
+    def onchange_profile_id(self, cr, uid, ids, profile_id, context=None):
         res={}
-        if import_config_id:
-            c = self.pool.get("account.statement.profil").browse(cr,uid,import_config_id)
+        if profile_id:
+            c = self.pool.get("account.statement.profil").browse(cr,uid,profile_id)
             res = {'value': {'partner_id': c.partner_id and c.partner_id.id or False,
                     'journal_id': c.journal_id and c.journal_id.id or False, 'commission_account_id': \
                     c.commission_account_id and c.commission_account_id.id or False, 
@@ -88,11 +88,11 @@ class CreditPartnerStatementImporter(osv.osv_memory):
             #We do not use osv exception we do not want to have it logged
             raise Exception(_('Please use a file with an extention'))
         sid = self.pool.get(
-                'account.bank.statement').credit_statement_import(
+                'account.bank.statement').statement_import(
                                             cursor,
                                             uid,
                                             False,
-                                            importer.import_config_id.id,
+                                            importer.profile_id.id,
                                             importer.input_statement,
                                             ftype.replace('.',''),
                                             context=context
