@@ -18,10 +18,20 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from . import credit_management_run
-from . import credit_management_line
-from . import credit_management_account
-from . import credit_management_partner
-from . import credit_management_profile
-import wizard
-import report
+import time
+
+from openerp.report import report_sxw
+
+class CreditSummaryReport(report_sxw.rml_parse):
+    def __init__(self, cr, uid, name, context):
+        super(CreditSummaryReport, self).__init__(cr, uid, name, context=context)
+        self.localcontext.update({
+            'time': time,
+            'cr':cr,
+            'uid': uid,
+        })
+
+report_sxw.report_sxw('report.credit_management_summary',
+                      'credit.management.communication',
+                      'addons/account_credit_management/report/credit_management_summary.html.mako',
+                      parser=CreditSummaryReport)

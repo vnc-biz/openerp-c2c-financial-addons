@@ -34,6 +34,7 @@ class CreditManagementMailer(TransientModel):
 
     def _get_lids(self, cursor, uid, mail_all, active_ids, context=None):
         """get line to be marked filter done lines"""
+        # TODO DRY with printer
         line_obj = self.pool.get('credit.management.line')
         if mail_all:
             domain = [('state', '=', 'to_be_sent'),

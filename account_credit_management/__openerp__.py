@@ -24,7 +24,7 @@
  'maintainer': 'Camptocamp',
  'category': 'Finance',
  'complexity': "normal",  # easy, normal, expert
- 'depends' : ['base', 'account', 'email_template'],
+ 'depends' : ['base', 'account', 'email_template', 'report_webkit'],
  'description': """Credit control management TODO""",
  'website': 'http://www.camptocamp.com',
  'init_xml': ["data.xml"],
@@ -36,6 +36,7 @@
                 "wizard/credit_management_mailer_view.xml",
                 "wizard/credit_management_marker_view.xml",
                 "wizard/credit_management_printer_view.xml",
+                "report/report.xml",
                 "credit_management_demo.xml"],
  'demo_xml': ["credit_management_demo.xml"],
  'tests': [],

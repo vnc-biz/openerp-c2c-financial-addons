@@ -21,9 +21,8 @@
 from openerp.osv.orm import  TransientModel, fields
 from openerp.osv.osv import except_osv
 from openerp.tools.translate import _
-
+import netsvc
 import logging
-import pooler
 
 logger = logging.getLogger('credit.line.management mailing')
 
@@ -161,3 +160,18 @@ class CreditCommunication(TransientModel):
             finally:
                 cursor.commit()
         return mail_ids
+
+    def _generate_report(self, cursor, uid, comms, context=None):
+        """Will generate a report by inserting mako template of related profile template"""
+        service = netsvc.LocalService('report.credit_management_summary')
+        ids = [x.id for x in comms]
+        result, format = service.create(cursor, uid, ids, {}, {})
+        return result
+
+    def _mark_credit_line_as_sent(self, cursor, uid, comms, context=None):
+        line_ids = []
+        for comm in comms:
+            line_ids += [x.id for x in comm.credit_lines]
+        l_obj = self.pool.get('credit.management.line')
+        l_obj.write(cursor, uid, line_ids, {'state': 'sent'}, context=context)
+        return line_ids

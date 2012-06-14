@@ -44,10 +44,11 @@ class CreditManagementRun(Model):
                                            string='State',
                                            required=True,
                                            readonly=True),
-                 'manual_ids': fields.many2many('account.move.line',
-                                                rel="credit_runreject_rel",
-                                                string='Line to be handled manually',
-                                                readonly=True),}
+                # 'manual_ids': fields.many2many('account.move.line',
+                #                                 rel="credit_runreject_rel",
+                #                                 string='Line to be handled manually',
+                #                                 readonly=True)
+    }
 
     _defaults = {'state': 'draft'}
 
@@ -80,24 +81,31 @@ class CreditManagementRun(Model):
         for profile in profile_ids:
             if profile.do_nothing:
                 continue
-            #try:
-            lines = profile._get_moves_line_to_process(run.date, context=context)
-            tmp_manual = profile._check_lines_profiles(lines, context=context)
-            lines = list(set(lines) - set(tmp_manual))
-            manualy_managed_lines += tmp_manual
-            print'RAW lines -->', lines
-            if not lines:
-                continue
-            # profile rules are sorted by level so iteration is in the correct order
-            for rule in profile.profile_rule_ids:
-                rule_lines = rule.get_rule_lines(run.date, lines)
-                print 'Here we go:', rule_lines
-                #only write action own separate cursor
-                cr_line_obj.create_or_update_from_mv_lines(cursor, uid, [], rule_lines, rule.id,
-                                                           run.date, context=context)
+            try:
+                lines = profile._get_moves_line_to_process(run.date, context=context)
+                tmp_manual = profile._check_lines_profiles(lines, context=context)
+                lines = list(set(lines) - set(tmp_manual))
+                manualy_managed_lines += tmp_manual
+                if not lines:
+                    continue
+                # profile rules are sorted by level so iteration is in the correct order
+                for rule in profile.profile_rule_ids:
+                    rule_lines = rule.get_rule_lines(run.date, lines)
+                    #only this write action own a separate cursor
+                    credit_line_ids = cr_line_obj.create_or_update_from_mv_lines(cursor, uid, [],
+                                                                                 rule_lines, rule.id,
+                                                                                 run.date, errors=errors,
+                                                                                 context=context)
                 lines = list(set(lines) - set(rule_lines))
-            #except Exception, exc:
-                #cursor.rollback()
-                #errors.append(unicode(exc))
+            except Exception, exc:
+                cursor.rollback()
+                self.write(cursor, uid, [run.id], {'report': str(exc), 'state': 'error'})
+            vals = {'report': u"Number of generated lines : %s \n" % (len(credit_line_ids),),
+                    'state': 'done'}
+            if errors:
+                vals['report'] += u"Following line generation errors appends:"
+                vals['report'] += u"----\n".join(errors)
+                vals['state'] = 'done'
+            run.write(vals)
         # lines will correspond to line that where not treated
         return lines

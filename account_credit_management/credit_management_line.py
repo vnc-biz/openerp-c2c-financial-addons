@@ -123,7 +123,7 @@ class CreditManagementLine (Model):
 
 
     def create_or_update_from_mv_lines(self, cursor, uid, ids, lines,
-                                       rule_id, lookup_date, context=None):
+                                       rule_id, lookup_date, errors=None, context=None):
         """Create or update line base on rules"""
         context = context or {}
         rule_obj = self.pool.get('credit.management.profile.rule')
@@ -131,12 +131,10 @@ class CreditManagementLine (Model):
         rule = rule_obj.browse(cursor, uid, rule_id, context)
         current_lvl = rule.level
         credit_line_ids = []
-        errors =  []
         existings = self.search(cursor, uid, [('move_line_id', 'in', lines),
                                               ('level', '=', current_lvl)])
         for line in ml_obj.browse(cursor, uid, lines, context):
             # we want to create as many line as possible
-            db, pool = pooler.get_db_and_pool(cursor.dbname)
             local_cr = db.cursor()
             try:
                 if line.id in existings:
@@ -150,9 +148,10 @@ class CreditManagementLine (Model):
                                                                  context=context)
             except Exception, exc:
                 logger.error(exc)
-                errors.append(unicode(exc))
+                if errors:
+                    errors.append(unicode(exc)) #obj-c common pattern
                 local_cr.rollback()
             finally:
                 local_cr.commit()
                 local_cr.close()
-            return (credit_line_ids, errors)
+            return credit_line_ids

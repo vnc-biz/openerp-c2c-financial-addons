@@ -27,7 +27,7 @@
             </page>
             <page string="Report and Errors">
               <field name="report" colspan="4"/>
-              <field name="manual_ids" colspan="4"/>
+              <!-- <field name="manual_ids" colspan="4"/> -->
             </page>
           </notebook>
           <group col="3" colspan="4">
