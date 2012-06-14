@@ -50,7 +50,9 @@ class CreditManagementLine (Model):
 
                 'state': fields.selection([('draft', 'Draft'),
                                            ('to_be_sent', 'To be sent'),
-                                           ('sent', 'Done')],
+                                           ('sent', 'Done'),
+                                           ('error', 'Error'),
+                                           ('mail_error', 'Mailing Error')],
                                           'State', required=True, readonly=True),
 
                 'canal': fields.selection([('manual', 'Manual'),
@@ -63,18 +65,16 @@ class CreditManagementLine (Model):
                 'partner_id': fields.many2one('res.partner', "Partner", required=True),
                 'amount_due': fields.float('Due Amount Tax inc.', required=True, readonly=True),
                 'balance_due': fields.float('Due balance', required=True, readonly=True),
-                'mail_id': fields.many2one('mail.thread', 'Sent mail', readonly=True),
-                'mail_status': fields.selection([('none', 'None'),
-                                                 ('error', 'Error'),
-                                                 ('sent', 'Done')],
-                                                'Mail status',
-                                                readonly=True),
+                'mail_message_id': fields.many2one('mail.message', 'Sent mail', readonly=True),
 
                 'move_line_id': fields.many2one('account.move.line', 'Move line',
                                                 required=True, readonly=True),
 
                 'account_id': fields.related('move_line_id', 'account_id', type='many2one',
                                              relation='account.account', string='Account',
+                                             store=True, readonly=True),
+                'company_id': fields.related('move_line_id', 'company_id', type='many2one',
+                                             relation='res.company', string='Company',
                                              store=True, readonly=True),
 
                 # we can allow a manual change of profile in draft state
@@ -88,13 +88,10 @@ class CreditManagementLine (Model):
 
                 'level': fields.related('profile_rule_id', 'level', type='float',
                                          relation='credit.management.profile', string='Level',
-                                         store=True, readonly=True),
-                # Maybe it should be a related fields of move line company_id
-                'company_id': fields.many2one('res.company', 'Company')}
+                                         store=True, readonly=True),}
 
-    _defaults = {'state': 'draft',
-                 'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(
-                                      cr, uid, 'res.partner.address', context=c),}
+
+    _defaults = {'state': 'draft'}
 
     def _update_from_mv_line(self, cursor, uid, ids, mv_line_br, rule_br,
                              lookup_date, context=None):
@@ -122,7 +119,6 @@ class CreditManagementLine (Model):
         data_dict['profile_rule_id'] = rule_br.id
         data_dict['company_id'] = mv_line_br.company_id.id
         data_dict['move_line_id'] = mv_line_br.id
-        data_dict['mail_status'] = 'none'
         return [self.create(cursor, uid, data_dict)]
 
 

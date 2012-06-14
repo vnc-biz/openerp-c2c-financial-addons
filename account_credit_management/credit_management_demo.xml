@@ -5,34 +5,38 @@
     <record id="email_template_credit_management_base" model="email.template">
       <field name="name">Credit Management demo mail</field>
       <field name="email_from">noreply@localhost</field>
-      <field name="subject">Credit Management Invoice (${object.profile_rule_id.level or 'n/a' })</field>
+      <field name="subject">Credit Management Invoice (${object.current_profile_rule.level or 'n/a' })</field>
       <field name="email_to">${object.get_mail() or  ''}</field>
       <field name="model_id" ref="model_credit_management_communication"/>
       <field name="auto_delete" eval="True"/>
       <field name="body_html"><![CDATA[
       <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
 
-      <p>Dear {object.name and ' ' or ''},</p>
+      <p>Dear {object.partner_id.name and ' ' or ''},</p>
 
       <p>Your text here</p>
 
       <b>Summary:</b>
       <table>
       <tr>
-      <td>date due:</td> <td>${object.date_due}</td>
+        <th>date due:</th>
+        <th>date due:</th>
+         <th>Amount due:</th>
+         <th>Amount balance:</th>
+         <th>Invoice number:</th>
       </tr>
+%for line in object.credit_lines:
       <tr>
-      <td>Amount due:</td> <td>${object.amount_due}</td>
-      </tr>
-      <tr>
-      <td>Amount balance:</td> <td>${object.amount_balance}</td>
-      </tr>
-      %if object.invoice_id:
-      <tr>
-      <td>Invoice number:</td> <td>object.invoice_id.number</td>
-      </tr>
+        <td>${line.date_due}</td>
+        <td>${line.amount_due}</td>
+        <td>${line.balance_due}</td>
+      %if line.invoice_id:
+          <td>${line.invoice_id.number}</td>
+      %else:
+          <td>n/a</td>
       %endif
-      </td
+%endfor
+      </table>
 
 
       If you have any question, do not hesitate to contact us.
@@ -47,6 +51,7 @@
       % if object.company_id.street:
       ${object.company_id.street or ''}
       % endif
+
       % if object.company_id.street2:
       ${object.company_id.street2}
       % endif

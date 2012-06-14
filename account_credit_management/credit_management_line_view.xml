@@ -21,8 +21,7 @@
           <field name="account_id"/>
           <field name="profile_rule_id"/>
           <field name="profile_id"/>
-          <field name="mail_id"/>
-          <field name="mail_status"/>
+          <field name="mail_message_id"/>
         </form>
       </field>
     </record>
@@ -44,8 +43,8 @@
                     domain="[('state', '=', 'sent')]"
                     help="New lines"/>
             <separator orientation="vertical"/>
-            <filter icon="terp-gtk-stop" string="Mailing Error"
-                    domain="[('mail_status', '=', 'error')]"
+            <filter icon="terp-gtk-stop" string="Error"
+                    domain="[('state', 'in', ('error', 'mail_error'))]"
                     help="New lines"/>
             <separator orientation="vertical"/>
 
@@ -97,7 +96,7 @@
       <field name="model">credit.management.line</field>
       <field name="type">tree</field>
       <field name="arch" type="xml">
-        <tree editable="bottom">
+        <tree editable="bottom" colors="green:state == 'sent';red:state in ('error', 'mail_error');">
           <field name="date"/>
           <field name="date_due"/>
           <field name="level"/>
@@ -111,8 +110,7 @@
           <field name="account_id"/>
           <field name="profile_rule_id"/>
           <field name="profile_id"/>
-          <field name="mail_id"/>
-          <field name="mail_status"/>
+          <field name="mail_message_id"/>
         </tree>
       </field>
     </record>

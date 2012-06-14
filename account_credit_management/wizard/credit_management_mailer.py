@@ -32,10 +32,10 @@ class CreditManagementMailer(TransientModel):
     _columns = {'mail_all': fields.boolean('Mail all ready lines')}
 
 
-    def _get_lids(self, cursor, uid, mark_all, active_ids, context=None):
+    def _get_lids(self, cursor, uid, mail_all, active_ids, context=None):
         """get line to be marked filter done lines"""
         line_obj = self.pool.get('credit.management.line')
-        if mark_all:
+        if mail_all:
             domain = [('state', '=', 'to_be_sent'),
                       ('canal', '=', 'mail')]
         else:
@@ -53,10 +53,10 @@ class CreditManagementMailer(TransientModel):
         current = self.browse(cursor, uid, wiz_id, context)
         lines_ids = context.get('active_ids')
 
-        if not lines_ids and not current.mark_all:
+        if not lines_ids and not current.mail_all:
             raise except_osv(_('Not lines ids are selected'),
                              _('You may check "Mail all ready lines"'))
-        filtered_ids = self._get_lids(cursor, uid, current.mark_all, lines_ids, context)
+        filtered_ids = self._get_lids(cursor, uid, current.mail_all, lines_ids, context)
         comms = comm_obj._generate_comm_from_credit_line_ids(cursor, uid, filtered_ids,
                                                              context=context)
         comm_obj._generate_mails(cursor, uid, comms, context=context)

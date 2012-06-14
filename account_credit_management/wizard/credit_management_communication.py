@@ -40,10 +40,20 @@ class CreditCommunication(TransientModel):
 
                 'credit_lines': fields.many2many('credit.management.line',
                                                  rel='comm_credit_rel',
-                                                 string='Credit Lines')}
+                                                 string='Credit Lines'),
+
+                'company_id': fields.many2one('res.company', 'Company',
+                                              required=True),
+
+                'user_id': fields.many2one('res.users', 'User')}
+
+    _defaults = {'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(
+                                      cr, uid, 'credit.management.profile', context=c),
+                 'user_id': lambda s, cr, uid, c: uid}
 
     def get_address(self, cursor, uid, com_id, context=None):
         """Return a valid address for customer"""
+
         context = context  or {}
         if isinstance(com_id, list):
             com_id = com_id[0]
@@ -57,7 +67,7 @@ class CreditCommunication(TransientModel):
             raise except_osv(_('No address for partner %s') % (current.partner_id.name),
                              _('Please set one'))
         add_obj = self.pool.get('res.partner.address')
-        return add_obj.browse(cursor, uid, add_obj, context=context)
+        return add_obj.browse(cursor, uid, add, context=context)
 
 
     def get_mail(self, cursor, uid, com_id, context=None):
@@ -66,7 +76,7 @@ class CreditCommunication(TransientModel):
         if isinstance(com_id, list):
             com_id = com_id[0]
         current = self.browse(cursor, uid, com_id, context=context)
-        email = current.get_address(context=context).email
+        email = current.get_address().email
         if not email:
              raise except_osv(_('No invoicing or default email for partner %s') %
                               (current.partner_id.name),
@@ -82,7 +92,8 @@ class CreditCommunication(TransientModel):
                                        ('partner_id', '=', partner_id),
                                        ('profile_rule_id', '=', rule_id)],
                                       context=context)
-        return cr_line_obj.browse(cursor, uid, cr_l_ids, context=context)
+        #return cr_line_obj.browse(cursor, uid, cr_l_ids, context=context)
+        return cr_l_ids
 
     def _generate_comm_from_credit_line_ids(self, cursor, uid, line_ids, context=None):
         if not line_ids:
@@ -91,18 +102,22 @@ class CreditCommunication(TransientModel):
         sql = ("SELECT distinct partner_id, profile_rule_id, credit_management_profile_rule.level"
                " FROM credit_management_line JOIN credit_management_profile_rule "
                "   ON (credit_management_line.profile_rule_id = credit_management_profile_rule.id)"
-               " WHERE credit_management_line in %s"
+               " WHERE credit_management_line.id in %s"
                " ORDER by credit_management_profile_rule.level")
 
         cursor.execute(sql, (tuple(line_ids),))
         res = cursor.dictfetchall()
         for rule_assoc in res:
             data = {}
-            data['credit_lines'] = self._get_credit_lines(cursor, uid, line_ids,
-                                                          context=context)
+            data['credit_lines'] = [(6, 0, self._get_credit_lines(cursor, uid, line_ids,
+                                                                  rule_assoc['partner_id'],
+                                                                  rule_assoc['profile_rule_id'],
+                                                                  context=context))]
             data['partner_id'] = rule_assoc['partner_id']
             data['current_profile_rule'] = rule_assoc['profile_rule_id']
-            comm_id = self.create(cursor, data, context=context)
+            comm_id = self.create(cursor, uid, data, context=context)
+
+
             comms.append(self.browse(cursor, uid, comm_id, context=context))
         return comms
 
@@ -110,36 +125,39 @@ class CreditCommunication(TransientModel):
         """Generate mail message using template related to rule"""
         cr_line_obj = self.pool.get('credit.management.line')
         mail_temp_obj = self.pool.get('email.template')
+        mail_message_obj = self.pool.get('mail.message')
+        mail_ids = []
         for comm in comms:
             # we want to use a local cursor in order to send the maximum
             # of email
-            mail_message_obj = self.pool.get('mail.message')
-            db, pool = pooler.get_db_and_pool(cursor.dbname)
-            local_cr = db.cursor()
             try:
-                mvalues = mail_temp_obj.generate_email(local_cr, uid,
-                                                       comm.current_profile_rule.id,
-                                                       comm.id, context=context)
+                template = comm.current_profile_rule.mail_template_id.id
 
-                assert 'email_from' in mvalues, ('email_from is missing or empty'
-                                                 'after template rendering,'
-                                                 'send_mail() cannot proceed')
-                mail_id = mail_message_obj.create(local_cr, uid, mvalues, context=context)
+                mvalues = mail_temp_obj.generate_email(cursor, uid,
+                                                       template,
+                                                       comm.id,
+                                                       context=context)
+                essential_values = ['subject', 'body_html',
+                                    'email_from', 'email_to']
+                for val in essential_values:
+                    if not mvalues.get(val):
+                        raise Exception('Mail generation error with %s', val)
+                mail_id = mail_message_obj.create(cursor, uid, mvalues, context=context)
 
-                for cl in comm.credit_lines:
-                    cr_line_obj.write(local_cr, uid, [cl.id],
-                                      {'mail_status': 'sent',
-                                       'mail_id': mail_id,
+                cl_ids = [cl.id for cl in comm.credit_lines]
+
+                # we do not use local cusros else we have a lock
+                cr_line_obj.write(cursor, uid, cl_ids,
+                                      {'mail_message_id': mail_id,
                                        'state': 'sent'})
-
-
+                mail_ids.append(mail_id)
             except Exception, exc:
                 logger.error(exc)
-                local_cr.rollback()
-                for cl in comm.credit_lines:
-                    cr_line_obj.write(local_cr, uid, [cl.id],
-                                      {'mail_status': 'error'})
-
+                cursor.rollback()
+                cl_ids = [cl.id for cl in comm.credit_lines]
+                # we do not use local cusros else we have a lock
+                cr_line_obj.write(cursor, uid, cl_ids,
+                                  {'state': 'mail_error'})
             finally:
-                local_cr.commit()
-                local_cr.close()
+                cursor.commit()
+        return mail_ids

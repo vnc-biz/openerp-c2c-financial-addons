@@ -16,7 +16,7 @@ end
 
 Given /^there is "(.*?)" credit lines$/ do |state|
   @credit_lines = CreditManagementLine.find_all_by_state(state)
-  @credit_lines.should_not be_nil,
+  @credit_lines.should_not be_empty,
   "not #{state} lines found"
 end
 
@@ -25,32 +25,35 @@ Given /^I mark all draft mail to state "(.*?)"$/ do | state |
   wiz.name = state
   wiz.mark_all = true
   wiz.save
-  wiz.mark_line
+  wiz.mark_lines
 end
 
 Then /^the draft line should be in state "(.*?)"$/ do | state |
-  @credit_lines.should be_nil,
+  @credit_lines.should_not be_nil,
   "no line where stored"
   @credit_lines.each do |line|
-    CreditManagementLine.find(line.id).state.should equal(state),
-    "The line #{line.id} is not in state #{state}"
+    line = CreditManagementLine.find(line.id)
+    line.state.should eql(state),
+    "The line #{line.id} is not in state #{state} he is is in state #{line.state} "
+  end
 
 end
 
 Given /^I mail all ready lines$/ do
-  @credit_lines.should be_nil,
+  @credit_lines.should_not be_nil,
   "no line where stored"
   wiz = CreditManagementMailer.new
   wiz.mail_all = true
   wiz.save
   wiz.mail_lines
-
 end
 
 Then /^All sent lines should be linked to a mail and in mail status "(.*?)"$/ do |status|
-  @credit_lines.should be_nil,
+  @credit_lines.should_not be_nil,
   "no line where stored"
   @credit_lines.each do |line|
-    CreditManagementLine.find(line.id).mail_status.should equal(status),
-    "The line #{line.id} is has no mail status #{state}"
+    line =  CreditManagementLine.find(line.id)
+    line.state.should eql(status),
+    "The line #{line.id} is has no mail status #{status} but #{line.state}"
+  end
 end

@@ -24,14 +24,21 @@ class CreditManagementPrinter(TransientModel):
     """Change the state of lines in mass"""
 
     _name = "credit.management.printer"
+    _rec_name = 'id'
     _description = """Mass printer"""
     _columns = {'mark_as_sent': fields.boolean('Mark lines as send',
-                                               help="Mail lines will be ignored if true"),
-                'send_all': fields.boolean('Print all draft lines')}
+                                               help="Lines to emailed will be ignored"),
+                'print_all': fields.boolean('Print all ready lines')}
 
 
     def print_lines(self, cursor, uid, ids, optional_args, context=None):
+        comm_obj = self.pool.get('credit.management.communication')
         context = context or {}
-        if isinstance(ids, (int, long)):
-            ids = [ids]
+        if isinstance(wiz_id, list):
+            wiz_id = wiz_id[0]
+        current = self.browse(cursor, uid, wiz_id, context)
+        lines_ids = context.get('active_ids')
+        if not lines_ids and not current.mail_all:
+            raise except_osv(_('Not lines ids are selected'),
+                             _('You may check "Print all ready lines"'))
         return False
