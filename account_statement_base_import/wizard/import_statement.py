@@ -31,12 +31,23 @@ class CreditPartnerStatementImporter(osv.osv_memory):
     """Import Credit statement"""
 
     _name = "credit.statement.import"
-    _description = __doc__
+    
+    def _get_profile(self, cr, uid, context=None):
+        if context is None: context = {}
+        res = False
+        if (context.get('active_model', False) == 'account.statement.profil' and
+            context.get('active_ids', False)):
+            res = context['active_ids']
+            if len(res) > 1:
+                raise Exception (_('You cannot use this on more than one profile !'))
+        return res[0]
+    
     _columns = {
         
         'profile_id': fields.many2one('account.statement.profil',
                                       'Import configuration parameter',
                                       required=True),
+        'input_statement': fields.binary('Statement file', required=True),
         'partner_id': fields.many2one('res.partner',
                                       'Credit insitute partner',
                                       ),
@@ -61,8 +72,12 @@ class CreditPartnerStatementImporter(osv.osv_memory):
                                                     help="Tic that box if you want OpenERP to control the start/end balance\
                                                     before confirming a bank statement. If don't ticked, no balance control will be done."
                                                     ),
-                                                    
+
     }   
+    
+    _defaults = {
+        'profile_id': _get_profile,
+    }
 
     def onchange_profile_id(self, cr, uid, ids, profile_id, context=None):
         res={}
@@ -77,16 +92,20 @@ class CreditPartnerStatementImporter(osv.osv_memory):
                     'balance_check':c.balance_check,}}
         return res
 
+    def _check_extension(self, filename):
+        (shortname, ftype) = os.path.splitext(file_name)
+        if not ftype:
+            #We do not use osv exception we do not want to have it logged
+            raise Exception(_('Please use a file with an extention'))
+        return ftype
+
     def import_statement(self, cursor, uid, req_id, context=None):
         """This Function import credit card agency statement"""
         context = context or {}
         if isinstance(req_id, list):
             req_id = req_id[0]
         importer = self.browse(cursor, uid, req_id, context)
-        (shortname, ftype) = os.path.splitext(importer.file_name)
-        if not ftype:
-            #We do not use osv exception we do not want to have it logged
-            raise Exception(_('Please use a file with an extention'))
+        ftype = self._check_extension(importer.file_name)
         sid = self.pool.get(
                 'account.bank.statement').statement_import(
                                             cursor,
@@ -97,11 +116,13 @@ class CreditPartnerStatementImporter(osv.osv_memory):
                                             ftype.replace('.',''),
                                             context=context
         )
-        obj_data = self.pool.get('ir.model.data')
-        act_obj = self.pool.get('ir.actions.act_window')
-        result = obj_data.get_object_reference(cursor, uid, 'account_statement_import', 'action_treasury_statement_tree')
+        # obj_data = self.pool.get('ir.model.data')
+        #         act_obj = self.pool.get('ir.actions.act_window')
+        #         result = obj_data.get_object_reference(cursor, uid, 'account_statement_import', 'action_treasury_statement_tree')
+        #         
+        #         id = result and result[1] or False
+        #         result = act_obj.read(cursor, uid, [id], context=context)[0]
+        #         result['domain'] = str([('id','in',[sid])])
         
-        id = result and result[1] or False
-        result = act_obj.read(cursor, uid, [id], context=context)[0]
-        result['domain'] = str([('id','in',[sid])])
-        return result
+        # We should return here the profile for which we executed the import
+        return {'type': 'ir.actions.act_window_close'}

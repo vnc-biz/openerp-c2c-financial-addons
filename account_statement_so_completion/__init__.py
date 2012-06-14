@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi, Joel Grand-Guillaume
+#    Author: Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -19,17 +19,4 @@
 #
 ##############################################################################
 
-from tools.translate import _
-import datetime
-import netsvc
-logger = netsvc.Logger()
-from openerp.osv.orm import Model, fields
-
-
-class AccountBankSatement(Model):
-
-    _inherit = "account.bank.statement"
- 
-
-
-
+import statement

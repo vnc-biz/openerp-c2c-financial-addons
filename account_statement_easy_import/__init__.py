@@ -19,5 +19,4 @@
 #
 ##############################################################################
 
-import file_parser
-import wizard
+import statement

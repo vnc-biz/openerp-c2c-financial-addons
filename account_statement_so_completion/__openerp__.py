@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi, Joel Grand-Guillaume
+#    Author: Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -19,17 +19,32 @@
 #
 ##############################################################################
 
-from tools.translate import _
-import datetime
-import netsvc
-logger = netsvc.Logger()
-from openerp.osv.orm import Model, fields
-
-
-class AccountBankSatement(Model):
-
-    _inherit = "account.bank.statement"
+{'name': "Bank statement Sale Order completion",
+ 'version': '1.0',
+ 'author': 'Camptocamp',
+ 'maintainer': 'Camptocamp',
+ 'category': 'Finance',
+ 'complexity': 'normal', #easy, normal, expert
+ 'depends': ['account_statement_base_completion', 'sale'],
+ 'description': """
  
-
-
-
+ Goal is to provide an easy way to fullfill the info of a bank statement line based on rules.
+ The reference of the line is always used by the reconciliation process. We're supposed to copy 
+ there (or write manually) the matching string. 
+ 
+ This module adds rules to match them (and fullfill reference) based on SO Number.
+ 
+ """,
+ 'website': 'http://www.camptocamp.com',
+ 'init_xml': [],
+ 'update_xml': [
+     'data.xml',
+ ],
+ 'demo_xml': [],
+ 'test': [],
+ 'installable': True,
+ 'images': [],
+ 'auto_install': True,
+ 'license': 'AGPL-3',
+ 'active': False,
+}

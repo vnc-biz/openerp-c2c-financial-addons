@@ -22,7 +22,7 @@ import netsvc
 logger = netsvc.Logger()
 from openerp.osv.orm import Model, fields
 
-class account_move(osv.osv):
+class account_move(Model):
     _inherit='account.move'
     
     def unlink(self, cr, uid, ids, context=None):
@@ -33,6 +33,6 @@ class account_move(osv.osv):
                 if move_line.reconcile_id:
                     move_line.reconcile_id.unlink(context=context)
         return super(account_move, self).unlink(cr, uid, ids, context=context)
-account_move()
+        
 
 
