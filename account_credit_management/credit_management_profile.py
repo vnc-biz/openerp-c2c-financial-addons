@@ -126,6 +126,8 @@ class CreditManagementProfile(Model):
         return lines
 
     def _check_lines_profiles(self, cursor, uid, profile_id, lines, context=None):
+        """ Check if there is credit line related to same move line but
+            related to an other profile"""
         context = context or {}
         if not lines:
             return []
@@ -154,8 +156,8 @@ class CreditManagementProfileRule (Model):
                 'name': fields.char('Name', size=128, required=True),
                 'level': fields.float('level', required=True),
 
-                'computation_mode': fields.selection([('net_days', 'Net days'),
-                                                      ('end_of_month', 'End of Month'),
+                'computation_mode': fields.selection([('net_days', 'Due date'),
+                                                      ('end_of_month', 'Due Date: end of Month'),
                                                       ('previous_date', 'Previous reminder')],
                                                      'Compute mode',
                                                      required=True),
@@ -217,9 +219,8 @@ class CreditManagementProfileRule (Model):
             fnc = getattr(self, fname)
             return fnc()
         else:
-            # maybe a UnboundLocalError
-            raise NameError(_('Can not get function for computation mode: '
-                               '%s is not implemented') % (fname,))
+            raise NotImplementedError(_('Can not get function for computation mode: '
+                                        '%s is not implemented') % (fname,))
 
     # -----------------------------------------
 

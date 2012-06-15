@@ -23,11 +23,12 @@
           <newline/>
           <notebook colspan="4">
             <page string="Profile">
-              <field name="profile_ids" colspan="4"/>
+              <field name="profile_ids" colspan="4" nolabel="1"/>
             </page>
             <page string="Report and Errors">
-              <field name="report" colspan="4"/>
-              <!-- <field name="manual_ids" colspan="4"/> -->
+              <field name="report" colspan="4" nolabel="1"/>
+              <separator string="Move lines To be treated manually"/>
+             <field name="manual_ids" colspan="4" nolabel="1"/>
             </page>
           </notebook>
           <group col="3" colspan="4">

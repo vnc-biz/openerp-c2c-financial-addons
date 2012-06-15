@@ -1,18 +1,25 @@
 <openerp>
 <data>
 <record id="partner_followup_form_view" model="ir.ui.view">
-  <field name="name">partner.followup.form.view</field>
+  <field name="name">partner.credit_management.form.view</field>
   <field name="model">res.partner</field>
   <field name="inherit_id" ref="base.view_partner_form" />
   <field name="type">form</field>
   <field name="arch" type="xml">
-      <notebook position="inside">
-        <page string="Credit Management">
-          <field name="credit_profile_id"/>
-          <field name="credit_management_line_ids" colspan="4"/>
-        </page>
-      </notebook>
+        <field name="last_reconciliation_date" position="after">
+          <field name="credit_profile_id"
+                 groups="account_credit_management.group_account_credit_management_manager,account_credit_management.group_account_credit_management_use"/>
+        </field>
   </field>
 </record>
+
+    <act_window
+        id="act_partner_credit_relation_relation"
+        name="Credit lines"
+        groups="account_credit_management.group_account_credit_management_manager,account_credit_management.group_account_credit_management_user"
+        domain="[('partner_id', '=',  active_id)]"
+        res_model="credit.management.line"
+        src_model="res.partner"/>
+
 </data>
 </openerp>

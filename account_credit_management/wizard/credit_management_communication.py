@@ -31,6 +31,7 @@ class CreditCommunication(TransientModel):
     """Shell calss used to provide a base model to email template and reporting.
        Il use this approche in version 7 a browse record will exist even if not saved"""
     _name = "credit.management.communication"
+    _description = "credit management communication"
     _rec_name = 'partner_id'
     _columns = {'partner_id': fields.many2one('res.partner', 'Partner', required=True),
 

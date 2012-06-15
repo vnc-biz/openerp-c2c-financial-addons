@@ -133,6 +133,7 @@ class CreditManagementLine (Model):
         credit_line_ids = []
         existings = self.search(cursor, uid, [('move_line_id', 'in', lines),
                                               ('level', '=', current_lvl)])
+        db, pool = pooler.get_db_and_pool(cursor.dbname)
         for line in ml_obj.browse(cursor, uid, lines, context):
             # we want to create as many line as possible
             local_cr = db.cursor()
@@ -154,4 +155,4 @@ class CreditManagementLine (Model):
             finally:
                 local_cr.commit()
                 local_cr.close()
-            return credit_line_ids
+        return credit_line_ids

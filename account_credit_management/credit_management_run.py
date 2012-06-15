@@ -18,6 +18,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+import sys
+import traceback
+
 from openerp.osv.orm import Model, fields
 from openerp.tools.translate import _
 from openerp.osv.osv import except_osv
@@ -34,7 +37,10 @@ class CreditManagementRun(Model):
                                                 rel="credit_run_profile_rel",
                                                 string='Profiles',
                                                 readonly=True,
+                                                help="If nothing set all profile will be used",
+
                                                 states={'draft': [('readonly', False)]}),
+
                 'report': fields.text('Report', readonly=True),
 
                 'state': fields.selection([('draft', 'Draft'),
@@ -44,10 +50,11 @@ class CreditManagementRun(Model):
                                            string='State',
                                            required=True,
                                            readonly=True),
-                # 'manual_ids': fields.many2many('account.move.line',
-                #                                 rel="credit_runreject_rel",
-                #                                 string='Line to be handled manually',
-                #                                 readonly=True)
+
+                'manual_ids': fields.many2many('account.move.line',
+                                                rel="credit_runreject_rel",
+                                                string='Line to be handled manually',
+                                                readonly=True),
     }
 
     _defaults = {'state': 'draft'}
@@ -71,7 +78,8 @@ class CreditManagementRun(Model):
             run_id = run_id[0]
         run = self.browse(cursor, uid, run_id, context=context)
         errors = []
-        manualy_managed_lines = []
+        manualy_managed_lines = [] #line who changed profile
+        credit_line_ids = [] # generated lines
         run.check_run_date(run.date, context=context)
         profile_ids = run.profile_ids
         if not profile_ids:
@@ -92,16 +100,21 @@ class CreditManagementRun(Model):
                 for rule in profile.profile_rule_ids:
                     rule_lines = rule.get_rule_lines(run.date, lines)
                     #only this write action own a separate cursor
-                    credit_line_ids = cr_line_obj.create_or_update_from_mv_lines(cursor, uid, [],
+                    credit_line_ids += cr_line_obj.create_or_update_from_mv_lines(cursor, uid, [],
                                                                                  rule_lines, rule.id,
                                                                                  run.date, errors=errors,
                                                                                  context=context)
                 lines = list(set(lines) - set(rule_lines))
             except Exception, exc:
                 cursor.rollback()
-                self.write(cursor, uid, [run.id], {'report': str(exc), 'state': 'error'})
+                error_type, error_value, trbk = sys.exc_info()
+                st = "Error: %s\nDescription: %s\nTraceback:" % (error_type.__name__, error_value)
+                st += ''.join(traceback.format_tb(trbk, 30))
+                self.write(cursor, uid, [run.id], {'report':st, 'state': 'error'})
+                return False
             vals = {'report': u"Number of generated lines : %s \n" % (len(credit_line_ids),),
-                    'state': 'done'}
+                    'state': 'done',
+                    'manual_ids': [(6, 0, manualy_managed_lines)]}
             if errors:
                 vals['report'] += u"Following line generation errors appends:"
                 vals['report'] += u"----\n".join(errors)

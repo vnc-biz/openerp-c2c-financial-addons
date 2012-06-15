@@ -18,18 +18,17 @@
       %endif
       <div>
 
-      <p>Dear ${object.partner_id.name and ' ' or ''},</p>
+      <p>Dear ${object.partner_id.name  or ''},</p>
 
       <p>Your text here</p>
 
-      <table>
-      <caption><b>Summary:</b></caption>
+      <table style="border: 1px solid" width="100%">
+      <caption><b>Summary</b></caption>
       <tr>
-        <th>date due:</th>
-        <th>date due:</th>
-         <th>Amount due:</th>
-         <th>Amount balance:</th>
-         <th>Invoice number:</th>
+        <th>date due</th>
+         <th>Amount due</th>
+         <th>Amount balance</th>
+         <th>Invoice number</th>
       </tr>
 %for line in object.credit_lines:
       <tr>
@@ -44,18 +43,20 @@
 %endfor
       </table>
       <br/>
+      <br/>
 
-      If you have any question, do not hesitate to contact us.<br/>
+     <p> If you have any question, do not hesitate to contact us.</p>
 
 
-      Thank you for choosing ${object.company_id.name}! <br/>
+      <p>Thank you for choosing ${object.company_id.name}! </p>
 
 
       -- more info here --
-      ${object.user_id.name} ${object.user_id.user_email and '<%s>'%(object.user_id.user_email) or ''}<br/>
+      <p>${object.user_id.name} ${object.user_id.user_email and '<%s>'%(object.user_id.user_email) or ''}<br/>
       ${object.company_id.name}<br/>
       % if object.company_id.street:
       ${object.company_id.street or ''}<br/>
+
       % endif
 
       % if object.company_id.street2:

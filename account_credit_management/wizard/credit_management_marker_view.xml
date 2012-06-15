@@ -7,11 +7,12 @@
       <field name="type">form</field>
       <field name="arch" type="xml">
         <form> <!-- editable="bottom" -->
-          <label string="This wizard will mark selected  draft lines
-                         to the selected state. Done Lines will be ignored " colspan="4"/>
+          <separator string="This wizard will mark selected  draft lines to the selected state. Done Lines will be ignored " colspan="4"/>
+          <newline/>
           <field name="name"/>
           <field name="mark_all"/>
-          <group>
+          <newline/>
+          <group colspan="4">
             <button name="mark_lines" string="Mark lines" type="object" icon="gtk-execute"/>
             <button special="cancel" string="Cancel" icon='gtk-cancel'/>
           </group>
