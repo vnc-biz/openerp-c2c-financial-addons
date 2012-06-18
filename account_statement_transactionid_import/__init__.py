@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi, Joel Grand-Guillaume
+#    Author: Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -18,27 +18,4 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
-{'name': "Bank statement easy import",
- 'version': '1.0',
- 'author': 'Camptocamp',
- 'maintainer': 'Camptocamp',
- 'category': 'Finance',
- 'complexity': 'normal', #easy, normal, expert
- 'depends': ['account_statement_base_completion','account_statement_base_import','base_transaction_id'],
- 'description': """
- 
- """,
- 'website': 'http://www.camptocamp.com',
- 'init_xml': [],
- 'update_xml': [
-     'wizard/import_statement_view.xml',
- ],
- 'demo_xml': [],
- 'test': [],
- 'installable': True,
- 'images': [],
- 'auto_install': False,
- 'license': 'AGPL-3',
- 'active': False,
-}
+import parser
