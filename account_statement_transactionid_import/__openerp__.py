@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi, Joel Grand-Guillaume
+#    Author: Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -19,40 +19,36 @@
 #
 ##############################################################################
 
-{'name': "Credit card institue like statement import",
+{'name': "Bank statement transactionID import",
  'version': '1.0',
  'author': 'Camptocamp',
  'maintainer': 'Camptocamp',
  'category': 'Finance',
  'complexity': 'normal', #easy, normal, expert
- 'depends': ['base_transaction_id','account_statement_ext'],
+ 'depends': ['account_statement_base_import','account_statement_transactionid_completion'],
  'description': """
- The goal of this module is to help dealing with huge volume of reconciliation through
- payment offices like Paypal, Lazer, Visa, Amazon and so on. It's mostly used for
- E-commerce.
+ This module brings generic methods and fields on bank statement to deal with 
+ the importation of different bank and offices that uses transactionID.
  
- Features:
+ This module allow you to import your bank transactions with a standard .csv or .xls file
+ (you'll find it in the 'datas' folder). It'll respect the profil
+ you'll choose (providen by the account_statement_ext module) to generate the entries. 
  
- 1) This module adds a new view on bank statement called 'Treasury Statement' that allow you 
- to import your bank transactions given by those payment offices. It provide a standard
- .csv or .xls file (you'll find it in the 'data' folder) that you can easily import. We take care
- of:
-  - Account commission and partner relation
-  - Can force an account for the reconciliation
+ This module can handle a commission taken by the payment office and has the following format:
  
- 2) Adds a report on bank statement that can be used for Checks
+ * transaction_id :    the transaction ID given by the bank/office. It'll be used as reference
+                       in the generated entries and will be useful for reconciliation process
+ * date :              date of the payment
+ * amount :            amount paid in the currency of the journal used in the importation profil
+ * commission_amount : amount of the comission for each line
+ * label :             the comunication given by the payment office, used as communication in the 
+                       generated entries.
  
- 3) When an error occurs in a bank statement, it will go through all line anyway and summarize 
- all the erronous line in a same popup instead of raising and crashing on every step.
  
  """,
  'website': 'http://www.camptocamp.com',
  'init_xml': [],
  'update_xml': [
-     'statement_view.xml',
-     'wizard/import_statement_view.xml',
-     'report/bank_statement_webkit_header.xml',
-     'report.xml',
  ],
  'demo_xml': [],
  'test': [],

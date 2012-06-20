@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Nicolas Bessi
+#    Author: Joel Grand-Guillaume
 #    Copyright 2011-2012 Camptocamp SA
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -19,32 +19,25 @@
 #
 ##############################################################################
 
-{'name': "Auto reconcile statements",
+{'name': "Bank statement extension with voucher",
  'version': '1.0',
  'author': 'Camptocamp',
  'maintainer': 'Camptocamp',
  'category': 'Finance',
  'complexity': 'normal', #easy, normal, expert
- 'depends': ['base_transaction_id'],
+ 'depends': ['account_statement_ext','account_voucher'],
  'description': """
- This allows you auto reconcile entries with payment from financial credit partners like Paypal, Visa, Amazon,... It is
- mostly use in E-Commerce, but could also be useful in other cases. 
- 
- The automatic reconciliation features match, if available, a transaction ID propagated from the Sale Order to 
- match transaction. If not present, it will look for the SO Name in the Origin or description of the move line.
- 
- You can choose which account you want to reconcile, which partner or which invoice.
+ This module is only needed when using account_bank_statement_ext with voucher in order to compute the period
+ correctly. This is mainly because with account_bank_statement_ext, the period is computed for each line.
  """,
  'website': 'http://www.camptocamp.com',
  'init_xml': [],
- 'update_xml': [
-     'wizard/statement_auto_reconcile_view.xml',
- ],
+ 'update_xml': [],
  'demo_xml': [],
  'test': [],
  'installable': True,
  'images': [],
- 'auto_install': False,
+ 'auto_install': True,
  'license': 'AGPL-3',
  'active': False,
 }
