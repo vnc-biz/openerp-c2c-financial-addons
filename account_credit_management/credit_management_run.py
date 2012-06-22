@@ -69,10 +69,7 @@ class CreditManagementRun(Model):
             raise except_osv(_('A run was already executed in a greater date'),
                              _('Run date should be >= %s') % (line.date))
 
-
-    def generate_credit_lines(self, cursor, uid, run_id, context=None):
-        """Generate credit management lines"""
-        context = context or {}
+    def _generate_credit_lines(self, cursor, uid, run_id, context=None):
         cr_line_obj = self.pool.get('credit.management.line')
         if isinstance(run_id, list):
             run_id = run_id[0]
@@ -122,3 +119,21 @@ class CreditManagementRun(Model):
             run.write(vals)
         # lines will correspond to line that where not treated
         return lines
+
+
+
+    def generate_credit_lines(self, cursor, uid, run_id, context=None):
+        """Generate credit management lines"""
+        context = context or {}
+        # we do a little magical tips in order to ensure non concurrent run
+        # of the function generate_credit_lines
+        try:
+            cursor.execute('SELECT id FROM credit_management_run'
+                           ' LIMIT 1 FOR UPDATE NOWAIT' )
+        except Exception, exc:
+            cursor.rollback()
+            raise except_osv(_('A credit management run is allready running'
+                               ' in background please try later'),
+                             str(exc))
+        # in case of exception openerp will do a rollback for us and free the lock
+        return self._generate_credit_lines(cursor, uid, run_id, context)
