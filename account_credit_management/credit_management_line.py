@@ -73,6 +73,11 @@ class CreditManagementLine (Model):
                 'account_id': fields.related('move_line_id', 'account_id', type='many2one',
                                              relation='account.account', string='Account',
                                              store=True, readonly=True),
+                                             
+                'currency_id': fields.related('move_line_id', 'currency_id', type='many2one',
+                                              relation='res.currency', string='Currency',
+                                              store=True, readonly=True),
+                                              
                 'company_id': fields.related('move_line_id', 'company_id', type='many2one',
                                              relation='res.company', string='Company',
                                              store=True, readonly=True),
