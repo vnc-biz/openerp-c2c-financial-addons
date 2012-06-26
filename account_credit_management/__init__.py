@@ -23,5 +23,6 @@ from . import credit_management_line
 from . import credit_management_account
 from . import credit_management_partner
 from . import credit_management_profile
+from . import credit_management_company
 import wizard
 import report

@@ -24,4 +24,5 @@ Feature: Ensure that mail credit line generation first pass is correct
     And having:
       | name |      value |
       | date | 2012-03-01 |
-    Then I launch the credit run
+    When I launch the credit run
+    Then my credit run should be in state "done"

@@ -73,11 +73,11 @@ class CreditManagementLine (Model):
                 'account_id': fields.related('move_line_id', 'account_id', type='many2one',
                                              relation='account.account', string='Account',
                                              store=True, readonly=True),
-                                             
+
                 'currency_id': fields.related('move_line_id', 'currency_id', type='many2one',
                                               relation='res.currency', string='Currency',
                                               store=True, readonly=True),
-                                              
+
                 'company_id': fields.related('move_line_id', 'company_id', type='many2one',
                                              relation='res.company', string='Company',
                                              store=True, readonly=True),
@@ -131,11 +131,23 @@ class CreditManagementLine (Model):
                                        rule_id, lookup_date, errors=None, context=None):
         """Create or update line base on rules"""
         context = context or {}
+        currency_obj = self.pool.get('res.currency')
         rule_obj = self.pool.get('credit.management.profile.rule')
         ml_obj = self.pool.get('account.move.line')
         rule = rule_obj.browse(cursor, uid, rule_id, context)
         current_lvl = rule.level
         credit_line_ids = []
+        user = self.pool.get('res.users').browse(cursor, uid, uid)
+        tolerance_base = user.company_id.credit_management_tolerance
+        tolerance = {}
+        currency_ids = currency_obj.search(cursor, uid, [])
+
+        acc_line_obj = self.pool.get('account.move.line')
+        for c_id in currency_ids:
+            tmp = currency_obj.compute(cursor, uid, c_id,
+                                       user.company_id.currency_id.id, tolerance_base)
+            tolerance[c_id] = tmp
+
         existings = self.search(cursor, uid, [('move_line_id', 'in', lines),
                                               ('level', '=', current_lvl)])
         db, pool = pooler.get_db_and_pool(cursor.dbname)
@@ -149,9 +161,15 @@ class CreditManagementLine (Model):
                                                                  line, rule, lookup_date,
                                                                  context=context)
                 else:
-                    credit_line_ids += self._create_from_mv_line(local_cr, uid, ids,
-                                                                 line, rule, lookup_date,
-                                                                 context=context)
+                    # as we use memoizer pattern this has almost no cost to get it
+                    # multiple time
+                    open_amount = acc_line_obj._amount_residual_from_date(cursor, uid, line,
+                                                                          lookup_date, context=context)
+
+                    if open_amount > tolerance.get(line.currency_id.id, tolerance_base):
+                        credit_line_ids += self._create_from_mv_line(local_cr, uid, ids,
+                                                                     line, rule, lookup_date,
+                                                                     context=context)
             except Exception, exc:
                 logger.error(exc)
                 if errors:

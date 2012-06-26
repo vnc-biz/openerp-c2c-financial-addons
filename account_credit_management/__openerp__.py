@@ -33,6 +33,7 @@
                 "credit_management_partner_view.xml",
                 "credit_management_profile_view.xml",
                 "credit_management_run_view.xml",
+                "credit_management_company_view.xml",
                 "wizard/credit_management_mailer_view.xml",
                 "wizard/credit_management_marker_view.xml",
                 "wizard/credit_management_printer_view.xml",

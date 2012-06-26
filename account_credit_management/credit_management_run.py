@@ -20,10 +20,13 @@
 ##############################################################################
 import sys
 import traceback
+import logging
 
 from openerp.osv.orm import Model, fields
 from openerp.tools.translate import _
 from openerp.osv.osv import except_osv
+
+logger = logging.getLogger('Credit management run')
 
 memoizers = {}
 
@@ -114,6 +117,7 @@ class CreditManagementRun(Model):
                 error_type, error_value, trbk = sys.exc_info()
                 st = "Error: %s\nDescription: %s\nTraceback:" % (error_type.__name__, error_value)
                 st += ''.join(traceback.format_tb(trbk, 30))
+                logger.error(st)
                 self.write(cursor, uid, [run.id], {'report':st, 'state': 'error'})
                 return False
             vals = {'report': u"Number of generated lines : %s \n" % (len(credit_line_ids),),

@@ -48,6 +48,20 @@ Given /^I mail all ready lines$/ do
   wiz.mail_lines
 end
 
+Given /^I clean all the credit lines$/ do
+ CreditManagementLine.find(:all).each do | line |
+    line.destroy
+   end
+end
+
+Then /^my credit run should be in state "(.*?)"$/ do |state|
+  @found_item.should_not be nil
+  @run = CreditManagementRun.find(@found_item.id)
+  @run.state.should eq(state),
+  "Run state is in state #{@run.state} instead of #{state}"
+end
+
+
 Then /^All sent lines should be linked to a mail and in mail status "(.*?)"$/ do |status|
   @credit_lines.should_not be_nil,
   "no line where stored"
