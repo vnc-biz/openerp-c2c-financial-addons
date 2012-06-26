@@ -25,6 +25,8 @@ from openerp.osv.orm import Model, fields
 from openerp.tools.translate import _
 from openerp.osv.osv import except_osv
 
+memoizers = {}
+
 
 class CreditManagementRun(Model):
     """Credit management run generate all credit management lines and reject"""
@@ -69,7 +71,12 @@ class CreditManagementRun(Model):
             raise except_osv(_('A run was already executed in a greater date'),
                              _('Run date should be >= %s') % (line.date))
 
+
     def _generate_credit_lines(self, cursor, uid, run_id, context=None):
+        """ Generate credit line. Function can be a little dryer but
+        it does almost noting, initalise variable maange error and call
+        real know how method"""
+        memoizers['credit_line_residuals'] = {}
         cr_line_obj = self.pool.get('credit.management.line')
         if isinstance(run_id, list):
             run_id = run_id[0]

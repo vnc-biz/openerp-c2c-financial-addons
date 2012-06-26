@@ -19,9 +19,10 @@
 #
 ##############################################################################
 from datetime import datetime
-
+import operator
 from openerp.osv.orm import Model, fields
 from openerp.tools.translate import _
+from openerp.addons.account_credit_management import credit_management_run
 
 class AccountAccount(Model):
     """Add a link to a credit management profile on account account"""
@@ -69,7 +70,7 @@ class AccountInvoice(Model):
 
     def action_move_create(self, cursor, uid, ids, context=None):
         """We ensure writing of invoice id in move line because
-           Trigger field may not work without account_voucher"""
+           Trigger field may not work without account_voucher addon"""
         res = super(AccountInvoice, self).action_move_create(cursor, uid, ids, context=context)
         for inv in self.browse(cursor, uid, ids, context=context):
             if inv.move_id:
@@ -79,14 +80,13 @@ class AccountInvoice(Model):
 
 
 class AccountMoveLine(Model):
-    """Add a function field tha link the invoice to the move line
-       It is mostly a performance trick as function search is way too
-       ineffective. It adds a function field to store invoice id we do not modify the
-       exisitng invoice string in order not to introduce regression.
-       If we merge into core we need to write the existing invoice field"""
+    """Add a function that compute the residual amount using a follow up date
+       Add relation between move line and invoicex"""
 
     _inherit = "account.move.line"
-    # Stor fields has strange behavior with voucher module
+    # Store fields has strange behavior with voucher module we had to overwrite invoice
+
+
     # def _invoice_id(self, cursor, user, ids, name, arg, context=None):
     #     #Code taken from OpenERP account addon
     #     invoice_obj = self.pool.get('account.invoice')
@@ -123,65 +123,98 @@ class AccountMoveLine(Model):
 
     _columns = {'invoice_id': fields.many2one('account.invoice', 'Invoice')}
 
-
-    def _compute_residual_currency(self, cursor, uid, mv_line_br, lookup_date):
-        """Compute residual of a line with currency"""
-        cur_obj = self.pool.get('res.currency')
-        move_line_total = 0.0
-        for payment_line in mv_line_br.reconcile_partial_id.line_partial_ids:
-            if self._should_exlude_line(mv_line_br, lookup_date):
+    def _get_payment_and_credit_lines(self, moveline_array, lookup_date):
+        credit_lines = []
+        payment_lines = []
+        for line in moveline_array:
+            if self._should_exlude_line(line):
                 continue
-            if (payment_line.currency_id and mv_line_br.currency_id
-                and payment_line.currency_id.id == mv_line_br.currency_id.id):
-                move_line_total += payment_line.amount_currency
+            if line.account_id.type == 'receivable' and line.debit:
+                credit_lines.append(line)
             else:
-                context_unreconciled = ({'date': payment_line.date})
-                amount_in_foreign_currency = cur_obj.compute(cursor,
-                                                             uid,
-                                                             mv_line_br.company_id.currency_id.id,
-                                                             mv_line_br.currency_id.id,
-                                                             (payment_line.debit - payment_line.credit),
-                                                             round=False,
-                                                             context=context_unreconciled)
-                move_line_total += amount_in_foreign_currency
-        return move_line_total
+                if line.reconcile_partial_id:
+                    payment_lines.append(line)
+        credit_lines.sort(key=operator.attrgetter('date'))
+        payment_lines.sort(key=operator.attrgetter('date'))
+        return (credit_lines, payment_lines)
 
-
-    def _compute_residual_standard(self, cursor, uid, mv_line_br, lookup_date):
-        """Compute residual of a line without currency"""
-        move_line_total = 0.0
-        for payment_line in mv_line_br.reconcile_partial_id.line_partial_ids:
-            if self._should_exlude_line(mv_line_br, lookup_date):
-                continue
-            move_line_total += (payment_line.debit - payment_line.credit)
-        return move_line_total
-
-
-    def _should_exlude_line(self, mv_line_br, payment_line, lookup_date):
-        """Check if line is applicable"""
-        if payment_line.id == mv_line_br.id:
+    def _validate_line_currencies(self, credit_lines):
+        """Raise an excpetion if there is lines with different currency"""
+        if len(credit_lines) == 0:
             return True
-        if (datetime.strptime(payment_line.date, "%Y-%m-%d").date()
-            > datetime.strptime(lookup_date, "%Y-%m-%d").date()):
-            return True
-        return False
+        currency = credit_lines[0].currency_id.id
+        if not all(obj.currency_id.id == currency for obj in credit_lines):
+            raise Exception('Not all line of move line are in the same currency')
 
-    #TODO REWRITE function to take care of multiple payment that's gonna be fun
+    def _get_value_amount(self, mv_line_br):
+        if mv_line_br.currency_id:
+            return mv_line_br.amount_currency
+        else:
+            return mv_line_br.debit - mv_line_br.credit
+
+    def _validate_partial(self, credit_lines):
+        if len(credit_lines) == 0:
+            return True
+        else:
+            line_with_partial = 0
+            for line in credit_lines:
+                if not line.reconcile_partial_id:
+                    line_with_partial += 1
+            if line_with_partial and line_with_partial != len(credit_lines):
+                    raise Exception('Can not compute credit line if multiple'
+                                    ' lines are not all linked to a partial')
+
+    def _get_applicable_payment_lines(self, credit_line, payment_lines):
+        applicable_payment = []
+        for pay_line in payment_lines:
+            if datetime.strptime(pay_line.date, "%Y-%m-%d").date() \
+                <= datetime.strptime(credit_line.date, "%Y-%m-%d").date():
+                applicable_payment.append(pay_line)
+        return applicable_payment
+
+    def _compute_partial_reconcile_residual(self, move_lines, lookup_date, move_id, memoizer):
+        """ Compute open amount of multiple credit lines linked to multiple payment lines"""
+        credit_lines, payment_lines = self._get_payment_and_credit_lines(move_lines, lookup_date, memoizer)
+        self._validate_line_currencies(credit_lines)
+        self._validate_line_currencies(payment_lines)
+        self._validate_partial(credit_lines)
+        # memoizer structure move_id : {move_line_id: open_amount}
+        # paymnent line and credit line are sorted by date
+        rest = 0.0
+        for credit_line in credit_lines:
+            applicable_payment = self._get_applicable_payment_lines(credit_line, payment_lines)
+            paid_amount = 0.0
+            for pay_line in applicable_payment:
+                paid_amount += self._get_value_amount(pay_line)
+            balance_amount = self._get_value_amount(credit_lines) - (paid_amount + rest)
+            memoizer[move_id][credit_line.id] = balance_amount
+            if balance_amount < 0.0:
+                rest = balance_amount
+            else:
+                rest = 0.0
+        return memoizer
+
+    def _compute_fully_open_amount(self, move_lines, lookup_date, move_id, memoizer):
+        for move_line in move_lines:
+            memoizer[move_id][move_line.id] = self._get_value_amount(move_line)
+        return memoizer
+
+
     def _amount_residual_from_date(self, cursor, uid, mv_line_br, lookup_date, context=None):
         """
-        Code  taken from function _amount_residual of account/account_move_line.py
-        TODO refactor it (gasp) once I have got time and be more advances in scenarios.
+        Code from function _amount_residual of account/account_move_line.py does not take
+        in account mulitple line payment and reconciliation. We have to rewrite it
         Code computes residual amount at lookup date for mv_line_br in entry
         """
-        context = context or {}
-        if mv_line_br.reconcile_id:
-            return (mv_line_br.amount_currency
-                    or (mv_line_br.debit - mv_line_br.credit))
-        if not mv_line_br.account_id.type in ('payable', 'receivable'):
-            return (mv_line_br.amount_currency
-                    or (mv_line_br.debit - mv_line_br.credit))
-        if mv_line_br.reconcile_partial_id:
-            if mv_line_br.currency_id:
-                return self._compute_residual_currency(cursor, uid, mv_line_br, lookup_date)
+        memoizer = credit_management_run.memoizers['credit_line_residuals']
+        move_id = mv_line_br.move_id.id
+        if mv_line_br.move_id.id in memoizer:
+            pass # get back value
+        else:
+            memoizer[move_id] = {}
+            move_lines = mv_line_br.move_id.line_id
+            if mv_line_br.reconcile_partial_id:
+                self._compute_partial_reconcile_residual(move_lines, lookup_date, move_id, memoizer)
             else:
-                return self._compute_residual_standard(cursor, uid, mv_line_br, lookup_date)
+                self._compute_fully_open_amount(move_lines, lookup_date, move_id, memoizer)
+        return memoizer[move_id][mv_line_br.id]
