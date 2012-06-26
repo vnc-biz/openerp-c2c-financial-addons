@@ -38,8 +38,8 @@
                 "wizard/credit_management_marker_view.xml",
                 "wizard/credit_management_printer_view.xml",
                 "report/report.xml",
-                "securtiy/ir.model.access.csv",
-                "credit_management_demo.xml"],
+                "securtiy/ir.model.access.csv",]
+                #"credit_management_demo.xml"],
  'demo_xml': ["credit_management_demo.xml"],
  'tests': [],
  'installable': True,
