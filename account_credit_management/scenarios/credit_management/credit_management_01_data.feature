@@ -8,7 +8,7 @@
 # Features Generic tags (none for all)
 ##############################################################################
 
-@credit_management_module
+@credit_management_module @credit_management_base_data
 
 Feature: Ensure that mail credit management is correct
 
