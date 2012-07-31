@@ -29,9 +29,11 @@
 Replaces the selection fields for countries and states
 by multi-selection fields
 on the module account fiscal position rules.
+
+
 It allows to create rules from and to multiple countries
 instead of one only actually.
-As instance :
+For instance :
  - From France
  - To each country in EU
 Will apply the same Fiscal Position

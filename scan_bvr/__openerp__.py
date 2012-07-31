@@ -2,7 +2,7 @@
 #
 #  c2c_scan_bvr
 #
-#  Created by Nicolas Bessi and Vincent Renaville 
+#  Created by Nicolas Bessi and Vincent Renaville
 #
 #  Copyright (c) 2012 CamptoCamp. All rights reserved.
 ##############################################################################
@@ -26,15 +26,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.     
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 ##############################################################################
 {
         "name" : "Wizard to Scan BVR for Invoice",
-        "description" : """
-        This module Will work with C-channel or other OCR scanner,
-        the module will help you to create an invoice directly from the BVR Code
-        , at this time it's work with BVR and BVR+
+        "description" : """create invoices from BVR code
+
+        This module works with C-channel or other OCR scanner.
+        It helps you to create an invoice directly from the BVR Code.
+        It currently supports BVR and BVR+
         """,
         "version" : "1.0",
         "author" : "Camptocamp",
