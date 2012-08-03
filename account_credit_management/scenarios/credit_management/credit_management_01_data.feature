@@ -19,7 +19,7 @@ Feature: Ensure that mail credit management is correct
     And having:
       |name|value|
       | demo | 1 |
-    Given I install the required modules:
+    Given I install the required modules with dependencies:
       | name |
       | account_credit_management |
     Given I need a "res.partner" with oid: credit_management.trusted_partner
