@@ -12,7 +12,31 @@
           <field name="company_id"/>
           <notebook  colspan="4">
             <page string="Rules">
-              <field name="profile_rule_ids" colspan="4" />
+              <field name="profile_rule_ids" colspan="4" >
+                <tree  editable="bottom">
+                  <field name="name"/>
+                  <field name="level"/>
+                  <field name="canal"/>
+                  <field name="delay_days"/>
+                  <field name="computation_mode"/>
+                  <field name="mail_template_id"/>
+                </tree>
+                <form>
+                  <field name="name"/>
+                  <notebook colspan="4">
+                    <page string="Delay Setting">
+                      <field name="level"/>
+                      <field name="canal"/>
+                      <field name="delay_days"/>
+                      <field name="computation_mode"/>
+                    </page>
+                    <page string="Mail and reporting">
+                      <field name="mail_template_id"/>
+                      <field name="custom_text"/>
+                    </page>
+                  </notebook>
+                </form>
+              </field>
             </page>
           </notebook>
         </form>
@@ -68,6 +92,7 @@
             </page>
             <page string="Mail and reporting">
               <field name="mail_template_id"/>
+              <field name="custom_text"/>
             </page>
           </notebook>
         </form>

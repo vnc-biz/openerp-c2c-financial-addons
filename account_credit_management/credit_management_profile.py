@@ -168,6 +168,7 @@ class CreditManagementProfileRule (Model):
                 'canal': fields.selection([('manual', 'Manual'),
                                            ('mail', 'Mail')],
                                           'Canal', required=True),
+                'custom_text': fields.text('Custom message', required=True, translate=True),
                 }
 
 
