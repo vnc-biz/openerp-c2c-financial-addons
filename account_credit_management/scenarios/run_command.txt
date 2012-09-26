@@ -1,0 +1,1 @@
+cucumber CONF=nbessi.conf --tags=@credit_management_first_run  features /opt/openerp_geoengine/src/c2c-financial-addons/account_credit_management/scenarios/
