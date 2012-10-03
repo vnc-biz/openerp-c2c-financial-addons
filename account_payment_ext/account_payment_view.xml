@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_payment_order_form_date_required" model="ir.ui.view">
+            <field name="name">payment.order.form</field>
+            <field name="model">payment.order</field>
+            <field name="inherit_id" ref="account_payment.view_payment_order_form"/>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                 <xpath expr='//field[@name="date_scheduled"]' position='replace'>
+                      <field name="date_scheduled" select="1" attrs="{'readonly':[('date_prefered','!=','fixed')],'required':[('date_prefered','=','fixed')]}" />
+                  </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>
