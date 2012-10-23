@@ -177,8 +177,9 @@ class wizard_account_fiscal_position_rule(osv.osv_memory):
         )
 
         for field in account_fiscal_position_rule.m2o_replaced_fields:
-            field_ids = [item.id for item in template[field]]
-            vals[field] = [(6, 0, field_ids)]
+            field_name = "%s_ids" % field
+            field_ids = [item.id for item in template[field_name]]
+            vals[field_name] = [(6, 0, field_ids)]
 
         return vals
 
