@@ -128,5 +128,5 @@ wkhtmltopdf. The texts are defined inside the report classes.
              'tests/open_invoices.yml',],
     #'tests/account_move_line.yml'
     'active': False,
-    'installable': True,
+    'installable': False,
 }

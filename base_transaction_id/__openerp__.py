@@ -38,7 +38,7 @@
  'update_xml': ['invoice_view.xml', 'sale_view.xml'],
  'demo_xml': [],
  'test': [],
- 'installable': True,
+ 'installable': False,
  'images': [],
  'auto_install': False,
  'license': 'AGPL-3',
