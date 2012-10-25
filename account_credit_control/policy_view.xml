@@ -64,7 +64,7 @@
         id="base_credit_control_configuration_menu"/>
 
     <record model="ir.actions.act_window" id="credit_policy_configuration_action">
-      <field name="name">Credit Policies</field>
+      <field name="name">Credit Control Policies</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">credit.control.policy</field>
       <field name="domain"></field>
@@ -74,7 +74,7 @@
     </record>
 
     <menuitem
-        name="Credit Policies"
+        name="Credit Control Policies"
         parent="base_credit_control_configuration_menu"
         action="credit_policy_configuration_action"
         id="credit_policy_configuration_action_menu"/>
