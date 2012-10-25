@@ -10,9 +10,9 @@
           <field name="name"/>
           <field name="do_nothing"/>
           <field name="company_id"/>
-          <notebook  colspan="4">
+          <notebook colspan="4">
             <page string="Policy Levels">
-              <field name="level_ids" colspan="4" >
+              <field name="level_ids" nolabel="1" colspan="4" >
                 <tree  editable="bottom">
                   <field name="name"/>
                   <field name="level"/>
@@ -37,6 +37,9 @@
                   </notebook>
                 </form>
               </field>
+            </page>
+            <page string="Accounts">
+              <field name="account_ids" nolabel="1"/>
             </page>
           </notebook>
         </form>
