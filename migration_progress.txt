@@ -1,0 +1,40 @@
+To migrate a module to 7.0, change installable to True in
+__openerp__.py, and do the hard work. When it is done, move the module
+to the DONE section below. 
+
+TODO
+----
+
+account_advanced_reconcile
+account_balance_line
+account_consolidation
+account_credit_management
+account_financial_report_webkit
+account_fiscal_position_rule_m2m
+account_fiscal_rules_partner_category
+account_payment_ext
+account_statement_base_completion
+account_statement_base_import
+account_statement_completion_voucher
+account_statement_ext
+account_statement_ext_voucher
+account_statement_transactionid_completion
+account_statement_transactionid_import
+account_unrealized_currency_gain_loss
+analytic_multicurrency
+analytic_secondaxis
+analytic_secondaxis_multicurrency
+analytic_secondaxis_project
+analytic_secondaxis_timesheet
+base_transaction_id
+c2c_budget
+c2c_reporting_tools
+currency_rate_update
+invoice_department
+invoice_validation_wkfl
+l10n_fr_improved
+migration_process.txt
+scan_bvr
+
+DONE
+----

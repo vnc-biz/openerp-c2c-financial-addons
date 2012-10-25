@@ -45,6 +45,6 @@ Will apply the same Fiscal Position
     'init_xml': [],
     'update_xml': ['fiscal_rules_view.xml', ],
     'demo_xml': [],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
 }

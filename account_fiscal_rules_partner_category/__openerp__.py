@@ -41,6 +41,6 @@ Based on the module account_fiscal_position_rule which is a dependency for this 
     'update_xml': ['partner_view.xml',
                    'fiscal_rules_view.xml', ],
     'demo_xml': [],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
 }

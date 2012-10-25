@@ -42,6 +42,6 @@
                 #"credit_management_demo.xml"],
  'demo_xml': ["credit_management_demo.xml"],
  'tests': [],
- 'installable': True,
+ 'installable': False,
  'license': 'AGPL-3',
  'application': True}

@@ -37,7 +37,7 @@
  ],
  'demo_xml': [],
  'test': [],
- 'installable': True,
+ 'installable': False,
  'images': [],
  'auto_install': True,
  'license': 'AGPL-3',
