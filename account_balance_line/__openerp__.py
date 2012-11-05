@@ -33,7 +33,7 @@
     "name" : "Balance for a line",
     "version" : "1.0",
     "depends" : ["base", "account"],
-    "author" : "CamptoCamp SA",
+    "author" : "Camptocamp",
     "description": """Add a balance total for selected line in move line view
     """,
     'website': 'http://www.openerp.com',
