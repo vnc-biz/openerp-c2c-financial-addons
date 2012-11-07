@@ -23,6 +23,7 @@ import pooler
 
 from openerp.osv.orm import Model, fields
 from openerp.osv import osv
+from openerp.tools.translate import _
 
 logger = logging.getLogger('credit.line.control')
 
@@ -182,4 +183,14 @@ class CreditControlLine(Model):
                                {'state': 'ignored'}, context=context)
 
         return line_ids
+
+    def unlink(self, cr, uid, ids, context=None, check=True):
+        for line in self.browse(cr, uid, ids, context=context):
+            if line.state != 'draft':
+                raise osv.except_osv(
+                    _('Error !'),
+                    _('You are not allowed to delete a credit control line that '
+                      'is not in draft state.'))
+
+        return super(CreditControlLine, self).unlink(cr, uid, ids, context=context)
 
