@@ -29,7 +29,7 @@
 ##############################################################################
 {
     "name" : "Currency Rate Update",
-    "version" : "0.6",
+    "version" : "0.7",
     "author" : "Camptocamp",
     "website" : "http://camptocamp.com",
     "category" : "Financial Management/Configuration",
@@ -81,12 +81,13 @@ Thanks to main contributors: Grzegorz Grzelak, Alexis de Lattre
 """,
     "depends" : ["base",
                  "account"], #Added to ensure account security groups are present
-    "init_xml" : ["security/security.xml"],
-    "update_xml" : [
-                        "currency_rate_update.xml",
-                        "company_view.xml",
-                    ],
-    "demo_xml" : [],
+    "data" : [
+        "currency_rate_update.xml",
+        "company_view.xml",
+        "security/security.xml",
+        ],
+    "demo" : [
+    ],
     "active": False,
     "installable": True
 }
