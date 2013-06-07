@@ -1,0 +1,5 @@
+openerp7-c2c-financial-addons (7.0-520-precise1) precise; urgency=low
+
+  * Packaging for Ubuntu precise
+
+ -- Enrico Weigelt, metux IT service <weigelt@metux.de>  Fri, 07 Jun 2013 14:00:00 +0200

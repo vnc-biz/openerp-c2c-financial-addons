@@ -1,0 +1,467 @@
+Source: openerp7-c2c-financial-addons
+Section: net
+Priority: optional
+Maintainer: Enrico Weigelt, metux ITS <weigelt@metux.de>
+Build-Depends: debhelper (>= 7.0.50~), python, rsync, dos2unix
+Standards-Version: 3.9.1
+
+
+Package: openerp7-addons-account-balance-line
+Section: net
+Architecture: all
+Depends:  openerp7-addons-base,
+  openerp7-addons-account,
+  ${misc:Depends}
+Conflicts: openerp-addons-account-balance-line
+Recommends: openerp7-server
+Description: OpenERP-7 module: account_balance_line
+  Add a balance total for selected line in move line view
+
+Package: openerp7-addons-account-consolidation
+Section: net
+Architecture: all
+Depends:  openerp7-addons-base,
+  openerp7-addons-account,
+  openerp7-addons-account-reversal,
+  ${misc:Depends}
+Conflicts: openerp-addons-account-consolidation
+Recommends: openerp7-server
+Description: OpenERP-7 module: account_consolidation
+  Account consolidation module. Coding in progress...
+  .
+  Some explanations to do...
+  .
+  - Difference between debit/credit is balanced on the debit/credit default account of the journal?
+
+Package: openerp7-addons-account-credit-control
+Section: net
+Architecture: all
+Depends:  openerp7-addons-base,
+  openerp7-addons-account,
+  openerp7-addons-email-template,
+  openerp7-addons-report-webkit,
+  ${misc:Depends}
+Conflicts: openerp-addons-account-credit-control
+Recommends: openerp7-server
+Description: OpenERP-7 module: account_credit_control
+  Credit Control
+  ==============
+  .
+  Configuration
+  -------------
+  .
+  Configure the policies and policy levels in ``Accounting  > Configuration >
+  Credit Control > Credit Policies``.
+  You can define as many policy levels as you need.
+  .
+  Configure a tolerance for the Credit control and a default policy
+  applied on all partners in each company, under the Accounting tab.
+  .
+  You are able to specify a particular policy for one partner or one invoice.
+  .
+  Usage
+  -----
+  .
+  Menu entries are located in ``Accounting > Periodical Processing > Credit
+  Control``.
+  .
+  Create a new "run" in the ``Credit Control Run`` menu with the controlling date.
+  Then, use the ``Compute credit lines`` button. All the credit control lines will
+  be generated. You can find them in the ``Credit Control Lines`` menu.
+  .
+  On each generated line, you have many choices:
+  * Send a email
+  * Print a letter
+  * Change the state (so you can ignore or reopen lines)
+
+Package: openerp7-addons-account-financial-report-webkit
+Section: net
+Architecture: all
+Depends:  openerp7-addons-account,
+  openerp7-addons-report-webkit,
+  ${misc:Depends}
+Conflicts: openerp-addons-account-financial-report-webkit
+Recommends: openerp7-server
+Description: OpenERP-7 module: account_financial_report_webkit
+  This module replace the following standard openerp financial reports :
+  - General ledger
+  - Trial Balance (simple or comparative view)
+  - Partner ledger
+  - Partner balance
+  - Open invoices report
+  .
+  .
+  Main improvements per report:
+  .
+  * The General ledger: details of all entries posted in your books sorted by account.
+  - Filter by account in the wizard (no need to go to the Chart of account to do this anymore)
+  or by view account (the report will display all regular children account) ie: you can select all P&L accounts.
+  - The report will now print only account with movements OR with a balance not null. No more endless
+  report with accounts with no data. (field: display account is hidden)
+  - initial balance calculation on the fly if no open entry posted
+  - Thanks to a new checkbox in account form, you will have possibility to centralize any accounts you like.
+  Ie: you do not want to see all entries posted under the account ‘VAT on sales’; you will only see aggregated amounts by periods.
+  - Counterpart account displayed for each transaction (3 accounts max.) to ease searching.
+  - Better ergonomy on the wizard: important information at the top, filters in the middle, options
+  at the bottom or separate tab, more specific filtering on a other tabs. No more unique wizard layout
+  for all financial reports (ie: we have removed the journal tab for the GL report)
+  - improved report style
+  .
+  * The partner ledger: details of entries relative to payable & receivable accounts posted in your books sorted by account and partner.
+  - Filter by partner now possible
+  - Now you can see accounts then Partner with subtotals for each account allowing you to check you data
+  with trial balance and partner balance for instance & accounts are ordered the same way than in the Chart of account
+  - period have been added (date only is uncompleted since date can be outside period)
+  - Reconciliation code added
+  - subtotal by account
+  - alpha sorting (same in partner balance)
+  .
+  * Open invoice report : other version of the partner ledger showing unreconciled / partially reconcies entries
+  (added on the 20/01/2012)
+  - Possibility to print unreconciled transactions only at any date in the past (thanks to the brand-new field:
+  last_rec_date which calculated the last move line reconciled date). No more pain to get open invoices at the last closing date.
+  - no initial balance calculated because the report shows open invoices from previous years.
+  .
+  * The Trial balance: list of account with balances
+  - you can either see the column : Initial balance , debit, credit , end balance or compare balances over 4 periods of your choice
+  - You can select the filter opening to get the opening trial balance only
+  - If you create a extra virtual charts (using consolidated account) of account for your P&L and your balance sheet,
+  you can print your statutory accounts (with comparision over years for ex.)
+  - If you compare 2 periods, you will get differences in value and % also
+  .
+  * The Partner balance: list of account with balances
+  - subtotal by account & partner
+  - alpha sorting (same in partner balance)
+  .
+  Limitations:
+  In order to run properly this module make sure you have installed the librairie ‘wkhtmltopdf’
+  for the pdf rendering (this library path must be added to you company settings).
+  .
+  Initial balances in these reports are based either on opening entry
+  posted in the opening period or calculated on the fly. So make sure,
+  your past accounting opening entries are in a opening period.
+  Initials balances are not calculated when using date filter (since a
+  date can be outside its logical period and IB could be different by
+  date Vs IB by period) The opening period is assumed to be the 01.01 of
+  the year with an opening flag and the first period of the year must
+  starts also the 01.01
+  .
+  Totals for amount in currencies are affective if the partner belong to
+  an account with a secondary currency.
+  .
+  html headers and footers are deactivated for these reports because of
+  an issue of wkhtmltopdf :
+  http://code.google.com/p/wkhtmltopdf/issues/detail?id=656 Instead, the
+  header and footer are created as text with arguments passed to
+  wkhtmltopdf. The texts are defined inside the report classes.
+
+Package: openerp7-addons-account-fiscal-position-rule-m2m
+Section: net
+Architecture: all
+Depends:  openerp7-addons-account-fiscal-position-rule,
+  ${misc:Depends}
+Conflicts: openerp-addons-account-fiscal-position-rule-m2m
+Recommends: openerp7-server
+Description: OpenERP-7 module: account_fiscal_position_rule_m2m
+  Replaces the selection fields for countries and states
+  by multi-selection fields
+  on the module account fiscal position rules.
+  .
+  .
+  It allows to create rules from and to multiple countries
+  instead of one only actually.
+  For instance :
+  - From France
+  - To each country in EU
+  Will apply the same Fiscal Position
+
+Package: openerp7-addons-account-fiscal-rules-partner-category
+Section: net
+Architecture: all
+Depends:  openerp7-addons-account-fiscal-position-rule,
+  openerp7-addons-account-fiscal-position-rule-m2m,
+  ${misc:Depends}
+Conflicts: openerp-addons-account-fiscal-rules-partner-category
+Recommends: openerp7-server
+Description: OpenERP-7 module: account_fiscal_rules_partner_category
+  Introduces a Fiscal Category on the Partners.
+  .
+  It can thereby be used in fiscal position rules.
+  .
+  Based on the module account_fiscal_position_rule which is a dependency for this module.
+
+Package: openerp7-addons-account-payment-ext
+Section: net
+Architecture: all
+Depends:  openerp7-addons-account-payment,
+  ${misc:Depends}
+Conflicts: openerp-addons-account-payment-ext
+Recommends: openerp7-server
+Description: OpenERP-7 module: account_payment_ext
+  In case of a payment order
+  set to pay directly , when the payment will pass to stade done, it will set payment line date to the current date
+
+Package: openerp7-addons-account-unrealized-currency-gain-loss
+Section: net
+Architecture: all
+Depends:  openerp7-addons-base,
+  openerp7-addons-account,
+  openerp7-addons-account-reversal,
+  openerp7-addons-base-headers-webkit,
+  ${misc:Depends}
+Conflicts: openerp-addons-account-unrealized-currency-gain-loss
+Recommends: openerp7-server
+Description: OpenERP-7 module: account_unrealized_currency_gain_loss
+  Add a wizard to generate the unrealized currency gain & loss entries. This adjusts accounts' balance of account with a foreign currency.
+  .
+  To configure it, Foreign currency gain & loss account have been added in company parameters.
+  .
+  For UK (Revaluation) :
+  LOSS  GAIN
+  - Revaluation account   [x]  [x]
+  - Provision B.S account  [ ]  [ ]
+  - Provision P&L account  [ ]  [ ]
+  .
+  For CH (Provision) :
+  LOSS  GAIN
+  - Revaluation account   [ ]  [ ]
+  - Provision B.S account  [x]  [ ]
+  - Provision P&L account  [x]  [ ]
+  .
+  For FR
+  LOSS  GAIN
+  - Revaluation account   [x]  [x]
+  - Provision B.S account  [x]  [ ]
+  - Provision P&L account  [x]  [ ]
+
+Package: openerp7-addons-analytic-multicurrency
+Section: net
+Architecture: all
+Depends:  openerp7-addons-account,
+  openerp7-addons-analytic,
+  openerp7-addons-account-analytic-analysis,
+  ${misc:Depends}
+Conflicts: openerp-addons-analytic-multicurrency
+Recommends: openerp7-server
+Description: OpenERP-7 module: analytic_multicurrency
+  This module improves OpenERP multi-currency handling in analytic accounting, overall for multi-company.
+  .
+  This module is based on the work made in all c2c_multicost* available on the v5.0 stable version and
+  allows you to share analytic account between company (even if currency differs in each one).
+  .
+  What has been done here:
+  .
+  * Adapt the owner of analytic line (= to company that own the general account associated with an analytic line)
+  * Add multi-currency on analytic lines (similar to financial accounting)
+  * Correct all "costs" indicators into analytic account to base them on the right currency (owner's company)
+  * By default, nothing changes for single company implementation.
+  .
+  As a result, we can now really share the same analytic account between companies that do not have the same
+  currency. This setup becomes True, Enjoy !
+  .
+  - Company A : EUR
+  - Company B : CHF
+  .
+  - Analytic Account A : USD, owned by Company A
+  - Analytic Account B : CHF, owned by Company A
+  - Analytic Account C : EUR, owned by Company B
+
+Package: openerp7-addons-analytic-secondaxis
+Section: net
+Architecture: all
+Depends:  openerp7-addons-account,
+  openerp7-addons-analytic,
+  ${misc:Depends}
+Conflicts: openerp-addons-analytic-secondaxis
+Recommends: openerp7-server
+Description: OpenERP-7 module: analytic_secondaxis
+  Add a second analytical axis on analytic lines allowing you to make reporting on.
+  .
+  Unless the account_analytic_plans from OpenERP SA, this module allow you to make cross-reporting
+  between those two axes, like all analytic lines that concern for example :
+  The activity "Communication" and the project "Product 1 Integration".
+  .
+  This second axis is called "activities" and you will be able to define for each analytical account, what are the
+  allowed activities for it.
+  .
+  There's also a kind of heritage between analytical account. Adding activities on parent account will allow
+  child to benefit from. So you can define a set of activities for each parent analytic account like:
+  .
+  Administratif
+  - Intern
+  - Project 1
+  Customers project
+  - Project X
+  - Project Y
+  .
+  What will be true for Administratif, will be true for Intern too.
+
+Package: openerp7-addons-analytic-secondaxis-multicurrency
+Section: net
+Architecture: all
+Depends:  openerp7-addons-analytic-secondaxis,
+  openerp7-addons-analytic-multicurrency,
+  ${misc:Depends}
+Conflicts: openerp-addons-analytic-secondaxis-multicurrency
+Recommends: openerp7-server
+Description: OpenERP-7 module: analytic_secondaxis_multicurrency
+  Add a second analytical axis on analytic lines allowing you to make reporting on.
+  .
+  Unless the account_analytic_plans from OpenERP SA, this module allow you to make cross-reporting
+  between those two axes, like all analytic lines that concern for example :
+  The activity "Communication" and the project "Product 1 Integration".
+  .
+  This second axis is called "activities" and you will be able to define for each analytical account, what are the
+  allowed activities for it.
+  .
+  This module enables the second axis on a multi-currency context (sharing analytic & activities accounts
+  between companies with different currencies).
+
+Package: openerp7-addons-analytic-secondaxis-project
+Section: net
+Architecture: all
+Depends:  openerp7-addons-analytic-secondaxis-timesheet,
+  openerp7-addons-project,
+  openerp7-addons-project-timesheet,
+  ${misc:Depends}
+Conflicts: openerp-addons-analytic-secondaxis-project
+Recommends: openerp7-server
+Description: OpenERP-7 module: analytic_secondaxis_project
+  Add a second analytical axis on analytic lines allowing you to make reporting on.
+  .
+  Unless the account_analytic_plans from OpenERP SA, this module allow you to make cross-reporting
+  between those two axes, like all analytic lines that concern for example :
+  The activity "Communication" and the project "Product 1 Integration".
+  .
+  This second axis is called "activities" and you will be able to define for each analytical account, what are the
+  allowed activities for it.
+  .
+  This module enables the second axis on projet.
+
+Package: openerp7-addons-analytic-secondaxis-timesheet
+Section: net
+Architecture: all
+Depends:  openerp7-addons-analytic-secondaxis,
+  openerp7-addons-hr-timesheet-sheet,
+  openerp7-addons-hr-timesheet,
+  ${misc:Depends}
+Conflicts: openerp-addons-analytic-secondaxis-timesheet
+Recommends: openerp7-server
+Description: OpenERP-7 module: analytic_secondaxis_timesheet
+  Add a second analytical axis on analytic lines allowing you to make reporting on.
+  .
+  Unless the account_analytic_plans from OpenERP SA, this module allow you to make cross-reporting
+  between those two axes, like all analytic lines that concern for example :
+  The activity "Communication" and the project "Product 1 Integration".
+  .
+  This second axis is called "activities" and you will be able to define for each analytical account, what are the
+  allowed activities for it.
+  .
+  This module enables the second axis on timesheet.
+
+Package: openerp7-addons-currency-rate-update
+Section: net
+Architecture: all
+Depends:  openerp7-addons-base,
+  openerp7-addons-account,
+  ${misc:Depends}
+Conflicts: openerp-addons-currency-rate-update
+Recommends: openerp7-server
+Description: OpenERP-7 module: currency_rate_update
+  Import exchange rates from the Internet.
+  .
+  The module is able to use 4 different sources:
+  .
+  1. Admin.ch
+  Updated daily, source in CHF.
+  .
+  2. European Central Bank (ported by Grzegorz Grzelak)
+  The reference rates are based on the regular daily concertation procedure between
+  central banks within and outside the European System of Central Banks,
+  which normally takes place at 2.15 p.m. (14:15) ECB time. Source in EUR.
+  http://www.ecb.europa.eu/stats/exchange/eurofxref/html/index.en.html
+  .
+  3. Yahoo Finance
+  Updated daily
+  .
+  4. Polish National Bank (Narodowy Bank Polski) (contribution by Grzegorz Grzelak)
+  Takes official rates from www.nbp.pl. Adds rate table symbol in log.
+  You should check when rates should apply to bookkeeping. If next day you should
+  change the update hour in schedule settings because in OpenERP they apply from
+  date of update (date - no hours).
+  .
+  In the roadmap : Google Finance.
+  Updated daily from Citibank N.A., source in EUR. Information may be delayed.
+  This is parsed from an HTML page, so it may be broken at anytime.
+  .
+  The update can be set under the company form.
+  You can set for each services which currency you want to update.
+  The logs of the update are visible under the service note.
+  You can active or deactivate the update.
+  The module uses internal ir_cron feature from OpenERP, so the job is launched once
+  the server starts if the 'first execute date' is before the current day.
+  The module supports multi-company currency in two ways:
+  .
+  *    the currencies are shared, you can set currency update only on one
+  company
+  *    the currency are separated, you can set currency on every company
+  separately
+  .
+  A function field lets you know your currency configuration.
+  .
+  If in multi-company mode, the base currency will be the first company's currency
+  found in database.
+  .
+  Thanks to main contributors: Grzegorz Grzelak, Alexis de Lattre
+
+Package: openerp7-addons-invoice-department
+Section: net
+Architecture: all
+Depends:  openerp7-addons-account,
+  openerp7-addons-hr,
+  ${misc:Depends}
+Conflicts: openerp-addons-invoice-department
+Recommends: openerp7-server
+Description: OpenERP-7 module: invoice_department
+  Add the department on Invoices.
+  .
+  The views are adapted to use the information in the search form.
+
+Package: openerp7-addons-invoice-validation-wkfl
+Section: net
+Architecture: all
+Depends:  openerp7-addons-account,
+  ${misc:Depends}
+Conflicts: openerp-addons-invoice-validation-wkfl
+Recommends: openerp7-server
+Description: OpenERP-7 module: invoice_validation_wkfl
+  This module adds 2 states between Draft and Open states in Invoices:
+  .
+  - To Validate: for invoices which need a validation
+  - To Send: for invoices that need to be sent
+
+Package: openerp7-addons-l10n-fr-improved
+Section: net
+Architecture: all
+Depends:  openerp7-addons-l10n-fr,
+  openerp7-addons-report-webkit,
+  ${misc:Depends}
+Conflicts: openerp-addons-l10n-fr-improved
+Recommends: openerp7-server
+Description: OpenERP-7 module: l10n_fr_improved
+  Improve l10n_fr module to fix main tax and trouble
+
+Package: openerp7-addons-scan-bvr
+Section: net
+Architecture: all
+Depends:  openerp7-addons-l10n-ch,
+  ${misc:Depends}
+Conflicts: openerp-addons-scan-bvr
+Recommends: openerp7-server
+Description: OpenERP-7 module: scan_bvr
+  create invoices from BVR code
+  .
+  This module works with C-channel or other OCR scanner.
+  It helps you to create an invoice directly from the BVR Code.
+  It currently supports BVR and BVR+
+
